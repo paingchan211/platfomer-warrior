@@ -1,0 +1,381 @@
+classDiagram
+%% ================= CORE LOOP =================
+class Game {
+- session: std::unique_ptr<Session>
+- running: bool
+
++ Game(): void
++ ~Game(): void
++ run(): void
++ newGame(): void
++ exit(): void
++ isRunning(): bool
+}
+
+class Session {
+- window: sf::RenderWindow
+- entityFactory: EntityFactory
+- gameWorld: GameWorld
+- cameraController: CameraController
+- physicsManager: PhysicsManager
+- inputManager: InputManager
+- combatSystem: CombatSystem
+- gameMaster: GameMaster
+- saveGameManager: SaveGameManager
+- keyBindingManager: KeyBindingManager
+- stateStack: Stack<GameStateData>
+- floatingTexts: Queue<FloatingText>
+
++ Session(): void
++ ~Session(): void
++ run(): void
++ shouldExit(): bool
+}
+
+Game *-- Session : owns
+Session *-- EntityFactory
+Session *-- GameWorld
+Session *-- CameraController
+Session *-- PhysicsManager
+Session *-- InputManager
+Session *-- CombatSystem
+Session *-- GameMaster
+Session *-- SaveGameManager
+Session *-- KeyBindingManager
+Session o--> ResourceManager : uses
+Session --> GameStateData : manages
+
+class GameWorld {
+- entityFactory: EntityFactory&
+- resourceManager: ResourceManager&
+- player: std::unique_ptr<Player>
+- enemies: std::unique_ptr<std::unique_ptr<Enemy>[]>
+- boss: std::unique_ptr<Boss>
+- platforms: std::unique_ptr<std::unique_ptr<Platform>[]>
+- floorTiles: std::unique_ptr<sf::Sprite[]>
+
++ GameWorld(EntityFactory& factory, ResourceManager& resources): void
++ initialize(): bool
++ reset(): void
++ updatePlatforms(float deltaTime): void
++ checkAndSpawnBoss(): bool
++ getPlayer(): Player*
++ getBoss(): Boss*
++ getEnemies(): std::unique_ptr<Enemy>[]&
++ getGroundLevel(): float
+}
+GameWorld o--> EntityFactory
+GameWorld o--> ResourceManager
+GameWorld *-- Player
+GameWorld *-- "0..*" Enemy
+GameWorld *-- Boss
+GameWorld *-- "many" Platform
+
+class EntityFactory {
+- resourceManager: ResourceManager&
+
++ EntityFactory(ResourceManager& resources): void
++ createPlayer(...): Player*
++ createEnemy(...): Enemy*
++ createBoss(): Boss*
++ createPlatforms(): void
+}
+EntityFactory o--> ResourceManager
+
+%% ================= ENTITIES =================
+class Entity {
+- sprite: sf::Sprite
+- position: sf::Vector2f
+- velocity: sf::Vector2f
+- active: bool
+
++ update(float deltaTime): void*
++ accept(EntityVisitor& visitor): void*
++ getBounds(): sf::FloatRect
++ getPosition(): sf::Vector2f
++ setPosition(sf::Vector2f position): void
+}
+
+class Character {
+- hp: int
+- maxHp: int
+- damage: int
+- speed: float
+
++ takeDamage(int amount): void
++ isAlive(): bool
++ setHp(int value): void
++ setDamage(int value): void
+}
+Entity <|-- Character
+
+class Player {
+- runAnim: Animation*
+- stats: PlayerStats
+- inventory: PlayerInventory
+- skillTree: SkillTree
+
++ handleInput(float deltaTime, KeyBindingManager* keys): void
++ update(float deltaTime): void
++ updatePhysics(float deltaTime, float gravity, Platform** platforms, int count): void
++ attack(int type): void
++ specialAttack(): void
++ applyLevelUpBonuses(LevelUpInfo info): void
++ getStats(): PlayerStats&
++ getInventory(): PlayerInventory&
++ getSkillTree(): SkillTree&
+}
+Character <|-- Player
+Player *-- PlayerStats
+Player *-- PlayerInventory
+Player *-- SkillTree
+
+class Enemy {
+- state: EnemyState
+- patrolLeft: float
+- patrolRight: float
+- detectionRange: float
+- attackRange: float
+
++ update(float deltaTime, float gravity, const Player& player): void
++ getCollisionBounds(): sf::FloatRect
++ applyIceStack(): void
++ applyBurn(int damage, float duration): void
+}
+Character <|-- Enemy
+
+class Boss {
+- bossAnimation: BossAnimation
+- bossState: BossState
+
++ spawn(sf::Vector2f position): void
++ update(float deltaTime, float gravity, const Player& player, bool enraged): void
++ getBossState(): BossState
++ setBossState(BossState state): void
+}
+Enemy <|-- Boss
+
+class Platform {
+- size: sf::Vector2f
+- isMoving: bool
+
++ Platform(texture, float x, float y, float moveDistance?, float speed?): void
++ update(float deltaTime): void
++ getCollisionBounds(): sf::FloatRect
+}
+Entity <|-- Platform
+
+class Projectile {
+- damage: int
+- lifetime: float
+
++ reset(): void*
++ update(float deltaTime): void*
++ getDamage(): int
++ getLifetime(): float
+}
+Entity <|-- Projectile
+
+class FireProjectile {
+- burnDamage: int
+- burnDuration: float
+
++ reset(texture, sf::Vector2f pos, bool facingRight): void
++ update(float deltaTime): void
++ getBurnDamage(): int
++ getBurnDuration(): float
+}
+Projectile <|-- FireProjectile
+
+class IceProjectile {
+- freezeDuration: float
+- slowAmount: float
+
++ reset(texture, sf::Vector2f pos, bool facingRight): void
++ update(float deltaTime): void
++ getFreezeDuration(): float
++ getSlowAmount(): float
+}
+Projectile <|-- IceProjectile
+
+class Meteor {
+- textures: sf::Texture*[5]
+
++ reset(sf::Texture*[5] textures, sf::Vector2f pos): void
++ update(float deltaTime): void
+}
+Projectile <|-- Meteor
+
+class HPPotion {
+- healingValue: int
+
++ reset(texture, sf::Vector2f pos): void
++ update(float deltaTime): void
++ getHealingValue(): int
+}
+Entity <|-- HPPotion
+
+%% ================= PLAYER SUBSYSTEMS =================
+class PlayerStats {
+- level: int
+- experience: int
+- expToNextLevel: int
+
++ gainExperience(int amount): LevelUpInfo
++ getLevel(): int
++ getExperience(): int
++ getExpToNextLevel(): int
+}
+
+class PlayerInventory {
+- hpPotions: int
+- maxHpPotions: const int
+
++ addHpPotion(): bool
++ useHpPotion(Player& player): bool
++ getHpPotions(): int
++ setHpPotions(int value): void
+}
+
+class SkillTree {
+- tree_: NTree<SkillNode,3>*
+- availableSkillPoints_: int
+
++ initialize(): void
++ addSkillPoints(int amount): void
++ upgradeSkill(SkillType type): bool
++ getTotalFireDamage(): int
++ getTotalIceDamage(): int
++ hasFireProjectile(): bool
++ hasIceProjectile(): bool
+}
+
+%% ================= SYSTEMS =================
+class CombatSystem {
+- resourceManager: ResourceManager&
+- inputManager: InputManager&
+- currentProjectileType: ProjectileType
+- fireProjectiles: DoublyLinkedList<std::unique_ptr<FireProjectile>>
+- iceProjectiles: DoublyLinkedList<std::unique_ptr<IceProjectile>>
+- hpPotions: DoublyLinkedList<std::unique_ptr<HPPotion>>
+- meteors: DoublyLinkedList<std::unique_ptr<Meteor>>
+
++ CombatSystem(ResourceManager&, InputManager&, CombatLogCallback, FloatingTextCallback, PushStateCallback): void
++ reset(std::mt19937& rng, const Player& player): void
++ updatePlayerCombat(float deltaTime, Player& player, float gravity, KeyBindingManager* keys): void
++ handlePlayerAttacks(Player& player, Enemy[][] enemies, Boss* boss, bool a, bool& b, float& c, float d, KeyBindingManager* e, float f): void
++ updateProjectiles(float deltaTime, Player& player, Enemy[][] enemies, Boss* boss, bool a, bool& b, float& c, float d, KeyBindingManager* e): void
++ updatePotions(float deltaTime, Player& player): void
++ updateMeteors(float deltaTime, Player& player, float gravity, const sf::View& view, std::mt19937& rng, const GameMaster* gm): void
++ getProjectileAmmo(): int
++ getSpecialAttackAmmo(): int
+}
+
+class PhysicsManager {
+- gravity: float
+
++ updatePlayerPhysics(Player& player, float deltaTime, float gravity, Platform** platforms, int count): void
++ updateEnemyPhysics(Enemy& enemy, float deltaTime, float gravity, Platform** platforms, int count): void
++ updateBossPhysics(Boss& boss, float deltaTime, float gravity, Platform** platforms, int count): void
++ setGravity(float value): void
++ getGravity(): float
+}
+
+class CameraController {
+- camera: sf::View
+- worldWidth: float
+
++ CameraController(float width, float height, float worldWidth): void
++ followPlayer(const Player* player): void
++ setPosition(sf::Vector2f pos): void
++ applyToWindow(sf::RenderWindow& window): void
++ handleResize(float width, float height): void
+}
+
+class InputManager {
+- leftKeyDown: bool
+- rightKeyDown: bool
+- projectileKeyPressed: bool
+- attack1KeyPressed: bool
+- attack2KeyPressed: bool
+
++ processEvent(const sf::Event& event, Stack<GameStateData>& stack, bool active, Player* player, ResourceManager& rm, SinglyLinkedList<std::string>& logs, int& a, int& b, int& c, bool& flag, UISystem* uiSystem, KeyBindingManager* kb, SaveGameManager* save): void
++ isActionPressed(GameAction action, const KeyBindingManager* kb): bool
++ isActionDown(GameAction action, const KeyBindingManager* kb): bool
++ isKeyDown(sf::Keyboard::Key key): bool
++ resetKeyStates(): void
+}
+
+class KeyBindingManager {
+- keyBindings: sf::Keyboard::Key[GameAction::ACTION_COUNT]
+
++ getKeyForAction(GameAction action): sf::Keyboard::Key
++ rebindAction(GameAction action, sf::Keyboard::Key key): bool
++ saveBindings(std::string path): bool
++ loadBindings(std::string path): bool
++ resetToDefaults(): void
+}
+
+class SaveGameManager {
+- savesDirectory_: std::string
+
++ SaveGameManager(): void
++ saveGame(const Player& player, const std::string& path): bool
++ loadGame(Player& player, const std::string& path): bool
++ saveExists(const std::string& path): bool
+}
+
+class GameMaster {
+- rageModeActive: bool
+- meteorFuryActive: bool
+- bossRageModeActive: bool
+
++ initialize(): bool
++ update(float deltaTime, const Player& player, const GameWorld& world): void
++ render(sf::RenderWindow& window): void
++ reset(): void
++ stopAllSounds(): void
++ isRageModeActive(): bool
++ isMeteorFuryActive(): bool
++ isBossRageModeActive(): bool
+}
+
+class ResourceManager {
+- textureMap: HashTable<std::string, std::unique_ptr<sf::Texture>>
+- animationMap: HashTable<std::string, std::unique_ptr<Animation>>
+- backgroundMusic: sf::Music
+- musicVolume: float
+- sfxVolume: float
+- resourcesLoaded: bool
+
++ getInstance(): ResourceManager&
++ loadAll(): bool
++ getTexture(std::string name): sf::Texture&
++ getAnimation(std::string name): Animation&
++ getEnemyAnim(): EnemyAnimation&
++ getBossAnim(): BossAnimation&
++ getFont(): sf::Font&
++ getMeteorTextures(sf::Texture*[5] textures): void
++ getBackgroundMusic(): sf::Music&
++ setMusicVolume(float volume): void
++ setSFXVolume(float volume): void
++ getMusicVolume(): float
++ getSFXVolume(): float
++ playAttackSound(int type, float pitch): void
++ playMeteorSound(): void
++ playVictorySound(): void
+}
+
+class GameStateData {
++ type: GameStateType
++ timeEntered: sf::Time
++ pausesGameLogic: bool
++ pausesRendering: bool
++ allowsInput: bool
++ selectedMenuOption: int
++ selectedSkillIndex: int
++ musicVolume: float
++ sfxVolume: float
++ awaitingKeyPress: bool
++ rebindingAction: int
+}

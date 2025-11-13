@@ -1,0 +1,76 @@
+{
+    "tasks": [
+        {
+            "type": "shell",
+            "label": "Build and prepare SFML game",
+            "command": "${workspaceFolder}/build_and_run.bat",
+            "args": [
+                "--no-run"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "detail": "Build using build_and_run.bat script"
+        },
+        {
+            "type": "cppbuild",
+            "label": "C/C++: g++.exe build active file",
+            "command": "C:\\mingw730\\mingw64\\bin\\g++.exe",
+            "args": [
+                "-std=c++17",
+                "main.cpp",
+                "Game.cpp",
+                "Session.cpp",
+                "Animation.cpp",
+                "Entity.cpp",
+                "Character.cpp",
+                "Projectile.cpp",
+                "Player.cpp",
+                "PlayerStats.cpp",
+                "PlayerInventory.cpp",
+                "Enemy.cpp",
+                "Boss.cpp",
+                "Platform.cpp",
+                "FireProjectile.cpp",
+                "IceProjectile.cpp",
+                "HPPotion.cpp",
+                "Meteor.cpp",
+                "ResourceManager.cpp",                "UISystem.cpp",                "InputManager.cpp",
+                "CombatSystem.cpp",
+                "FloatingText.cpp",
+                "GameWorld.cpp",
+                "CameraController.cpp",
+                "PhysicsManager.cpp",
+                "SkillTree.cpp",
+                "KeyBindingManager.cpp",
+                "RenderVisitor.cpp",
+                "DebugVisitor.cpp",
+                "SaveGameManager.cpp",
+                "-I\"${workspaceFolder}/SFML-2.5.1/include\"",
+                "-L\"${workspaceFolder}/SFML-2.5.1/lib\"",
+                "-lsfml-graphics",
+                "-lsfml-window",
+                "-lsfml-system",
+                "-lsfml-audio",
+                "-o",
+                "bin/main.exe"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": "build",
+            "detail": "Direct g++ compilation (fallback)"
+        }
+    ],
+    "version": "2.0.0"
+}
