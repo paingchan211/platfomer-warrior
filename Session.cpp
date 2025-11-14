@@ -1100,7 +1100,7 @@ bool Session::isGamePaused() const
     {
         return false;
     }
-    return stateStack.top().pausesGameLogic;
+    return stateStack.top().behavior().pausesGameLogic();
 }
 
 bool Session::shouldExit() const

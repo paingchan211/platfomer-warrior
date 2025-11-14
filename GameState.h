@@ -26,9 +26,17 @@ enum class GameStateType
     ConfirmOverwriteSave
 };
 
+class GameStateBehavior;
+
+// Returns a behavior instance for the requested state type
+const GameStateBehavior &getGameStateBehavior(GameStateType type);
+
 // Holds detailed state information for current game mode
 struct GameStateData
 {
+    GameStateData();                    // Default constructor (Playing)
+    explicit GameStateData(GameStateType stateType);
+
     GameStateType type;      // Current state type
     sf::Time timeEntered;    // Timestamp when entered this state
     bool pausesGameLogic;    // Whether game logic is paused
@@ -48,60 +56,31 @@ struct GameStateData
     bool awaitingKeyPress;
     int rebindingAction;
 
-    // Default constructor (for playing state)
-    GameStateData()
-        : type(GameStateType::Playing),
-          pausesGameLogic(false),
-          pausesRendering(false),
-          allowsInput(true),
-          selectedMenuOption(0),
-          selectedSkillIndex(1),
-          musicVolume(80.0f),
-          sfxVolume(80.0f),
-          awaitingKeyPress(false),
-          rebindingAction(-1)
-    {
-    }
+    // Returns current behavior (safe because behaviors are singletons)
+    const GameStateBehavior &behavior() const;
 
-    // Constructor that configures behavior depending on state type
-    explicit GameStateData(GameStateType stateType)
-        : type(stateType),
-          pausesGameLogic(false),
-          pausesRendering(false),
-          allowsInput(true),
-          selectedMenuOption(0),
-          selectedSkillIndex(1),
-          musicVolume(80.0f),
-          sfxVolume(80.0f),
-          awaitingKeyPress(false),
-          rebindingAction(-1)
-    {
-        // Configure behavior based on specific state type
-        switch (stateType)
-        {
-        case GameStateType::LoadGameMenu:
-        case GameStateType::SaveGameMenu:
-        case GameStateType::Paused:
-        case GameStateType::SettingsMenu:
-        case GameStateType::AudioSettings:
-        case GameStateType::ControlsMenu:
-        case GameStateType::PlayerStatsScreen:
-        case GameStateType::InventoryOnlyScreen:
-        case GameStateType::SkillTreeScreen:
-        case GameStateType::HelpScreen:
-        case GameStateType::CombatLogScreen:
-        case GameStateType::ConfirmQuitToMenu:
-        case GameStateType::ConfirmRestart:
-            pausesGameLogic = true;
-            break;
-        case GameStateType::BossDeathSlowMotion:
-            pausesGameLogic = false;
-            break;
-        case GameStateType::GameOver:
-            pausesGameLogic = true;
-            break;
-        default:
-            break;
-        }
-    }
+private:
+    const GameStateBehavior *stateBehavior; // Behavior implementing the pattern
+
+    void initializeDefaults();
+    void applyBehavior(GameStateType stateType);
+};
+
+// Base interface for all concrete states
+class GameStateBehavior
+{
+public:
+    virtual ~GameStateBehavior() = default;
+
+    // Every state exposes its type for debugging and comparisons
+    virtual GameStateType getType() const = 0;
+
+    // Flags that describe how this state affects the simulation
+    virtual bool pausesGameLogic() const = 0;
+    virtual bool pausesRendering() const = 0;
+    virtual bool allowsInput() const = 0;
+
+    // Lifecycle hooks that derived states may override if they need work
+    virtual void onEnter(GameStateData &state) const;
+    virtual void onExit(GameStateData &state) const;
 };
