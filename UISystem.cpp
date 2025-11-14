@@ -123,6 +123,129 @@ void UISystem::renderGameOverScreen(sf::RenderWindow &window,
     window.draw(restartText);
 }
 
+// Draw player sprite with optional rage tint
+void UISystem::renderPlayerEntity(sf::RenderWindow &window, const Player &player, bool rageModeActive)
+{
+    if (!player.isActive())
+        return;
+
+    if (rageModeActive)
+    {
+        window.draw(UISystem::makeTintedSprite(player.getSprite(), sf::Color(255, 100, 100, 255)));
+    }
+    else
+    {
+        window.draw(player.getSprite());
+    }
+}
+
+// Draw enemy sprite along with per-enemy UI
+void UISystem::renderEnemyEntity(sf::RenderWindow &window, const Enemy &enemy)
+{
+    if (!enemy.isActive())
+        return;
+
+    if (!enemy.isAlive())
+    {
+        window.draw(UISystem::makeTintedSprite(enemy.getSprite(), sf::Color(100, 100, 100, 160)));
+        return;
+    }
+
+    if (enemy.isFrozen())
+    {
+        window.draw(UISystem::makeTintedSprite(enemy.getSprite(), sf::Color(150, 200, 255, 255)));
+    }
+    else if (enemy.getIsBurning())
+    {
+        window.draw(UISystem::makeTintedSprite(enemy.getSprite(), sf::Color(255, 180, 100, 255)));
+    }
+    else
+    {
+        window.draw(enemy.getSprite());
+    }
+
+    renderEnemyHealthBar(window, enemy, sf::Vector2f(resourceManager.getEnemyAnim().frameSize));
+    renderEnemyStatusEffects(window, enemy);
+}
+
+// Draw boss sprite along with boss UI
+void UISystem::renderBossEntity(sf::RenderWindow &window, const Boss &boss, bool bossRageModeActive)
+{
+    if (!boss.isActive())
+        return;
+
+    if (!boss.isAlive())
+    {
+        window.draw(UISystem::makeTintedSprite(boss.getSprite(), sf::Color(120, 120, 120, 200)));
+        return;
+    }
+
+    if (boss.isFrozen())
+    {
+        window.draw(UISystem::makeTintedSprite(boss.getSprite(), sf::Color(150, 200, 255, 255)));
+    }
+    else if (boss.getIsBurning())
+    {
+        window.draw(UISystem::makeTintedSprite(boss.getSprite(), sf::Color(255, 180, 100, 255)));
+    }
+    else if (bossRageModeActive)
+    {
+        window.draw(UISystem::makeTintedSprite(boss.getSprite(), sf::Color(255, 100, 100, 255)));
+    }
+    else
+    {
+        window.draw(boss.getSprite());
+    }
+
+    renderBossHealthBar(window, boss, sf::Vector2f(resourceManager.getBossAnim().frameSize), 2.5f);
+    renderBossStatusEffects(window, boss, bossRageModeActive);
+}
+
+// Draw a platform if active
+void UISystem::renderPlatformEntity(sf::RenderWindow &window, const Platform &platform)
+{
+    if (platform.isActive())
+    {
+        window.draw(platform.getSprite());
+    }
+}
+
+// Draw a HP potion if active
+void UISystem::renderHPPotionEntity(sf::RenderWindow &window, const HPPotion &potion)
+{
+    if (potion.isActive())
+    {
+        window.draw(potion.getSprite());
+    }
+}
+
+// Draw fire projectile if active
+void UISystem::renderFireProjectileEntity(sf::RenderWindow &window, const FireProjectile &projectile)
+{
+    if (projectile.isActive())
+    {
+        window.draw(projectile.getSprite());
+    }
+}
+
+// Draw ice projectile if active
+void UISystem::renderIceProjectileEntity(sf::RenderWindow &window, const IceProjectile &projectile)
+{
+    if (projectile.isActive())
+    {
+        window.draw(projectile.getSprite());
+    }
+}
+
+// Draw meteor if active
+void UISystem::renderMeteorEntity(sf::RenderWindow &window, const Meteor &meteor)
+{
+    if (meteor.isActive())
+    {
+        window.draw(meteor.getSprite());
+    }
+}
+
 // Render the HUD overlay (health, XP, ammo, etc.)
 void UISystem::renderHUD(sf::RenderWindow &window,
                          const Player &player,

@@ -667,9 +667,6 @@ void Session::renderWorld()
     // Mid-gray background to contrast entities
     window.clear(sf::Color(128, 128, 128));
 
-    // Renderer used to draw each concrete entity type
-    EntityRenderer entityRenderer(window, uiSystem, ResourceManager::getInstance(), gameMaster);
-
     // Aliases for containers and counts
     auto &floorTiles = gameWorld.getFloorTiles();
     std::size_t floorTileCount = gameWorld.getFloorTileCount();
@@ -689,20 +686,20 @@ void Session::renderWorld()
     for (std::size_t i = 0; i < platformsCount; ++i)
     {
         if (platforms[i])
-            entityRenderer.draw(*platforms[i]);
+            uiSystem.renderPlatformEntity(window, *platforms[i]);
     }
 
     // Potions and meteors (world-attached entities)
     for (const auto &potion : combatSystem.getHPPotions())
     {
         if (potion)
-            entityRenderer.draw(*potion);
+            uiSystem.renderHPPotionEntity(window, *potion);
     }
 
     for (const auto &meteor : combatSystem.getMeteors())
     {
         if (meteor)
-            entityRenderer.draw(*meteor);
+            uiSystem.renderMeteorEntity(window, *meteor);
     }
 
     // Fire projectiles
@@ -710,7 +707,7 @@ void Session::renderWorld()
     {
         auto &projectile = *it;
         if (projectile)
-            entityRenderer.draw(*projectile);
+            uiSystem.renderFireProjectileEntity(window, *projectile);
     }
 
     // Ice projectiles
@@ -718,7 +715,7 @@ void Session::renderWorld()
     {
         auto &projectile = *it;
         if (projectile)
-            entityRenderer.draw(*projectile);
+            uiSystem.renderIceProjectileEntity(window, *projectile);
     }
 
     // Enemies
@@ -726,16 +723,16 @@ void Session::renderWorld()
     {
         auto &enemy = enemies[i];
         if (enemy)
-            entityRenderer.draw(*enemy);
+            uiSystem.renderEnemyEntity(window, *enemy);
     }
 
     // Boss
     if (bossSpawned && boss)
-        entityRenderer.draw(*boss);
+        uiSystem.renderBossEntity(window, *boss, gameMaster.isBossRageModeActive());
 
     // Player always last to render above enemies if overlapping
     if (player)
-        entityRenderer.draw(*player);
+        uiSystem.renderPlayerEntity(window, *player, gameMaster.isRageModeActive());
 
     // Screen-space floating text
     floatingTexts.forEach([this](std::unique_ptr<FloatingText> &dt_ptr)

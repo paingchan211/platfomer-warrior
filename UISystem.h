@@ -9,6 +9,7 @@
 #include "DoublyLinkedList.h"
 #include "Enemy.h"
 #include "FireProjectile.h"
+#include "IceProjectile.h"
 #include "GameState.h"
 #include "HPPotion.h"
 #include "KeyBindingManager.h"
@@ -40,6 +41,16 @@ public:
                               std::size_t floorTileCount,
                               const std::unique_ptr<std::unique_ptr<Platform>[]> &platforms,
                               std::size_t platformCount);
+
+    // World entity rendering helpers
+    void renderPlayerEntity(sf::RenderWindow &window, const Player &player, bool rageModeActive);
+    void renderEnemyEntity(sf::RenderWindow &window, const Enemy &enemy);
+    void renderBossEntity(sf::RenderWindow &window, const Boss &boss, bool bossRageModeActive);
+    void renderPlatformEntity(sf::RenderWindow &window, const Platform &platform);
+    void renderHPPotionEntity(sf::RenderWindow &window, const HPPotion &potion);
+    void renderFireProjectileEntity(sf::RenderWindow &window, const FireProjectile &projectile);
+    void renderIceProjectileEntity(sf::RenderWindow &window, const IceProjectile &projectile);
+    void renderMeteorEntity(sf::RenderWindow &window, const Meteor &meteor);
 
     void renderHUD(sf::RenderWindow &window,
                    const Player &player,

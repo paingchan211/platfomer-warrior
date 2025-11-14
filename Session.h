@@ -22,7 +22,6 @@
 #include "CameraController.h"
 #include "PhysicsManager.h"
 #include "KeyBindingManager.h"
-#include "EntityRenderer.h"
 #include "GameMaster.h"
 #include "SaveGameManager.h"
 
