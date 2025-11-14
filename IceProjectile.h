@@ -23,9 +23,8 @@ public:
     void reset() override;                                                                  // Default reset
     void reset(const sf::Texture &texture, const sf::Vector2f &startPos, bool facingRight); // Full reset
 
-    void update(float dt) override;                     // Updates position and animation
-    void accept(EntityVisitor &visitor) const override; // Accepts visitor
-    sf::FloatRect getBounds() const override;           // Returns collision bounds
+    void update(float dt) override;           // Updates position and animation
+    sf::FloatRect getBounds() const override; // Returns collision bounds
 
     float getFreezeDuration() const; // Returns freeze duration
     float getSlowAmount() const;     // Returns slow effect

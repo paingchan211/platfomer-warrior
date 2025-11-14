@@ -1,5 +1,4 @@
 #include "IceProjectile.h"
-#include "EntityVisitor.h"
 
 // Constructor initializing projectile visuals, movement, and freezing effect
 IceProjectile::IceProjectile(const sf::Texture &texture, const sf::Vector2f &startPos, bool facingRight)
@@ -24,12 +23,6 @@ IceProjectile::IceProjectile(const sf::Texture &texture, const sf::Vector2f &sta
     freezeDuration = 2.0f;
     slowAmount = 0.5f;
     initializeProjectile(8, 3.0f);
-}
-
-// Accept visitor (for collision or behavior handling)
-void IceProjectile::accept(EntityVisitor &visitor) const
-{
-    visitor.visit(*this);
 }
 
 // Resets projectile (no behavior defined)

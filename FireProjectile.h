@@ -27,8 +27,6 @@ public:
 
     // Updates the projectile position, animation, and lifetime
     void update(float dt) override;
-    // Accepts a visitor for the visitor pattern
-    void accept(EntityVisitor &visitor) const override;
     // Returns the collision bounds of the projectile (smaller than visual bounds)
     sf::FloatRect getBounds() const override;
 

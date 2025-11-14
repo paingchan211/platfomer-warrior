@@ -1,4 +1,4 @@
-#include "DebugVisitor.h"
+#include "DebugRenderer.h"
 #include "Player.h"
 #include "Enemy.h"
 #include "Boss.h"
@@ -9,17 +9,17 @@
 #include "Meteor.h"
 
 // Constructor that takes a reference to the render window
-DebugVisitor::DebugVisitor(sf::RenderWindow &window)
+DebugRenderer::DebugRenderer(sf::RenderWindow &window)
     : window(window) {}
 
-// Visits player entity and draws its collision bounds in green
-void DebugVisitor::visit(const Player &player)
+// Draw player collision bounds in green
+void DebugRenderer::draw(const Player &player)
 {
     drawBounds(player.getCollisionBounds(), sf::Color::Green);
 }
 
-// Visits enemy entity and draws its collision bounds in red (only if alive)
-void DebugVisitor::visit(const Enemy &enemy)
+// Draw enemy collision bounds in red (only if alive)
+void DebugRenderer::draw(const Enemy &enemy)
 {
     // Skip drawing if enemy is dead
     if (!enemy.isAlive())
@@ -28,8 +28,8 @@ void DebugVisitor::visit(const Enemy &enemy)
     drawBounds(enemy.getCollisionBounds(), sf::Color::Red);
 }
 
-// Visits boss entity and draws its collision bounds in magenta (only if alive)
-void DebugVisitor::visit(const Boss &boss)
+// Draw boss collision bounds in magenta (only if alive)
+void DebugRenderer::draw(const Boss &boss)
 {
     // Skip drawing if boss is dead
     if (!boss.isAlive())
@@ -38,14 +38,14 @@ void DebugVisitor::visit(const Boss &boss)
     drawBounds(boss.getCollisionBounds(), sf::Color::Magenta);
 }
 
-// Visits platform entity and draws its collision bounds in yellow
-void DebugVisitor::visit(const Platform &platform)
+// Draw platform collision bounds in yellow
+void DebugRenderer::draw(const Platform &platform)
 {
     drawBounds(platform.getCollisionBounds(), sf::Color::Yellow);
 }
 
-// Visits HP potion entity and draws its collision bounds in green (only if active)
-void DebugVisitor::visit(const HPPotion &potion)
+// Draw HP potion collision bounds in green (only if active)
+void DebugRenderer::draw(const HPPotion &potion)
 {
     // Skip drawing if potion is not active
     if (!potion.isActive())
@@ -54,8 +54,8 @@ void DebugVisitor::visit(const HPPotion &potion)
     drawBounds(potion.getBounds(), sf::Color(0, 200, 0));
 }
 
-// Visits fire projectile entity and draws its collision bounds in cyan (only if active)
-void DebugVisitor::visit(const FireProjectile &projectile)
+// Draw fire projectile collision bounds in cyan (only if active)
+void DebugRenderer::draw(const FireProjectile &projectile)
 {
     // Skip drawing if projectile is not active
     if (!projectile.isActive())
@@ -64,8 +64,8 @@ void DebugVisitor::visit(const FireProjectile &projectile)
     drawBounds(projectile.getBounds(), sf::Color::Cyan);
 }
 
-// Visits ice projectile entity and draws its collision bounds in blue (only if active)
-void DebugVisitor::visit(const IceProjectile &projectile)
+// Draw ice projectile collision bounds in blue (only if active)
+void DebugRenderer::draw(const IceProjectile &projectile)
 {
     // Skip drawing if projectile is not active
     if (!projectile.isActive())
@@ -74,8 +74,8 @@ void DebugVisitor::visit(const IceProjectile &projectile)
     drawBounds(projectile.getBounds(), sf::Color::Blue);
 }
 
-// Visits meteor entity and draws its collision bounds in orange (only if active)
-void DebugVisitor::visit(const Meteor &meteor)
+// Draw meteor collision bounds in orange (only if active)
+void DebugRenderer::draw(const Meteor &meteor)
 {
     // Skip drawing if meteor is not active
     if (!meteor.isActive())
@@ -85,7 +85,7 @@ void DebugVisitor::visit(const Meteor &meteor)
 }
 
 // Draws collision bounds as a colored outline rectangle
-void DebugVisitor::drawBounds(const sf::FloatRect &bounds, const sf::Color &color) const
+void DebugRenderer::drawBounds(const sf::FloatRect &bounds, const sf::Color &color) const
 {
     // Skip drawing if bounds are invalid
     if (bounds.width <= 0.f || bounds.height <= 0.f)

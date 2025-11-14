@@ -90,7 +90,6 @@ class Entity {
 - active: bool
 
 + update(float deltaTime): void*
-+ accept(EntityVisitor& visitor): void*
 + getBounds(): sf::FloatRect
 + getPosition(): sf::Vector2f
 + setPosition(sf::Vector2f position): void

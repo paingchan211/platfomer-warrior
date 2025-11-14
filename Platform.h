@@ -30,9 +30,6 @@ public:
     // Update position (for moving platforms)
     void update(float dt) override;
 
-    // Accept visitor for rendering or debugging
-    void accept(EntityVisitor &visitor) const override;
-
     // Get platform sprite bounds
     sf::FloatRect getBounds() const override;
 

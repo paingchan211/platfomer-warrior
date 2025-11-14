@@ -1,8 +1,6 @@
 #pragma once
 #include <SFML/Graphics.hpp>
 
-class EntityVisitor;
-
 // Base entity class that provides common functionality for all game entities
 class Entity
 {
@@ -22,9 +20,6 @@ public:
     virtual void update(float dt) = 0;
     // Returns the global bounds of the entity sprite
     virtual sf::FloatRect getBounds() const;
-
-    // Pure virtual accept method for the visitor pattern
-    virtual void accept(EntityVisitor &visitor) const = 0;
 
     // Returns the position of the entity
     sf::Vector2f getPosition() const;

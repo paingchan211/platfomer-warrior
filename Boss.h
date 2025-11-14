@@ -36,8 +36,6 @@ public:
 
     // Spawns the boss at the specified position
     void spawn(sf::Vector2f spawnPos);
-    // Accepts a visitor for the visitor pattern
-    void accept(EntityVisitor &visitor) const override;
     // Updates the boss state, movement, and animations based on player position
     void update(float dt, float gravity, const Player &player, bool isEnraged = false);
     // Returns the global bounds of the boss sprite

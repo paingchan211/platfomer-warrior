@@ -84,9 +84,6 @@ public:
     // Update player each frame
     void update(float dt) override;
 
-    // Visitor pattern support
-    void accept(EntityVisitor &visitor) const override;
-
     // Handle keyboard input (movement / attacks)
     void handleInput(float dt, const KeyBindingManager *keyManager = nullptr);
 

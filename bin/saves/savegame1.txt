@@ -2,17 +2,17 @@
 1
 
 [PLAYER_STATS]
-Level=4
-Experience=35
-ExpToNextLevel=400
+Level=1
+Experience=60
+ExpToNextLevel=100
 
 [SKILL_TREE]
-AvailableSkillPoints=18
+AvailableSkillPoints=2
 Skill=0,1,0
-Skill=1,1,0
-Skill=2,1,0
+Skill=1,0,1
+Skill=2,0,1
 Skill=3,0,1
-Skill=4,1,0
+Skill=4,0,1
 Skill=5,0,1
 Skill=6,0,1
 Skill=7,0,1
@@ -20,11 +20,11 @@ Skill=8,0,1
 
 [PLAYER_HP]
 100
-160
+100
 
 [PLAYER_DAMAGE]
-40
+25
 
 [PLAYER_INVENTORY]
-HpPotions=5
+HpPotions=2
 

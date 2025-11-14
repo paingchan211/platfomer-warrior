@@ -59,8 +59,6 @@ public:
 
     // Override of base update method (empty implementation)
     void update(float dt) override;
-    // Accepts a visitor for the visitor pattern
-    void accept(EntityVisitor &visitor) const override;
     // Updates the enemy state, movement, and animations based on player position
     void update(float dt, float gravity, const Player &player);
     // Returns the global bounds of the enemy sprite

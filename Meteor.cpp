@@ -1,5 +1,4 @@
 #include "Meteor.h"
-#include "EntityVisitor.h"
 #include <cstdlib>
 
 // Constructor initializes meteor with textures and position
@@ -29,12 +28,6 @@ Meteor::Meteor(sf::Texture *meteorTextures[5], sf::Vector2f startPos)
 
     // Scale meteor sprite
     sprite.setScale({3.f, 3.f});
-}
-
-// Accept visitor for rendering or debugging
-void Meteor::accept(EntityVisitor &visitor) const
-{
-    visitor.visit(*this);
 }
 
 // Update meteor position, animation, and lifetime

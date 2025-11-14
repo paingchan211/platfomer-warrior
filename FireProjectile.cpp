@@ -1,5 +1,4 @@
 #include "FireProjectile.h"
-#include "EntityVisitor.h"
 
 // Constructor that initializes the fire projectile with texture, position, and direction
 FireProjectile::FireProjectile(const sf::Texture &texture, const sf::Vector2f &startPos, bool facingRight)
@@ -32,12 +31,6 @@ FireProjectile::FireProjectile(const sf::Texture &texture, const sf::Vector2f &s
     // Initialize burn effect properties
     burnDamage = 5;
     burnDuration = 3.0f;
-}
-
-// Accepts a visitor for the visitor pattern
-void FireProjectile::accept(EntityVisitor &visitor) const
-{
-    visitor.visit(*this);
 }
 
 // Resets the projectile to default state (empty implementation)

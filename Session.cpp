@@ -1,5 +1,5 @@
 #include "Session.h"
-#include "DebugVisitor.h"
+#include "DebugRenderer.h"
 #include <algorithm>
 #include <cmath>
 #include <iostream>
@@ -667,8 +667,8 @@ void Session::renderWorld()
     // Mid-gray background to contrast entities
     window.clear(sf::Color(128, 128, 128));
 
-    // Visitor used to render each entity by type
-    RenderVisitor renderVisitor(window, uiSystem, ResourceManager::getInstance(), gameMaster);
+    // Renderer used to draw each concrete entity type
+    EntityRenderer entityRenderer(window, uiSystem, ResourceManager::getInstance(), gameMaster);
 
     // Aliases for containers and counts
     auto &floorTiles = gameWorld.getFloorTiles();
@@ -687,21 +687,30 @@ void Session::renderWorld()
 
     // Platforms
     for (std::size_t i = 0; i < platformsCount; ++i)
-        platforms[i]->accept(renderVisitor);
+    {
+        if (platforms[i])
+            entityRenderer.draw(*platforms[i]);
+    }
 
     // Potions and meteors (world-attached entities)
     for (const auto &potion : combatSystem.getHPPotions())
-        potion->accept(renderVisitor);
+    {
+        if (potion)
+            entityRenderer.draw(*potion);
+    }
 
     for (const auto &meteor : combatSystem.getMeteors())
-        meteor->accept(renderVisitor);
+    {
+        if (meteor)
+            entityRenderer.draw(*meteor);
+    }
 
     // Fire projectiles
     for (auto it = combatSystem.getFireProjectiles().begin(); it != combatSystem.getFireProjectiles().end(); ++it)
     {
         auto &projectile = *it;
         if (projectile)
-            projectile->accept(renderVisitor);
+            entityRenderer.draw(*projectile);
     }
 
     // Ice projectiles
@@ -709,7 +718,7 @@ void Session::renderWorld()
     {
         auto &projectile = *it;
         if (projectile)
-            projectile->accept(renderVisitor);
+            entityRenderer.draw(*projectile);
     }
 
     // Enemies
@@ -717,15 +726,16 @@ void Session::renderWorld()
     {
         auto &enemy = enemies[i];
         if (enemy)
-            enemy->accept(renderVisitor);
+            entityRenderer.draw(*enemy);
     }
 
     // Boss
-    if (bossSpawned)
-        boss->accept(renderVisitor);
+    if (bossSpawned && boss)
+        entityRenderer.draw(*boss);
 
     // Player always last to render above enemies if overlapping
-    player->accept(renderVisitor);
+    if (player)
+        entityRenderer.draw(*player);
 
     // Screen-space floating text
     floatingTexts.forEach([this](std::unique_ptr<FloatingText> &dt_ptr)
@@ -779,12 +789,12 @@ void Session::renderGameOver()
 
 void Session::renderDebugCollisions()
 {
-    DebugVisitor debugVisitor(window);
+    DebugRenderer debugRenderer(window);
 
     // Player
     Player *player = gameWorld.getPlayer();
     if (player)
-        player->accept(debugVisitor);
+        debugRenderer.draw(*player);
 
     // Enemies
     auto &enemies = gameWorld.getEnemies();
@@ -793,13 +803,13 @@ void Session::renderDebugCollisions()
     {
         auto &enemy = enemies[i];
         if (enemy)
-            enemy->accept(debugVisitor);
+            debugRenderer.draw(*enemy);
     }
 
     // Boss
     Boss *boss = gameWorld.getBoss();
     if (boss)
-        boss->accept(debugVisitor);
+        debugRenderer.draw(*boss);
 
     // Platforms
     auto &platforms = gameWorld.getPlatforms();
@@ -808,14 +818,14 @@ void Session::renderDebugCollisions()
     {
         auto &platform = platforms[i];
         if (platform)
-            platform->accept(debugVisitor);
+            debugRenderer.draw(*platform);
     }
 
     // Potions
     for (const auto &potion : combatSystem.getHPPotions())
     {
         if (potion)
-            potion->accept(debugVisitor);
+            debugRenderer.draw(*potion);
     }
 
     // Fire projectiles
@@ -823,7 +833,7 @@ void Session::renderDebugCollisions()
     {
         auto &projectile = *it;
         if (projectile)
-            projectile->accept(debugVisitor);
+            debugRenderer.draw(*projectile);
     }
 
     // Ice projectiles
@@ -831,15 +841,15 @@ void Session::renderDebugCollisions()
     {
         auto &projectile = *it;
         if (projectile)
-            projectile->accept(debugVisitor);
+            debugRenderer.draw(*projectile);
     }
 
     // Meteors
     for (const auto &meteor : combatSystem.getMeteors())
     {
         if (meteor)
-            meteor->accept(debugVisitor);
-    }
+            debugRenderer.draw(*meteor);
+}
 }
 
 void Session::renderKeyDisplay()

@@ -1,5 +1,4 @@
 #include "HPPotion.h"
-#include "EntityVisitor.h"
 
 // Constructor initializing position, animation, and lifetime
 HPPotion::HPPotion(const sf::Texture &texture, sf::Vector2f startPos)
@@ -16,12 +15,6 @@ HPPotion::HPPotion(const sf::Texture &texture, sf::Vector2f startPos)
     // Set initial animation frame and scale
     sprite.setTextureRect(sf::IntRect({0, 0}, {FRAME_WIDTH, FRAME_HEIGHT}));
     sprite.setScale({2.0f, 2.0f});
-}
-
-// Accept visitor (part of the visitor pattern)
-void HPPotion::accept(EntityVisitor &visitor) const
-{
-    visitor.visit(*this);
 }
 
 // Updates potion animation and lifetime

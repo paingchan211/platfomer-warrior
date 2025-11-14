@@ -1,5 +1,4 @@
 #include "Platform.h"
-#include "EntityVisitor.h"
 
 // Constructor for static platform
 Platform::Platform(const sf::Texture &texture, float x, float y)
@@ -29,12 +28,6 @@ Platform::Platform(const sf::Texture &texture, float x, float y, float moveDista
     collisionOffset = {PLATFORM_MARGIN_WIDTH, PLATFORM_MARGIN_HEIGHT};
     active = true;
     velocity = {0.f, 0.f};
-}
-
-// Visitor pattern entry point
-void Platform::accept(EntityVisitor &visitor) const
-{
-    visitor.visit(*this);
 }
 
 // Update position if platform is moving

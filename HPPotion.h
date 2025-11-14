@@ -20,9 +20,8 @@ private:
 public:
     HPPotion(const sf::Texture &texture, sf::Vector2f startPos); // Constructor
 
-    void update(float dt) override;                     // Updates potion state
-    void accept(EntityVisitor &visitor) const override; // Accepts entity visitor
-    sf::FloatRect getBounds() const override;           // Returns collision bounds
+    void update(float dt) override;           // Updates potion state
+    sf::FloatRect getBounds() const override; // Returns collision bounds
 
     int getHealingValue() const;  // Returns heal amount
     static int GetHealingValue(); // Returns static heal amount

@@ -23,7 +23,7 @@ $SOURCES = @(
     "Boss", "Platform", "FireProjectile", "IceProjectile", "HPPotion",
     "Meteor", "ResourceManager", "UISystem", "InputManager",    "CombatSystem", "FloatingText",
     "GameWorld", "CameraController", "PhysicsManager", "SkillTree",
-    "KeyBindingManager", "RenderVisitor", "DebugVisitor", "GameMaster", "SaveGameManager"
+    "KeyBindingManager", "EntityRenderer", "DebugRenderer", "GameMaster", "SaveGameManager"
 )
 
 # Create directories

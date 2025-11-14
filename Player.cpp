@@ -3,7 +3,6 @@
 #include "HPPotion.h"
 #include "Constants.h"
 #include "KeyBindingManager.h"
-#include "EntityVisitor.h"
 
 // Constructor initializes animations, stats, physics, and collision
 Player::Player(Animation *run, Animation *idle, Animation *atk1, Animation *atk2,
@@ -68,12 +67,6 @@ Player::Player(Animation *run, Animation *idle, Animation *atk1, Animation *atk2
 void Player::update(float dt)
 {
     updateAnimation(dt);
-}
-
-// Accept visitor (used by rendering/debugging systems)
-void Player::accept(EntityVisitor &visitor) const
-{
-    visitor.visit(*this);
 }
 
 // Handle user input for movement, sprinting, and dashing

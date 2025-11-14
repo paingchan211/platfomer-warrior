@@ -1,6 +1,5 @@
 #include "Boss.h"
 #include "Constants.h"
-#include "EntityVisitor.h"
 #include <cmath>
 
 // Returns a dummy animation for Enemy base class initialization (boss uses BossAnimation instead)
@@ -81,12 +80,6 @@ void Boss::spawn(sf::Vector2f spawnPos)
     isRegenerating = false;
     hasRegeneratedOnce = false;
     accumulatedHealing = 0.0f;
-}
-
-// Accepts a visitor for the visitor pattern
-void Boss::accept(EntityVisitor &visitor) const
-{
-    visitor.visit(*this);
 }
 
 // Updates the boss state, movement, and animations based on player position

@@ -21,9 +21,6 @@ public:
     // Update meteor movement and animation
     void update(float dt) override;
 
-    // Accept visitor for the visitor design pattern
-    void accept(EntityVisitor &visitor) const override;
-
     // Return the bounding box for collision detection
     sf::FloatRect getBounds() const override;
 };

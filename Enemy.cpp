@@ -1,6 +1,5 @@
 #include "Enemy.h"
 #include "Constants.h"
-#include "EntityVisitor.h"
 #include <algorithm>
 #include <cmath>
 
@@ -71,12 +70,6 @@ void Enemy::tickIceStacks(float dt)
 // Override of base update method (empty implementation, actual update is in overloaded version)
 void Enemy::update(float dt)
 {
-}
-
-// Accepts a visitor for the visitor pattern
-void Enemy::accept(EntityVisitor &visitor) const
-{
-    visitor.visit(*this);
 }
 
 // Updates the enemy state, movement, and animations based on player position
