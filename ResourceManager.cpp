@@ -1,5 +1,9 @@
 #include "ResourceManager.h"
+#include <algorithm>
+#include <chrono>
+#include <iomanip>
 #include <iostream>
+#include <sstream>
 
 namespace
 {
@@ -32,6 +36,13 @@ namespace
         std::cerr << "Failed to load " << label << ": " << path << std::endl;
         return false;
     }
+
+    std::string formatValue(double value, int precision)
+    {
+        std::ostringstream oss;
+        oss << std::fixed << std::setprecision(precision) << value;
+        return oss.str();
+    }
 }
 
 // Constructor initializes texture and animation maps and audio volumes
@@ -51,28 +62,23 @@ ResourceManager &ResourceManager::getInstance()
 // Loads all game assets including fonts, textures, animations, and audio
 bool ResourceManager::loadAll()
 {
-    if (!loadFont())
-        return false;
+    std::cout << "Loading resources..." << std::endl;
 
-    if (!loadTextures())
+    if (!loadFont() ||
+        !loadTextures() ||
+        !loadMeteorTextures() ||
+        !loadPlayerAnimations() ||
+        !loadEnemyAnimations() ||
+        !loadBossAnimation() ||
+        !loadAudio())
+    {
+        std::cerr << "Resource loading failed." << std::endl;
         return false;
-
-    if (!loadMeteorTextures())
-        return false;
-
-    if (!loadPlayerAnimations())
-        return false;
-
-    if (!loadEnemyAnimations())
-        return false;
-
-    if (!loadBossAnimation())
-        return false;
-
-    if (!loadAudio())
-        return false;
+    }
 
     resourcesLoaded = true;
+    std::cout << "All resources loaded successfully!" << std::endl;
+    printHashTableStats();
     return true;
 }
 
@@ -99,7 +105,10 @@ bool ResourceManager::loadTextures()
             std::cerr << "Failed to load texture: " << path << std::endl;
             return false;
         }
+        size_t previousSize = textureMap.size();
+        size_t previousBucketCount = textureMap.bucketCount();
         textureMap.insert(name, std::move(texture));
+        logTextureInsertion(name, previousSize, previousBucketCount);
         return true;
     };
 
@@ -137,7 +146,10 @@ bool ResourceManager::loadMeteorTextures()
         }
 
         std::string name = "meteor_" + std::to_string(i + 1);
+        size_t previousSize = textureMap.size();
+        size_t previousBucketCount = textureMap.bucketCount();
         textureMap.insert(name, std::move(texture));
+        logTextureInsertion(name, previousSize, previousBucketCount);
     }
     return true;
 }
@@ -154,7 +166,10 @@ bool ResourceManager::loadPlayerAnimations()
             std::cerr << "Failed to load player animation: " << path << std::endl;
             return false;
         }
+        size_t previousSize = animationMap.size();
+        size_t previousBucketCount = animationMap.bucketCount();
         animationMap.insert(name, std::move(anim));
+        logAnimationInsertion(name, previousSize, previousBucketCount);
         return true;
     };
 
@@ -322,12 +337,90 @@ bool ResourceManager::loadAudio()
     return true;
 }
 
+void ResourceManager::logTextureInsertion(const std::string &name, size_t previousSize, size_t previousBucketCount)
+{
+    if (textureMap.bucketCount() != previousBucketCount && previousBucketCount > 0)
+    {
+        float loadFactorBefore = static_cast<float>(previousSize + 1) / static_cast<float>(previousBucketCount);
+        logTableResize("Texture Map", previousBucketCount, textureMap.bucketCount(), loadFactorBefore);
+    }
+
+    size_t bucketIndex = textureMap.bucketIndex(name);
+    std::cout << "[OK] Loaded texture: " << name << " (bucket " << bucketIndex << ")" << std::endl;
+}
+
+void ResourceManager::logAnimationInsertion(const std::string &name, size_t previousSize, size_t previousBucketCount)
+{
+    if (animationMap.bucketCount() != previousBucketCount && previousBucketCount > 0)
+    {
+        float loadFactorBefore = static_cast<float>(previousSize + 1) / static_cast<float>(previousBucketCount);
+        logTableResize("Animation Map", previousBucketCount, animationMap.bucketCount(), loadFactorBefore);
+    }
+
+    size_t bucketIndex = animationMap.bucketIndex(name);
+    std::cout << "[OK] Loaded animation: " << name << " (bucket " << bucketIndex << ")" << std::endl;
+}
+
+void ResourceManager::logTableResize(const char *label, size_t previousBuckets, size_t newBuckets, float previousLoadFactor)
+{
+    std::cout << "[OK] Resizing table: " << previousBuckets << " -> " << newBuckets
+              << " buckets (load factor: " << formatValue(previousLoadFactor, 2) << ")";
+    if (label != nullptr)
+    {
+        std::cout << " [" << label << "]";
+    }
+    std::cout << std::endl;
+}
+
+void ResourceManager::logTextureLookup(const std::string &name, long long lookupNs)
+{
+    size_t bucketIndex = textureMap.bucketIndex(name);
+    std::cout << "[HashTable] - Retrieved \"" << name << "\" texture (" << lookupNs
+              << "ns lookup, bucket " << bucketIndex << ")" << std::endl;
+}
+
+void ResourceManager::logAnimationLookup(const std::string &name, long long lookupNs)
+{
+    size_t bucketIndex = animationMap.bucketIndex(name);
+    std::cout << "[HashTable] - Retrieved \"" << name << "\" animation (" << lookupNs
+              << "ns lookup, bucket " << bucketIndex << ")" << std::endl;
+}
+
+void ResourceManager::printHashTableStats() const
+{
+    std::cout << "\nHash Table Statistics:\n";
+    std::cout << "  Texture Map: " << textureMap.size() << " items, " << textureMap.bucketCount()
+              << " buckets (load: " << formatValue(textureMap.loadFactor(), 2) << ")\n";
+    std::cout << "  Animation Map: " << animationMap.size() << " items, " << animationMap.bucketCount()
+              << " buckets (load: " << formatValue(animationMap.loadFactor(), 2) << ")\n";
+
+    size_t totalItems = textureMap.size() + animationMap.size();
+    size_t totalNonEmpty = textureMap.nonEmptyBucketCount() + animationMap.nonEmptyBucketCount();
+    double averageChain = (totalNonEmpty == 0)
+                              ? 0.0
+                              : static_cast<double>(totalItems) / static_cast<double>(totalNonEmpty);
+
+    size_t textureLongest = textureMap.longestChainLength();
+    size_t animationLongest = animationMap.longestChainLength();
+    size_t longestChain = textureLongest > animationLongest ? textureLongest : animationLongest;
+    const char *quality = (longestChain <= 3)   ? "excellent distribution"
+                          : (longestChain <= 6) ? "good distribution"
+                                                : "needs attention";
+
+    std::cout << "  Average chain length: " << formatValue(averageChain, 1) << " nodes" << std::endl;
+    std::cout << "  Longest chain: " << longestChain << " nodes (" << quality << ")" << std::endl;
+}
+
 // Gets a texture by its name from the hash table
 sf::Texture &ResourceManager::getTexture(const std::string &name)
 {
+    auto start = std::chrono::steady_clock::now();
     try
     {
         std::unique_ptr<sf::Texture> &texture = textureMap.get(name);
+        long long lookupNs =
+            std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - start).count();
+        logTextureLookup(name, lookupNs);
         return *texture;
     }
     catch (const std::runtime_error &)
@@ -340,9 +433,13 @@ sf::Texture &ResourceManager::getTexture(const std::string &name)
 // Gets an animation by its name from the hash table
 Animation &ResourceManager::getAnimation(const std::string &name)
 {
+    auto start = std::chrono::steady_clock::now();
     try
     {
         std::unique_ptr<Animation> &anim = animationMap.get(name);
+        long long lookupNs =
+            std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - start).count();
+        logAnimationLookup(name, lookupNs);
         return *anim;
     }
     catch (const std::runtime_error &)

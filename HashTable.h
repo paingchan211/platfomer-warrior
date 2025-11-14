@@ -79,6 +79,24 @@ public:
 
     // Returns a list of all key-value pairs in the table
     std::unique_ptr<std::pair<K, V>[]> getAllPairs(size_t &count) const;
+
+    // Returns total number of buckets allocated in the table
+    size_t bucketCount() const;
+
+    // Returns the current load factor (count / capacity)
+    float loadFactor() const;
+
+    // Returns the bucket index that currently stores the provided key
+    size_t bucketIndex(const K &key) const;
+
+    // Returns how many buckets contain at least one node
+    size_t nonEmptyBucketCount() const;
+
+    // Returns the longest linked-list chain among all buckets
+    size_t longestChainLength() const;
+
+    // Returns the average chain length across all populated buckets
+    double averageChainLength() const;
 };
 
 // -----------------------------
@@ -436,4 +454,90 @@ std::unique_ptr<std::pair<K, V>[]> HashTable<K, V>::getAllPairs(size_t &outCount
     }
 
     return result;
+}
+
+// Returns number of buckets currently allocated
+template <typename K, typename V>
+size_t HashTable<K, V>::bucketCount() const
+{
+    return capacity;
+}
+
+// Returns current load factor
+template <typename K, typename V>
+float HashTable<K, V>::loadFactor() const
+{
+    if (capacity == 0)
+    {
+        return 0.0f;
+    }
+    return static_cast<float>(count) / static_cast<float>(capacity);
+}
+
+// Returns bucket index that stores the provided key
+template <typename K, typename V>
+size_t HashTable<K, V>::bucketIndex(const K &key) const
+{
+    size_t index = hash(key);
+    Node *current = table[index];
+
+    while (current != nullptr)
+    {
+        if (current->key == key)
+        {
+            return index;
+        }
+        current = current->next;
+    }
+
+    throw std::runtime_error("Key not found in hash table");
+}
+
+// Counts buckets that contain at least one node
+template <typename K, typename V>
+size_t HashTable<K, V>::nonEmptyBucketCount() const
+{
+    size_t used = 0;
+    for (size_t i = 0; i < capacity; ++i)
+    {
+        if (table[i] != nullptr)
+        {
+            ++used;
+        }
+    }
+    return used;
+}
+
+// Computes the longest linked-list chain length
+template <typename K, typename V>
+size_t HashTable<K, V>::longestChainLength() const
+{
+    size_t maxLength = 0;
+    for (size_t i = 0; i < capacity; ++i)
+    {
+        size_t length = 0;
+        Node *current = table[i];
+        while (current != nullptr)
+        {
+            ++length;
+            current = current->next;
+        }
+        if (length > maxLength)
+        {
+            maxLength = length;
+        }
+    }
+    return maxLength;
+}
+
+// Computes the average chain length for populated buckets
+template <typename K, typename V>
+double HashTable<K, V>::averageChainLength() const
+{
+    size_t usedBuckets = nonEmptyBucketCount();
+    if (usedBuckets == 0)
+    {
+        return 0.0;
+    }
+    return static_cast<double>(count) / static_cast<double>(usedBuckets);
 }

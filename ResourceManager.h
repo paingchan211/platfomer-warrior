@@ -82,6 +82,14 @@ private:
     bool loadBossAnimation();
     bool loadAudio();
 
+    // Logging helpers for hash table activity
+    void logTextureInsertion(const std::string &name, size_t previousSize, size_t previousBucketCount);
+    void logAnimationInsertion(const std::string &name, size_t previousSize, size_t previousBucketCount);
+    void logTextureLookup(const std::string &name, long long lookupNs);
+    void logAnimationLookup(const std::string &name, long long lookupNs);
+    void logTableResize(const char *label, size_t previousBuckets, size_t newBuckets, float previousLoadFactor);
+    void printHashTableStats() const;
+
     // Hash tables for textures and animations
     HashTable<std::string, std::unique_ptr<sf::Texture>> textureMap;
     HashTable<std::string, std::unique_ptr<Animation>> animationMap;
