@@ -25,7 +25,7 @@ namespace
             label = "List";
 
         std::cout << "[DoublyLinkedList] " << label << " | active: " << active.size()
-                  << " | pool: " << pool.size() << std::endl;
+                  << " | pool: " << pool.size() << " ";
     }
 
     // Helper function template to reclaim inactive items from active list to pool for reuse
@@ -1411,4 +1411,3 @@ void CombatSystem::triggerBossDefeated(bool &bossDeathSlowMotionActive,
         // debugMessage is currently unused; it can be logged or used for debugging if needed
     }
 }
-
