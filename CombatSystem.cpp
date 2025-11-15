@@ -1287,6 +1287,10 @@ void CombatSystem::spawnMeteorBurst(DoublyLinkedList<std::unique_ptr<Meteor>> &m
         // Add meteor to active list if valid
         if (meteor)
         {
+            if (ENABLE_DOUBLY_LINKED_LIST_STDOUT)
+            {
+                std::cout << "        reusing meteor node @" << meteor.get() << std::endl;
+            }
             meteors.push_back(std::move(meteor));
             ++spawned;
         }
