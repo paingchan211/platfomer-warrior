@@ -20,6 +20,7 @@ Session::Session()
                    { pushState(type); })
 {
     window.setFramerateLimit(120); // Limit FPS to stabilize timing
+    inputManager.setCombatLogStdoutEnabled(combatLogStdoutEnabled);
 }
 
 Session::~Session()
@@ -846,7 +847,7 @@ void Session::renderDebugCollisions()
     {
         if (meteor)
             debugRenderer.draw(*meteor);
-}
+    }
 }
 
 void Session::renderKeyDisplay()
@@ -1022,11 +1023,26 @@ void Session::addCombatLog(const std::string &message)
 {
     // Append new message
     combatLog.pushBack(message);
+    if (combatLogStdoutEnabled)
+    {
+        std::cout << "[SinglyLinkedList] [Session] Combat Log Entry Added: \"" << message << "\"\n";
+        std::cout << "[SinglyLinkedList] [Session] Combat Log Size: " << combatLog.size() << "\n\n";
+    }
 
     // Maintain ring buffer size
     while (combatLog.size() > MAX_COMBAT_LOG_ENTRIES)
     {
+        if (combatLogStdoutEnabled)
+        {
+            std::cout << "[SinglyLinkedList] [Session] Ring buffer full - removing oldest entry\n";
+            std::cout << "[SinglyLinkedList] [Session] Combat Log Entry Removed: \"" << combatLog.front() << "\"\n";
+        }
         combatLog.popFront();
+        if (combatLogStdoutEnabled)
+        {
+            std::cout << "[SinglyLinkedList] [Session] Combat Log Size: " << combatLog.size()
+                      << " (MAX_ENTRIES maintained)\n\n";
+        }
     }
 }
 
@@ -1107,6 +1123,12 @@ bool Session::shouldExit() const
 {
     // True when user requested exit
     return requestExit;
+}
+
+void Session::setCombatLogStdoutEnabled(bool enabled)
+{
+    combatLogStdoutEnabled = enabled;
+    inputManager.setCombatLogStdoutEnabled(enabled);
 }
 
 // ==============================

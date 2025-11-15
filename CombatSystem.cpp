@@ -21,6 +21,11 @@ namespace
                       const DoublyLinkedList<std::unique_ptr<T>> &active,
                       const DoublyLinkedList<std::unique_ptr<T>> &pool)
     {
+        if (!ENABLE_DOUBLY_LINKED_LIST_STDOUT)
+        {
+            return;
+        }
+
         if (!label || label[0] == '\0')
             label = "List";
 
@@ -53,7 +58,7 @@ namespace
             }
         }
 
-        if (reclaimed > 0)
+        if (reclaimed > 0 && ENABLE_DOUBLY_LINKED_LIST_STDOUT)
         {
             logListState(label, active, pool);
             std::cout << "    action: reclaimed " << reclaimed << " inactive node(s) into pool" << std::endl;
@@ -655,15 +660,18 @@ void CombatSystem::updateProjectiles(float dt,
             }
         }
 
-        if (spawnedFireProjectiles > 0)
+        if (ENABLE_DOUBLY_LINKED_LIST_STDOUT)
         {
-            logListState("Fire Projectiles", fireProjectiles, fireProjectilePool);
-            std::cout << "    action: spawned " << spawnedFireProjectiles << " fire projectile(s)" << std::endl;
-        }
-        else if (spawnedIceProjectiles > 0)
-        {
-            logListState("Ice Projectiles", iceProjectiles, iceProjectilePool);
-            std::cout << "    action: spawned " << spawnedIceProjectiles << " ice projectile(s)" << std::endl;
+            if (spawnedFireProjectiles > 0)
+            {
+                logListState("Fire Projectiles", fireProjectiles, fireProjectilePool);
+                std::cout << "    action: spawned " << spawnedFireProjectiles << " fire projectile(s)" << std::endl;
+            }
+            else if (spawnedIceProjectiles > 0)
+            {
+                logListState("Ice Projectiles", iceProjectiles, iceProjectilePool);
+                std::cout << "    action: spawned " << spawnedIceProjectiles << " ice projectile(s)" << std::endl;
+            }
         }
 
         // Consume one ammo per "shot" (regardless of how many projectiles per shot)
@@ -1200,8 +1208,11 @@ void CombatSystem::spawnPotion(DoublyLinkedList<std::unique_ptr<HPPotion>> &poti
     if (potion)
     {
         potions.push_back(std::move(potion));
-        logListState("HP Potions", potions, hpPotionPool);
-        std::cout << "    action: spawned 1 HP potion into active list" << std::endl;
+        if (ENABLE_DOUBLY_LINKED_LIST_STDOUT)
+        {
+            logListState("HP Potions", potions, hpPotionPool);
+            std::cout << "    action: spawned 1 HP potion into active list" << std::endl;
+        }
     }
 }
 
@@ -1281,7 +1292,7 @@ void CombatSystem::spawnMeteorBurst(DoublyLinkedList<std::unique_ptr<Meteor>> &m
         }
     }
 
-    if (spawned > 0)
+    if (spawned > 0 && ENABLE_DOUBLY_LINKED_LIST_STDOUT)
     {
         logListState("Meteors", meteors, meteorPool);
         std::cout << "    action: spawned " << spawned << " meteor(s)" << std::endl;

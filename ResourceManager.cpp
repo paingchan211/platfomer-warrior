@@ -1,4 +1,5 @@
 #include "ResourceManager.h"
+#include "Constants.h"
 #include <algorithm>
 #include <chrono>
 #include <iomanip>
@@ -339,6 +340,11 @@ bool ResourceManager::loadAudio()
 
 void ResourceManager::logTextureInsertion(const std::string &name, size_t previousSize, size_t previousBucketCount)
 {
+    if (!ENABLE_HASH_TABLE_STDOUT)
+    {
+        return;
+    }
+
     if (textureMap.bucketCount() != previousBucketCount && previousBucketCount > 0)
     {
         float loadFactorBefore = static_cast<float>(previousSize + 1) / static_cast<float>(previousBucketCount);
@@ -351,6 +357,11 @@ void ResourceManager::logTextureInsertion(const std::string &name, size_t previo
 
 void ResourceManager::logAnimationInsertion(const std::string &name, size_t previousSize, size_t previousBucketCount)
 {
+    if (!ENABLE_HASH_TABLE_STDOUT)
+    {
+        return;
+    }
+
     if (animationMap.bucketCount() != previousBucketCount && previousBucketCount > 0)
     {
         float loadFactorBefore = static_cast<float>(previousSize + 1) / static_cast<float>(previousBucketCount);
@@ -363,6 +374,11 @@ void ResourceManager::logAnimationInsertion(const std::string &name, size_t prev
 
 void ResourceManager::logTableResize(const char *label, size_t previousBuckets, size_t newBuckets, float previousLoadFactor)
 {
+    if (!ENABLE_HASH_TABLE_STDOUT)
+    {
+        return;
+    }
+
     std::cout << "[OK] Resizing table: " << previousBuckets << " -> " << newBuckets
               << " buckets (load factor: " << formatValue(previousLoadFactor, 2) << ")";
     if (label != nullptr)
@@ -374,6 +390,11 @@ void ResourceManager::logTableResize(const char *label, size_t previousBuckets, 
 
 void ResourceManager::logTextureLookup(const std::string &name, long long lookupNs)
 {
+    if (!ENABLE_HASH_TABLE_STDOUT)
+    {
+        return;
+    }
+
     size_t bucketIndex = textureMap.bucketIndex(name);
     std::cout << "[HashTable] - Retrieved \"" << name << "\" texture (" << lookupNs
               << "ns lookup, bucket " << bucketIndex << ")" << std::endl;
@@ -381,6 +402,11 @@ void ResourceManager::logTextureLookup(const std::string &name, long long lookup
 
 void ResourceManager::logAnimationLookup(const std::string &name, long long lookupNs)
 {
+    if (!ENABLE_HASH_TABLE_STDOUT)
+    {
+        return;
+    }
+
     size_t bucketIndex = animationMap.bucketIndex(name);
     std::cout << "[HashTable] - Retrieved \"" << name << "\" animation (" << lookupNs
               << "ns lookup, bucket " << bucketIndex << ")" << std::endl;
@@ -388,6 +414,11 @@ void ResourceManager::logAnimationLookup(const std::string &name, long long look
 
 void ResourceManager::printHashTableStats() const
 {
+    if (!ENABLE_HASH_TABLE_STDOUT)
+    {
+        return;
+    }
+
     std::cout << "\nHash Table Statistics:\n";
     std::cout << "  Texture Map: " << textureMap.size() << " items, " << textureMap.bucketCount()
               << " buckets (load: " << formatValue(textureMap.loadFactor(), 2) << ")\n";

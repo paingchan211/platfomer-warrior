@@ -4,6 +4,7 @@
 #include "UISystem.h"
 #include "SaveGameManager.h"
 #include <algorithm>
+#include <iostream>
 
 // Constructor — initialize all key state flags
 InputManager::InputManager()
@@ -19,7 +20,8 @@ InputManager::InputManager()
       projectileKeyPressed(false),
       switchProjectileKeyPressed(false),
       attack1KeyPressed(false),
-      attack2KeyPressed(false)
+      attack2KeyPressed(false),
+      combatLogStdoutEnabled(false)
 {
 }
 
@@ -502,7 +504,7 @@ void InputManager::handleSimpleScreenInput(const sf::Event &event,
                 if (upgraded)
                 {
                     uiSystem->showToast("Skill upgraded successfully!", sf::Color::Green);
-                    combatLog.pushBack("[Skill Tree] Upgraded skill (type: " + std::to_string(static_cast<int>(selectedSkill)) + ")");
+                    appendCombatLogEntry(combatLog, "[Skill Tree] Upgraded skill (type: " + std::to_string(static_cast<int>(selectedSkill)) + ")");
                 }
                 else
                 {
@@ -527,7 +529,7 @@ void InputManager::handleSimpleScreenInput(const sf::Event &event,
                 if (refunded > 0)
                 {
                     uiSystem->showToast("Fire branch reset! Refunded " + std::to_string(refunded) + " skill points", sf::Color::Cyan);
-                    combatLog.pushBack("[Skill Tree] Reset Fire branch - Refunded " + std::to_string(refunded) + " points");
+                    appendCombatLogEntry(combatLog, "[Skill Tree] Reset Fire branch - Refunded " + std::to_string(refunded) + " points");
                 }
                 else
                 {
@@ -552,7 +554,7 @@ void InputManager::handleSimpleScreenInput(const sf::Event &event,
                 if (refunded > 0)
                 {
                     uiSystem->showToast("Ice branch reset! Refunded " + std::to_string(refunded) + " skill points", sf::Color::Cyan);
-                    combatLog.pushBack("[Skill Tree] Reset Ice branch - Refunded " + std::to_string(refunded) + " points");
+                    appendCombatLogEntry(combatLog, "[Skill Tree] Reset Ice branch - Refunded " + std::to_string(refunded) + " points");
                 }
                 else
                 {
@@ -621,13 +623,19 @@ void InputManager::handleCombatLogInput(const sf::Event &event,
             int targetIndex = combatLogCurrentNode;
             int currentIndex = 0;
 
-            combatLog.removeIf([&targetIndex, &currentIndex](const std::string &)
-                               {
-                                   bool shouldRemove = (currentIndex == targetIndex);
-                                   currentIndex++;
-                                   return shouldRemove; });
+            int removedCount = combatLog.removeIf([&targetIndex, &currentIndex](const std::string &)
+                                                  {
+                                                      bool shouldRemove = (currentIndex == targetIndex);
+                                                      currentIndex++;
+                                                      return shouldRemove; });
 
-            combatLogDeleteCount++;
+            if (removedCount > 0 && combatLogStdoutEnabled)
+            {
+                std::cout << "\n[SinglyLinkedList] [InputManager] User deleted entry at index " << targetIndex << "\n";
+                std::cout << "[SinglyLinkedList] [Session] Combat Log Size: " << combatLog.size() << "\n\n";
+            }
+
+            combatLogDeleteCount += removedCount;
 
             // Clamp selection after deletion
             if (combatLogCurrentNode >= combatLog.size() && combatLog.size() > 0)
@@ -639,6 +647,16 @@ void InputManager::handleCombatLogInput(const sf::Event &event,
                 combatLogCurrentNode = 0;
             }
         }
+    }
+}
+
+void InputManager::appendCombatLogEntry(SinglyLinkedList<std::string> &combatLog, const std::string &message)
+{
+    combatLog.pushBack(message);
+    if (combatLogStdoutEnabled)
+    {
+        std::cout << "[SinglyLinkedList] [Session] Combat Log Entry Added: \"" << message << "\"\n";
+        std::cout << "[SinglyLinkedList] [Session] Combat Log Size: " << combatLog.size() << "\n\n";
     }
 }
 
@@ -1012,6 +1030,7 @@ void InputManager::setProjectileKeyPressed(bool pressed) { projectileKeyPressed 
 void InputManager::setSwitchProjectileKeyPressed(bool pressed) { switchProjectileKeyPressed = pressed; }
 void InputManager::setAttack1KeyPressed(bool pressed) { attack1KeyPressed = pressed; }
 void InputManager::setAttack2KeyPressed(bool pressed) { attack2KeyPressed = pressed; }
+void InputManager::setCombatLogStdoutEnabled(bool enabled) { combatLogStdoutEnabled = enabled; }
 
 // Handles Save Game menu (choose slot, confirm overwrite, or go back)
 void InputManager::handleSaveGameMenuInput(const sf::Event &event,

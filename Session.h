@@ -76,7 +76,8 @@ private:
     std::mt19937 rng{std::random_device{}()}; // Random generator
 
     // ---------- Exit Control ----------
-    bool requestExit = false; // Exit request flag
+    bool requestExit = false;                 // Exit request flag
+    bool combatLogStdoutEnabled = ENABLE_COMBAT_LOG_STDOUT; // Mirrors combat log operations to std::cout when true
 
 public:
     // ---------- Constructor & Destructor ----------
@@ -86,6 +87,8 @@ public:
     // ---------- Main Game Loop ----------
     void run();              // Runs the main game loop
     bool shouldExit() const; // Checks if game should exit
+    void setCombatLogStdoutEnabled(bool enabled);
+    bool isCombatLogStdoutEnabled() const { return combatLogStdoutEnabled; }
 
 private:
     // ---------- Initialization ----------

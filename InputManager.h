@@ -58,6 +58,7 @@ public:
     void setSwitchProjectileKeyPressed(bool pressed);
     void setAttack1KeyPressed(bool pressed);
     void setAttack2KeyPressed(bool pressed);
+    void setCombatLogStdoutEnabled(bool enabled);
 
 private:
     // Internal helper functions for each menu/game mode
@@ -122,6 +123,8 @@ private:
                               int &combatLogTraversalCount,
                               int &combatLogDeleteCount);
 
+    void appendCombatLogEntry(SinglyLinkedList<std::string> &combatLog, const std::string &message);
+
     // Key state flags
     bool leftKeyDown;
     bool rightKeyDown;
@@ -136,4 +139,5 @@ private:
     bool switchProjectileKeyPressed;
     bool attack1KeyPressed;
     bool attack2KeyPressed;
+    bool combatLogStdoutEnabled;
 };
