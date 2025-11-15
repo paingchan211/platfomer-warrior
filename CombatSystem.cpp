@@ -301,6 +301,9 @@ void CombatSystem::handlePlayerAttacks(Player &player,
                     // Reward skill point on enemy kill
                     player.getSkillTree().addSkillPoints(1);
 
+                    // Deactivate the enemy so it's no longer rendered or updated
+                    enemy->setActive(false);
+
                     if (combatLogCallback)
                     {
                         combatLogCallback("Defeated Enemy! (+25 XP, +1 Skill Point)");
@@ -431,6 +434,9 @@ void CombatSystem::handlePlayerAttacks(Player &player,
                     spawnPotion(hpPotions, MAX_HP_POTIONS, resourceManager.getTexture("hp_potion"), potionPos);
 
                     player.getSkillTree().addSkillPoints(1);
+
+                    // Deactivate the enemy so it's no longer rendered or updated
+                    enemy->setActive(false);
 
                     if (combatLogCallback)
                     {
@@ -809,6 +815,9 @@ void CombatSystem::handleProjectileCollisions(float dt,
 
                     player.getSkillTree().addSkillPoints(1);
 
+                    // Deactivate the enemy so it's no longer rendered or updated
+                    enemy->setActive(false);
+
                     if (combatLogCallback)
                     {
                         combatLogCallback("Defeated Enemy! (+25 XP, +1 Skill Point)");
@@ -918,6 +927,9 @@ void CombatSystem::handleProjectileCollisions(float dt,
                     player.applyLevelUpBonuses(levelUpInfo);
 
                     player.getSkillTree().addSkillPoints(1);
+
+                    // Deactivate the enemy so it's no longer rendered or updated
+                    enemy->setActive(false);
 
                     if (combatLogCallback)
                     {

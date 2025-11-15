@@ -57,6 +57,9 @@ void UISystem::renderGameOverScreen(sf::RenderWindow &window,
         {
             if (enemies[i])
             {
+                // Skip entirely inactive enemies (those that have been removed/deactivated)
+                if (!enemies[i]->isActive())
+                    continue;
                 if (enemies[i]->isAlive())
                     window.draw(enemies[i]->getSprite());
                 else
