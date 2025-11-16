@@ -580,7 +580,6 @@ void Session::render()
     if (debugMode)
     {
         renderDebugCollisions();
-        renderKeyDisplay();
     }
 
     // HUD and dynamic status indicators
@@ -660,6 +659,9 @@ void Session::render()
     if (debugMode)
     {
         renderStateStack();
+
+        // Draw the debug key display last so it stays above large UI screens (e.g., combat log)
+        renderKeyDisplay();
     }
 }
 
