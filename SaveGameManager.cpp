@@ -110,8 +110,8 @@ bool SaveGameManager::loadGame(Player &player, const std::string &saveName)
             int currentHP, maxHP;
             file >> currentHP >> maxHP;
             std::getline(file, line); // Consume newline
-            player.setHp(currentHP);
             player.setMaxHp(maxHP);
+            player.setHp(currentHP);
         }
         else if (line == "[PLAYER_DAMAGE]")
         {
@@ -162,8 +162,8 @@ bool SaveGameManager::loadGame(Player &player, const std::string &saveName)
                     int currentHP, maxHP;
                     file >> currentHP >> maxHP;
                     std::getline(file, line);
-                    player.setHp(currentHP);
                     player.setMaxHp(maxHP);
+                    player.setHp(currentHP);
                 }
                 else if (invLine == "[PLAYER_DAMAGE]")
                 {

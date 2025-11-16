@@ -267,7 +267,8 @@ void UISystem::renderHUD(sf::RenderWindow &window,
     renderXPBar(window, player);
     renderInventoryDisplay(window, player);
     renderProjectileAmmo(window, projectileAmmo, projectileCooldown, player, isFireProjectile);
-    renderSpecialAttackAmmo(window, specialAttackAmmo, specialAttackCooldown);
+    const bool hasSpecialAttack = player.getSkillTree().hasSpecialAttack();
+    renderSpecialAttackAmmo(window, specialAttackAmmo, specialAttackCooldown, hasSpecialAttack);
     renderControlsText(window);
 
     // Alerts for special modes (Rage, Meteor, Boss Rage)
@@ -414,23 +415,31 @@ void UISystem::renderProjectileAmmo(sf::RenderWindow &window, int ammo, float co
 }
 
 // Render special attack ammo indicator
-void UISystem::renderSpecialAttackAmmo(sf::RenderWindow &window, int ammo, float cooldown)
+void UISystem::renderSpecialAttackAmmo(sf::RenderWindow &window, int ammo, float cooldown, bool unlocked)
 {
     sf::CircleShape specialCircle(30.f);
     const sf::Vector2f circleCenter{SCREEN_WIDTH - 50.f, SCREEN_HEIGHT - 50.f};
     specialCircle.setPosition(circleCenter - sf::Vector2f{specialCircle.getRadius(), specialCircle.getRadius()});
 
-    // Color based on ammo status
-    const sf::Color ammoColor = ammo == MAX_SPECIAL_ATTACK_AMMO
-                                    ? sf::Color(0, 200, 0, 160)
-                                    : sf::Color(200, 0, 0, 160);
-    specialCircle.setFillColor(ammoColor);
-    specialCircle.setOutlineColor(sf::Color::White);
-    specialCircle.setOutlineThickness(2.f);
+    if (unlocked)
+    {
+        const sf::Color ammoColor = ammo == MAX_SPECIAL_ATTACK_AMMO
+                                        ? sf::Color(0, 200, 0, 160)
+                                        : sf::Color(200, 0, 0, 160);
+        specialCircle.setFillColor(ammoColor);
+        specialCircle.setOutlineColor(sf::Color::White);
+        specialCircle.setOutlineThickness(2.f);
+    }
+    else
+    {
+        specialCircle.setFillColor(sf::Color(40, 40, 40, 160));
+        specialCircle.setOutlineColor(sf::Color(120, 120, 120));
+        specialCircle.setOutlineThickness(1.5f);
+    }
     window.draw(specialCircle);
 
-    // Cooldown progress overlay
-    if (ammo < MAX_SPECIAL_ATTACK_AMMO && cooldown > 0.f)
+    // Cooldown progress overlay (only if unlocked)
+    if (unlocked && ammo < MAX_SPECIAL_ATTACK_AMMO && cooldown > 0.f && SPECIAL_ATTACK_COOLDOWN_TIME > 0.f)
     {
         const float progress = 1.f - cooldown / SPECIAL_ATTACK_COOLDOWN_TIME;
         sf::VertexArray arc(sf::TriangleFan, 34);
@@ -447,11 +456,15 @@ void UISystem::renderSpecialAttackAmmo(sf::RenderWindow &window, int ammo, float
 
     // Labels
     sf::Text specialLabel("S", resourceManager.getFont(), 22);
+    specialLabel.setFillColor(unlocked ? sf::Color::White : sf::Color(160, 160, 160));
     const sf::FloatRect specialBounds = specialLabel.getLocalBounds();
     specialLabel.setPosition(circleCenter.x - specialBounds.width / 2.f, circleCenter.y - specialBounds.height);
     window.draw(specialLabel);
 
-    sf::Text ammoText(std::to_string(ammo) + "/" + std::to_string(MAX_SPECIAL_ATTACK_AMMO), resourceManager.getFont(), 14);
+    sf::Text ammoText(unlocked ? std::to_string(ammo) + "/" + std::to_string(MAX_SPECIAL_ATTACK_AMMO) : "LOCKED",
+                      resourceManager.getFont(),
+                      unlocked ? 14 : 12);
+    ammoText.setFillColor(unlocked ? sf::Color::White : sf::Color(200, 200, 200));
     const sf::FloatRect ammoBounds = ammoText.getLocalBounds();
     ammoText.setPosition(circleCenter.x - ammoBounds.width / 2.f, circleCenter.y + 8.f);
     window.draw(ammoText);
@@ -1360,6 +1373,10 @@ void UISystem::renderSkillTreeScreen(sf::RenderWindow &window,
 
     // Skill tree data from player
     const SkillTree &skillTree = player->getSkillTree();
+    const auto *specialAttackNode = skillTree.getSkillNode(SkillType::SPECIAL_ATTACK);
+    const bool specialAttackUnlocked = specialAttackNode && !specialAttackNode->isEmpty() && specialAttackNode->getKey().isUnlocked();
+    const int specialAttackLevel = specialAttackNode ? specialAttackNode->getKey().currentLevel : 0;
+    const int specialAttackMaxLevel = specialAttackNode ? specialAttackNode->getKey().maxLevel : 1;
 
     // Title
     sf::Text titleText;
@@ -1482,7 +1499,14 @@ void UISystem::renderSkillTreeScreen(sf::RenderWindow &window,
     };
 
     // Root node (Special attack)
-    drawSkillNode("Special\nAttack (S)", true, 1, 1, screenCenter.x, rootY, sf::Color(200, 100, 200), selectedSkillIndex == 0);
+    drawSkillNode("Special\nAttack (S)",
+                  specialAttackUnlocked,
+                  specialAttackLevel,
+                  specialAttackMaxLevel,
+                  screenCenter.x,
+                  rootY,
+                  sf::Color(200, 100, 200),
+                  selectedSkillIndex == 0);
 
     // Branch connections to tier 1
     drawConnection(screenCenter.x - 30.f, rootY + 20.f, leftX, tier1Y - 25.f, skillTree.hasFireProjectile());

@@ -142,7 +142,7 @@ private:
     void renderXPBar(sf::RenderWindow &window, const Player &player);
     void renderInventoryDisplay(sf::RenderWindow &window, const Player &player);
     void renderProjectileAmmo(sf::RenderWindow &window, int ammo, float cooldown, const Player &player, bool isFireProjectile);
-    void renderSpecialAttackAmmo(sf::RenderWindow &window, int ammo, float cooldown);
+    void renderSpecialAttackAmmo(sf::RenderWindow &window, int ammo, float cooldown, bool unlocked);
     void renderControlsText(sf::RenderWindow &window);
 
     std::string toastMessage;

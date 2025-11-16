@@ -33,7 +33,7 @@ constexpr float PROJECTILE_COOLDOWN_TIME = 5.f; // Cooldown time between project
 
 // Special attack system constants
 constexpr int MAX_SPECIAL_ATTACK_AMMO = 1;          // Maximum special attack ammo count
-constexpr float SPECIAL_ATTACK_COOLDOWN_TIME = 0.f; // Cooldown time for special attack in seconds
+constexpr float SPECIAL_ATTACK_COOLDOWN_TIME = 5.f; // Cooldown time for special attack in seconds
 
 // Item and effect limits
 constexpr std::size_t MAX_HP_POTIONS = 20; // Maximum number of HP potions in the world

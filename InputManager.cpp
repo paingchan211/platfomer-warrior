@@ -459,15 +459,13 @@ void InputManager::handleSimpleScreenInput(const sf::Event &event,
             // Try to upgrade / unlock selected skill
             enterKeyDown = true;
 
-            SkillType selectedSkill;
+            SkillType selectedSkill = SkillType::SPECIAL_ATTACK;
             bool validSelection = true;
 
             switch (currentStateData.selectedSkillIndex)
             {
             case 0:
-                // Base special attack already unlocked
-                uiSystem->showToast("Special Attack is already unlocked!", sf::Color::Yellow);
-                validSelection = false;
+                selectedSkill = SkillType::SPECIAL_ATTACK;
                 break;
             case 1:
                 selectedSkill = SkillType::FIRE_PROJECTILE;
@@ -498,7 +496,7 @@ void InputManager::handleSimpleScreenInput(const sf::Event &event,
                 break;
             }
 
-            if (validSelection && currentStateData.selectedSkillIndex != 0)
+            if (validSelection)
             {
                 bool upgraded = player->getSkillTree().upgradeSkill(selectedSkill);
                 if (upgraded)
@@ -511,6 +509,8 @@ void InputManager::handleSimpleScreenInput(const sf::Event &event,
                     // Explain why upgrade failed (no points / prereq / max level)
                     if (player->getSkillTree().getSkillPoints() <= 0)
                         uiSystem->showToast("Not enough skill points!", sf::Color::Red);
+                    else if (selectedSkill == SkillType::SPECIAL_ATTACK && player->getSkillTree().hasSpecialAttack())
+                        uiSystem->showToast("Special Attack already unlocked!", sf::Color::Yellow);
                     else
                         uiSystem->showToast("Cannot upgrade: Prerequisites not met or max level", sf::Color::Red);
                 }

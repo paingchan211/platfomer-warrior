@@ -131,6 +131,7 @@ public:
     int getFireProjectileCount() const; // Get number of fire projectiles
     int getIceProjectileCount() const;  // Get number of ice projectiles
 
+    bool hasSpecialAttack() const;   // Check if special attack unlocked
     bool hasFireProjectile() const; // Check if fire projectile unlocked
     bool hasIceProjectile() const;  // Check if ice projectile unlocked
 

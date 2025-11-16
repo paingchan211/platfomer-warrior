@@ -26,10 +26,8 @@ SkillTree::~SkillTree()
 // Initialize the skill tree structure and setup connections
 void SkillTree::initialize()
 {
-    // Root node: Special Attack (always available)
-    SkillNode specialAttack("Special Attack", "Powerful special attack (S key) - Always available", SkillType::SPECIAL_ATTACK, 1, 0, 0, 0);
-    specialAttack.isLocked = false;
-    specialAttack.currentLevel = 1;
+    // Root node: Special Attack (must be unlocked with skill points)
+    SkillNode specialAttack("Special Attack", "Unlock a powerful special attack (S key) - Costs 1 skill point", SkillType::SPECIAL_ATTACK, 1, 0, 0, 0);
     tree = new NTree<SkillNode, 3>(specialAttack);
 
     // Create Fire Projectile branch
@@ -108,9 +106,6 @@ bool SkillTree::canUpgradeSkill(SkillType type) const
     auto node = getSkillNode(type);
     if (!node)
         return false;
-
-    if (type == SkillType::SPECIAL_ATTACK)
-        return false; // Root skill can't be upgraded
 
     if (node->getKey().isMaxLevel())
         return false; // Already maxed out
@@ -250,7 +245,16 @@ bool SkillTree::hasIceProjectile() const
     return iceProjectileNode && !iceProjectileNode->isEmpty() && iceProjectileNode->getKey().isUnlocked();
 }
 
-// Reset all skill levels except the root node
+// Check if the player has unlocked the root special attack
+bool SkillTree::hasSpecialAttack() const
+{
+    if (!tree || tree->isEmpty())
+        return false;
+
+    return tree->getKey().isUnlocked();
+}
+
+// Reset all skill levels to locked state
 void SkillTree::reset()
 {
     availableSkillPoints = 0;
@@ -259,11 +263,9 @@ void SkillTree::reset()
     {
         tree->traverseLevelOrder([](SkillNode &skill)
                                   {
-            if (skill.type != SkillType::SPECIAL_ATTACK)
-            {
-                skill.currentLevel = 0;
-                skill.isLocked = true;
-            } });
+            skill.currentLevel = 0;
+            skill.isLocked = true;
+        });
     }
 }
 

@@ -122,8 +122,9 @@ void CombatSystem::reset(std::mt19937 &rng, const Player &player)
     else
         currentProjectileType = ProjectileType::FIRE;
 
-    // Reset special attack and potion cooldowns
-    specialAttackAmmo = MAX_SPECIAL_ATTACK_AMMO;
+    // Reset special attack and potion cooldowns (respect unlocked skills)
+    const bool hasSpecialAttack = player.getSkillTree().hasSpecialAttack();
+    specialAttackAmmo = hasSpecialAttack ? MAX_SPECIAL_ATTACK_AMMO : 0;
     specialAttackCooldown = 0.f;
     potionUseCooldown = 0.f;
     attackSoundDelay = 0.f;
@@ -220,20 +221,31 @@ void CombatSystem::updatePlayerCombat(float dt, Player &player, float slowMoPitc
         potionUseCooldown -= dt;
     }
 
-    // Update special attack cooldown
-    if (specialAttackCooldown > 0.f)
+    const bool hasSpecialAttack = player.getSkillTree().hasSpecialAttack();
+    if (!hasSpecialAttack)
     {
-        specialAttackCooldown -= dt;
+        specialAttackAmmo = 0;
+        specialAttackCooldown = 0.f;
     }
-
-    // Regenerate special attack ammo if below maximum and cooldown is ready
-    if (specialAttackAmmo < MAX_SPECIAL_ATTACK_AMMO && specialAttackCooldown <= 0.f)
+    else
     {
-        ++specialAttackAmmo;
-        // Set cooldown if ammo is still below maximum
-        if (specialAttackAmmo < MAX_SPECIAL_ATTACK_AMMO)
+        // Update special attack cooldown
+        if (specialAttackCooldown > 0.f)
         {
-            specialAttackCooldown = SPECIAL_ATTACK_COOLDOWN_TIME;
+            specialAttackCooldown -= dt;
+            if (specialAttackCooldown < 0.f)
+                specialAttackCooldown = 0.f;
+        }
+
+        // Regenerate special attack ammo if below maximum and cooldown is ready
+        if (specialAttackAmmo < MAX_SPECIAL_ATTACK_AMMO && specialAttackCooldown <= 0.f)
+        {
+            ++specialAttackAmmo;
+            // Set cooldown if ammo is still below maximum
+            if (specialAttackAmmo < MAX_SPECIAL_ATTACK_AMMO)
+            {
+                specialAttackCooldown = SPECIAL_ATTACK_COOLDOWN_TIME;
+            }
         }
     }
 }
@@ -363,8 +375,9 @@ void CombatSystem::handlePlayerAttacks(Player &player,
     inputManager.setAttack1KeyPressed(attack1Down);
 
     // Handle special attack input
-    const bool specialAttackDown = sf::Keyboard::isKeyPressed(keyManager ? keyManager->getKeyForAction(GameAction::SPECIAL_ATTACK) : sf::Keyboard::S);
-    if (specialAttackDown && !inputManager.isAttack2KeyPressed() && !player.getIsAttacking() && !player.getIsSpecialAttacking() && specialAttackAmmo > 0)
+    const bool specialKeyDown = sf::Keyboard::isKeyPressed(keyManager ? keyManager->getKeyForAction(GameAction::SPECIAL_ATTACK) : sf::Keyboard::S);
+    const bool hasSpecialAttack = player.getSkillTree().hasSpecialAttack();
+    if (specialKeyDown && hasSpecialAttack && !inputManager.isAttack2KeyPressed() && !player.getIsAttacking() && !player.getIsSpecialAttacking() && specialAttackAmmo > 0)
     {
         // Start special attack animation
         player.specialAttack();
@@ -389,7 +402,7 @@ void CombatSystem::handlePlayerAttacks(Player &player,
             specialAttackCooldown = SPECIAL_ATTACK_COOLDOWN_TIME;
         }
     }
-    inputManager.setAttack2KeyPressed(specialAttackDown);
+    inputManager.setAttack2KeyPressed(specialKeyDown);
 
     // While special attack animation is active, apply AoE damage to enemies and boss
     if (player.getIsSpecialAttacking())
