@@ -16,10 +16,10 @@ public:
 
     bool initialize(); // Loads sounds and initializes variables
 
-    void update(float dt, const Player &player, const GameWorld &gameWorld); // Updates all active modes
-    void render(sf::RenderWindow &window);                                   // Renders rage overlay
-    void reset();                                                            // Resets all states
-    void stopAllSounds();                                                    // Stops playing sounds
+    void update(float dt, const Player &player, const GameWorld &gameWorld);                // Updates all active modes
+    void render(sf::RenderWindow &window, const sf::View &worldView, const Player *player); // Renders rage overlay + events
+    void reset();                                                                           // Resets all states
+    void stopAllSounds();                                                                   // Stops playing sounds
 
     bool isRageModeActive() const;           // Checks if rage mode is active
     float getPlayerDamageMultiplier() const; // Returns player’s damage multiplier
@@ -44,6 +44,12 @@ private:
     void updateBossRageMode(float dt, const GameWorld &gameWorld);
     void activateBossRageMode();
     void deactivateBossRageMode();
+
+    // Sand storm helpers
+    void updateSandStorm(float dt, const GameWorld &gameWorld);
+    void renderSandStorm(sf::RenderWindow &window, const sf::Vector2f &focusPoint);
+    void ensureSandStormTexture(const sf::Vector2u &windowSize);
+    int getDefeatedEnemyCount(const GameWorld &gameWorld) const;
 
     // Rage mode variables
     bool rageModeActive;
@@ -74,4 +80,24 @@ private:
     bool bossRageModeActive;
     bool bossRageModeTriggeredOnce;
     float bossDamageMultiplier;
+
+    // Sand storm variables
+    bool sandStormTriggerAnnounced;
+    bool sandStormWarningActive;
+    bool sandStormInProgress;
+    float sandStormWarningDuration;
+    float sandStormWarningTimer;
+    float sandStormTimer;
+    float sandStormFadeDuration;
+    float sandStormActiveDuration;
+    float sandStormIntensity;
+    float sandStormVisibilityRadius;
+    float sandStormVisibilityMinRadius;
+    float sandStormVisibilityMaxRadius;
+    float sandStormFogMaxAlpha;
+    int sandStormKillsRequired;
+
+    sf::RenderTexture sandStormRenderTexture;
+    sf::Sprite sandStormSprite;
+    sf::Vector2u sandStormMaskSize;
 };

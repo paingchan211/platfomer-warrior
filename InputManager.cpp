@@ -180,7 +180,7 @@ void InputManager::processEvent(const sf::Event &event,
             }
             else if (currentState == GameStateType::Playing)
             {
-                handleGameInput(event, stateStack, gameOver, keyManager);
+                handleGameInput(event, stateStack, gameOver, resourceManager, keyManager);
             }
         }
     }
@@ -271,11 +271,14 @@ void InputManager::handleMainMenuInput(const sf::Event &event,
 void InputManager::handleGameInput(const sf::Event &event,
                                    Stack<GameStateData> &stateStack,
                                    bool gameOver,
+                                   ResourceManager &resourceManager,
                                    KeyBindingManager *keyManager)
 {
     // Pause (Esc) if not in game-over state
     if (event.key.code == sf::Keyboard::Escape && !escKeyDown && !gameOver)
     {
+        resourceManager.stopWalkSound();
+        resourceManager.stopMeteorSound();
         stateStack.push(GameStateData(GameStateType::Paused));
         escKeyDown = true;
     }

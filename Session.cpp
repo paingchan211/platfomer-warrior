@@ -582,6 +582,9 @@ void Session::render()
         renderDebugCollisions();
     }
 
+    // GameMaster visual overlays (e.g., sand storm) before HUD so bars remain readable
+    gameMaster.render(window, cameraController.getView(), gameWorld.getPlayer());
+
     // HUD and dynamic status indicators
     uiSystem.renderHUD(window,
                        *gameWorld.getPlayer(),
@@ -596,9 +599,6 @@ void Session::render()
 
     // Periodic low-HP attention
     uiSystem.renderLowHpWarning(window, lowHpWarningTimer, gameWorld.getPlayer());
-
-    // GameMaster visual effects (e.g., rage/meter)
-    gameMaster.render(window);
 
     // State-driven overlays/menus
     if (getCurrentState() == GameStateType::Paused)

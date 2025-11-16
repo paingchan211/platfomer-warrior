@@ -70,6 +70,7 @@ private:
     void handleGameInput(const sf::Event &event,
                          Stack<GameStateData> &stateStack,
                          bool gameOver,
+                         ResourceManager &resourceManager,
                          KeyBindingManager *keyManager = nullptr);
 
     void handlePauseMenuInput(const sf::Event &event,
