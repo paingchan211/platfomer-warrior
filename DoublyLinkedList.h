@@ -11,11 +11,11 @@ class DoublyLinkedNode
 {
 public:
     typedef DoublyLinkedNode<DataType> Node; // Type alias for node type
-    static Node NIL; // Sentinel node representing end of list or empty list
+    static Node NIL;                         // Sentinel node representing end of list or empty list
 
 private:
     DataType value; // Value stored in the node
-    Node *next; // Pointer to the next node in the list
+    Node *next;     // Pointer to the next node in the list
     Node *previous; // Pointer to the previous node in the list
 
 public:
@@ -192,7 +192,7 @@ public:
 private:
     Node *head_{&Node::NIL}; // Pointer to the first node in the list
     Node *tail_{&Node::NIL}; // Pointer to the last node in the list
-    unsigned long size_{0}; // Number of elements in the list
+    unsigned long size_{0};  // Number of elements in the list
 
 public:
     // Iterator class template that supports both const and non-const iteration
@@ -219,7 +219,7 @@ public:
             using type = Y;
         };
 
-        using pointer = typename conditional<is_const, const T *, T *>::type; // Pointer type based on constness
+        using pointer = typename conditional<is_const, const T *, T *>::type;   // Pointer type based on constness
         using reference = typename conditional<is_const, const T &, T &>::type; // Reference type based on constness
 
         // Default constructor that initializes iterator to NIL
@@ -255,7 +255,7 @@ public:
         Node *node_; // Pointer to the current node
     };
 
-    using iterator = BasicIterator<false>; // Non-const iterator type
+    using iterator = BasicIterator<false>;      // Non-const iterator type
     using const_iterator = BasicIterator<true>; // Const iterator type
 
     // Default constructor that creates an empty list
@@ -333,9 +333,6 @@ public:
     // Applies a function to each element in the list (const)
     template <typename Func>
     void forEach(Func func) const;
-
-    // Moves elements from another list into this list at the specified position
-    void splice(iterator pos, DoublyLinkedList &other, iterator first, iterator last);
 
     // Removes all elements from the list
     void clear() noexcept;
@@ -805,71 +802,6 @@ void DoublyLinkedList<T>::forEach(Func func) const
         func(cur->getValueRef());
         cur = cur->getNext();
     }
-}
-
-// Moves elements from another list into this list at the specified position
-template <typename T>
-void DoublyLinkedList<T>::splice(iterator pos, DoublyLinkedList &other, iterator first, iterator last)
-{
-    // Return early if range is empty
-    if (first == last)
-        return;
-
-    // Get node pointers for the range and insertion point
-    Node *f = first.node_;
-    Node *l = last.node_;
-    Node *before = (!pos.node_->isNIL() ? pos.node_->getPrevious() : tail_);
-
-    // Get nodes around the range in the source list
-    Node *rangePrev = f->getPrevious();
-    Node *rangeEnd = (!l->isNIL() ? l->getPrevious() : other.tail_);
-    Node *rangeNext = l;
-
-    // Remove range from source list by updating links
-    if (!rangePrev->isNIL())
-        rangePrev->setNext(rangeNext);
-    else
-        other.head_ = rangeNext;
-
-    if (!rangeNext->isNIL())
-        rangeNext->setPrevious(rangePrev);
-    else
-        other.tail_ = rangePrev;
-
-    // Insert range into this list before the insertion point
-    if (!before->isNIL())
-    {
-        before->setNext(f);
-        f->setPrevious(before);
-    }
-    else
-    {
-        head_ = f;
-        f->setPrevious(&Node::NIL);
-    }
-
-    if (!pos.node_->isNIL())
-    {
-        pos.node_->setPrevious(rangeEnd);
-        rangeEnd->setNext(pos.node_);
-    }
-    else
-    {
-        tail_ = rangeEnd;
-        rangeEnd->setNext(&Node::NIL);
-    }
-
-    // Count number of nodes moved and update sizes
-    unsigned long count = 0;
-    Node *cur = f;
-    while (cur != rangeNext)
-    {
-        ++count;
-        cur = cur->getNext();
-    }
-
-    size_ += count;
-    other.size_ -= count;
 }
 
 // Removes all elements from the list
