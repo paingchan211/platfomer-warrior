@@ -364,7 +364,7 @@ void Session::updatePlayer(float dt)
     Player *player = gameWorld.getPlayer();
 
     // Movement input + jump handling
-    player->handleInput(dt, &keyBindingManager);
+    player->handleInput(dt, &keyBindingManager, gameMaster.isSandStormActive());
     bool didJump = player->jump(dt, &keyBindingManager);
     if (didJump)
     {

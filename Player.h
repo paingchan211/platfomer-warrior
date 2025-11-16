@@ -85,7 +85,7 @@ public:
     void update(float dt) override;
 
     // Handle keyboard input (movement / attacks)
-    void handleInput(float dt, const KeyBindingManager *keyManager = nullptr);
+    void handleInput(float dt, const KeyBindingManager *keyManager = nullptr, bool sprintDisabled = false);
 
     // Handle sprite animation transitions
     void updateAnimation(float dt);

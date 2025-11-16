@@ -387,6 +387,11 @@ float GameMaster::getBossDamageMultiplier() const
     return bossDamageMultiplier;
 }
 
+bool GameMaster::isSandStormActive() const
+{
+    return sandStormInProgress;
+}
+
 // Handles scheduling and timers for the sand storm event
 void GameMaster::updateSandStorm(float dt, const GameWorld &gameWorld)
 {

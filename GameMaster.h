@@ -26,7 +26,8 @@ public:
     bool isMeteorFuryActive() const;         // Checks if meteor fury is active
     float getMeteorSpawnInterval() const;    // Returns current meteor spawn interval
     bool isBossRageModeActive() const;       // Checks if boss rage mode is active
-    float getBossDamageMultiplier() const;   // Returns boss’s damage multiplier
+    float getBossDamageMultiplier() const;   // Returns boss's damage multiplier
+    bool isSandStormActive() const;          // Checks if sand storm is currently restricting vision/movement
 
 private:
     // Rage mode functions

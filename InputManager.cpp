@@ -293,6 +293,12 @@ void InputManager::handleGameInput(const sf::Event &event,
     if (event.key.code == skillTreeKey && !gameOver)
     {
         stateStack.push(GameStateData(GameStateType::SkillTreeScreen));
+
+        // Default to root node so navigation always starts from the base skill
+        if (!stateStack.isEmpty())
+        {
+            stateStack.top().selectedSkillIndex = 0;
+        }
     }
 }
 

@@ -70,7 +70,7 @@ void Player::update(float dt)
 }
 
 // Handle user input for movement, sprinting, and dashing
-void Player::handleInput(float dt, const KeyBindingManager *keyManager)
+void Player::handleInput(float dt, const KeyBindingManager *keyManager, bool sprintDisabled)
 {
     // Handle special dash attack
     if (isSpecialAttacking)
@@ -96,8 +96,9 @@ void Player::handleInput(float dt, const KeyBindingManager *keyManager)
 
     float moveSpeed = speed;
 
-    // Sprinting using Shift key
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::LShift) || sf::Keyboard::isKeyPressed(sf::Keyboard::RShift))
+    // Sprinting using Shift key (disabled during certain events like sand storms)
+    if (!sprintDisabled &&
+        (sf::Keyboard::isKeyPressed(sf::Keyboard::LShift) || sf::Keyboard::isKeyPressed(sf::Keyboard::RShift)))
         moveSpeed *= speedBoost;
 
     bool moving = false;
