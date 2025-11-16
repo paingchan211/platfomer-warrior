@@ -20,109 +20,163 @@ private:
 
 public:
     // Default constructor that initializes node with default value and NIL pointers
-    DoublyLinkedNode()
-    {
-        value = DataType();
-        next = &NIL;
-        previous = &NIL;
-    }
+    DoublyLinkedNode();
 
     // Constructor that initializes node with a given value
-    DoublyLinkedNode(const DataType &aValue)
-    {
-        value = aValue;
-        next = &NIL;
-        previous = &NIL;
-    }
+    explicit DoublyLinkedNode(const DataType &aValue);
 
     // Move constructor that moves a value into the node
-    DoublyLinkedNode(DataType &&aValue)
-    {
-        value = std::move(aValue);
-        next = &NIL;
-        previous = &NIL;
-    }
+    DoublyLinkedNode(DataType &&aValue);
 
     // Inserts a new node before this node in the list
-    void prepend(Node *newNode)
-    {
-        // Set new node's next pointer to this node
-        newNode->next = this;
-
-        // If this node has a previous node, update its links
-        if (this->previous != &NIL)
-        {
-            newNode->previous = this->previous;
-            this->previous->next = newNode;
-        }
-
-        // Update this node's previous pointer to point to new node
-        this->previous = newNode;
-    }
+    void prepend(Node *newNode);
 
     // Inserts a new node after this node in the list
-    void append(Node *newNode)
-    {
-        // Set new node's previous pointer to this node
-        newNode->previous = this;
-        // If this node has a next node, update its links
-        if (this->next != &NIL)
-        {
-            newNode->next = this->next;
-            this->next->previous = newNode;
-        }
-        // Update this node's next pointer to point to new node
-        this->next = newNode;
-    }
+    void append(Node *newNode);
 
     // Returns a copy of the value stored in the node
-    DataType getValue() const
-    {
-        return value;
-    }
+    DataType getValue() const;
 
     // Returns a reference to the value stored in the node (non-const)
-    DataType &getValueRef()
-    {
-        return value;
-    }
+    DataType &getValueRef();
 
     // Returns a const reference to the value stored in the node
-    const DataType &getValueRef() const
-    {
-        return value;
-    }
+    const DataType &getValueRef() const;
 
     // Returns a pointer to the next node
-    Node *getNext() const
-    {
-        return next;
-    }
+    Node *getNext() const;
 
     // Returns a pointer to the previous node
-    Node *getPrevious() const
-    {
-        return previous;
-    }
+    Node *getPrevious() const;
 
     // Sets the next node pointer
-    void setNext(Node *n)
-    {
-        next = n;
-    }
+    void setNext(Node *n);
 
     // Sets the previous node pointer
-    void setPrevious(Node *p)
-    {
-        previous = p;
-    }
+    void setPrevious(Node *p);
 
     // Checks if this node is the NIL sentinel node
-    bool isNIL() const
-    {
-        return this == &NIL;
-    }
+    bool isNIL() const;
 };
+
+// ---------- DoublyLinkedNode Implementation ----------
+
+// Default constructor that initializes node with default value and NIL pointers
+template <typename DataType>
+DoublyLinkedNode<DataType>::DoublyLinkedNode()
+{
+    value = DataType();
+    next = &NIL;
+    previous = &NIL;
+}
+
+// Constructor that initializes node with a given value
+template <typename DataType>
+DoublyLinkedNode<DataType>::DoublyLinkedNode(const DataType &aValue)
+{
+    value = aValue;
+    next = &NIL;
+    previous = &NIL;
+}
+
+// Move constructor that moves a value into the node
+template <typename DataType>
+DoublyLinkedNode<DataType>::DoublyLinkedNode(DataType &&aValue)
+{
+    value = std::move(aValue);
+    next = &NIL;
+    previous = &NIL;
+}
+
+// Inserts a new node before this node in the list
+template <typename DataType>
+void DoublyLinkedNode<DataType>::prepend(Node *newNode)
+{
+    // Set new node's next pointer to this node
+    newNode->next = this;
+
+    // If this node has a previous node, update its links
+    if (this->previous != &NIL)
+    {
+        newNode->previous = this->previous;
+        this->previous->next = newNode;
+    }
+
+    // Update this node's previous pointer to point to new node
+    this->previous = newNode;
+}
+
+// Inserts a new node after this node in the list
+template <typename DataType>
+void DoublyLinkedNode<DataType>::append(Node *newNode)
+{
+    // Set new node's previous pointer to this node
+    newNode->previous = this;
+    // If this node has a next node, update its links
+    if (this->next != &NIL)
+    {
+        newNode->next = this->next;
+        this->next->previous = newNode;
+    }
+    // Update this node's next pointer to point to new node
+    this->next = newNode;
+}
+
+// Returns a copy of the value stored in the node
+template <typename DataType>
+DataType DoublyLinkedNode<DataType>::getValue() const
+{
+    return value;
+}
+
+// Returns a reference to the value stored in the node (non-const)
+template <typename DataType>
+DataType &DoublyLinkedNode<DataType>::getValueRef()
+{
+    return value;
+}
+
+// Returns a const reference to the value stored in the node
+template <typename DataType>
+const DataType &DoublyLinkedNode<DataType>::getValueRef() const
+{
+    return value;
+}
+
+// Returns a pointer to the next node
+template <typename DataType>
+typename DoublyLinkedNode<DataType>::Node *DoublyLinkedNode<DataType>::getNext() const
+{
+    return next;
+}
+
+// Returns a pointer to the previous node
+template <typename DataType>
+typename DoublyLinkedNode<DataType>::Node *DoublyLinkedNode<DataType>::getPrevious() const
+{
+    return previous;
+}
+
+// Sets the next node pointer
+template <typename DataType>
+void DoublyLinkedNode<DataType>::setNext(Node *n)
+{
+    next = n;
+}
+
+// Sets the previous node pointer
+template <typename DataType>
+void DoublyLinkedNode<DataType>::setPrevious(Node *p)
+{
+    previous = p;
+}
+
+// Checks if this node is the NIL sentinel node
+template <typename DataType>
+bool DoublyLinkedNode<DataType>::isNIL() const
+{
+    return this == &NIL;
+}
 
 // Static definition of the NIL sentinel node
 template <typename DataType>

@@ -1,208 +1,227 @@
 #pragma once
 
-#include <functional>
-#include <stdexcept>
-#include <memory>
+#include <functional> // std::hash for hashing keys
+#include <stdexcept>  // std::runtime_error for error reporting
+#include <memory>     // std::unique_ptr for returning pairs
 
-// Generic templated hash table implementation with chaining
+// Generic templated hash table implementation using separate chaining.
+//
+// K = key type
+// V = value type
+//
+// Collisions are handled by a linked list (Node) per bucket.
+// Table automatically resizes when load factor exceeds loadFactorLimit.
 template <typename K, typename V>
 class HashTable
 {
 private:
-    // Node representing a single key-value pair in a linked list
+    // Node represents one key-value pair stored in a bucket's linked list.
     struct Node
     {
-        K key;      // Key stored in this node
-        V value;    // Associated value
-        Node *next; // Pointer to next node in the same bucket
+        K key;      // Stored key
+        V value;    // Associated value for this key
+        Node *next; // Pointer to next node in this bucket chain (nullptr if end)
 
+        // Construct node by copying key and value
         Node(const K &k, const V &v) : key(k), value(v), next(nullptr) {}
+
+        // Construct node by copying key and moving value
         Node(const K &k, V &&v) : key(k), value(std::move(v)), next(nullptr) {}
     };
 
-    Node **table;          // Array of pointers to linked lists (buckets)
-    size_t capacity;       // Number of buckets
-    size_t count;          // Number of key-value pairs
-    float loadFactorLimit; // Load factor threshold for resizing
+    Node **table;          // Dynamic array of pointers to bucket heads
+    size_t capacity;       // Number of buckets in the table
+    size_t count;          // Number of stored key-value pairs
+    float loadFactorLimit; // Maximum allowed load factor before resizing
 
-    // Computes hash index for a given key
+    // Compute the bucket index for a given key using std::hash.
     size_t hash(const K &key) const;
 
-    // Doubles the table size and rehashes all elements
+    // Double the capacity and re-insert all existing nodes into the new table.
     void resize();
 
 public:
-    // Constructor initializes table with given capacity and load factor
+    // Construct hash table with initial bucket count and desired load factor.
     explicit HashTable(size_t initialCapacity = 16, float loadFactor = 0.75f);
 
-    // Destructor releases all memory
+    // Destructor releases all nodes and the bucket array.
     ~HashTable();
 
-    // Copy constructor (deep copy)
+    // Copy constructor performs a deep copy of all buckets and nodes.
     HashTable(const HashTable &other);
 
-    // Copy assignment operator (deep copy)
+    // Copy assignment operator, also deep copies from other.
     HashTable &operator=(const HashTable &other);
 
-    // Inserts or updates a key-value pair (copy version)
+    // Insert or update a key-value pair using copy semantics for value.
     void insert(const K &key, const V &value);
 
-    // Inserts or updates a key-value pair (move version)
+    // Insert or update a key-value pair using move semantics for value.
     void insert(const K &key, V &&value);
 
-    // Retrieves a value by key (throws if not found)
+    // Get a mutable reference to value for a given key. Throws if key is missing.
     V &get(const K &key);
 
-    // Retrieves a const reference to a value by key (throws if not found)
+    // Get a const reference to value for a given key. Throws if key is missing.
     const V &get(const K &key) const;
 
-    // Retrieves a value by key or returns default if key not found
+    // Return value for key if present; otherwise return provided defaultValue.
     V getOrDefault(const K &key, const V &defaultValue) const;
 
-    // Checks if a key exists in the hash table
+    // True if key exists in table, false otherwise.
     bool contains(const K &key) const;
 
-    // Removes a key-value pair if it exists
+    // Remove a key-value pair by key if it exists. Returns true if removed.
     bool remove(const K &key);
 
-    // Clears all elements from the table
+    // Delete all key-value pairs and reset all buckets to empty.
     void clear();
 
-    // Returns total number of key-value pairs
+    // Number of key-value pairs currently stored.
     size_t size() const;
 
-    // Checks if table is empty
+    // True if there are no stored pairs.
     bool isEmpty() const;
 
-    // Accesses or creates a key-value pair using operator[]
+    // Access value by key, creating a default-constructed value if missing.
     V &operator[](const K &key);
 
-    // Returns a list of all key-value pairs in the table
-    std::unique_ptr<std::pair<K, V>[]> getAllPairs(size_t &count) const;
+    // Return all key-value pairs as a contiguous array of std::pair<K, V>.
+    // outCount is set to number of pairs. Returns nullptr if table is empty.
+    std::unique_ptr<std::pair<K, V>[]> getAllPairs(size_t &outCount) const;
 
-    // Returns total number of buckets allocated in the table
+    // Total number of buckets in the underlying table.
     size_t bucketCount() const;
 
-    // Returns the current load factor (count / capacity)
+    // Current load factor = count / capacity.
     float loadFactor() const;
 
-    // Returns the bucket index that currently stores the provided key
+    // Return the bucket index that currently stores the given key.
+    // Throws if the key is not found.
     size_t bucketIndex(const K &key) const;
 
-    // Returns how many buckets contain at least one node
+    // Count how many buckets have at least one node.
     size_t nonEmptyBucketCount() const;
 
-    // Returns the longest linked-list chain among all buckets
+    // Compute maximum chain length (longest linked list) across all buckets.
     size_t longestChainLength() const;
 
-    // Returns the average chain length across all populated buckets
+    // Compute average chain length among buckets that are non-empty.
     double averageChainLength() const;
 };
 
-// -----------------------------
-// Implementation
-// -----------------------------
+// -------------------- Implementation --------------------
 
-// Computes hash index for a given key
+// Compute hash index for a given key by calling std::hash and modding capacity.
 template <typename K, typename V>
 size_t HashTable<K, V>::hash(const K &key) const
 {
-    std::hash<K> hasher;
-    return hasher(key) % capacity;
+    std::hash<K> hasher;           // Standard hash functor for key type
+    return hasher(key) % capacity; // Constrain hash into [0, capacity)
 }
 
-// Resizes table and rehashes all nodes into a larger array
+// Resize table by doubling capacity and rehashing all existing nodes.
 template <typename K, typename V>
 void HashTable<K, V>::resize()
 {
-    size_t oldCapacity = capacity;
-    Node **oldTable = table;
+    size_t oldCapacity = capacity; // Store old bucket count
+    Node **oldTable = table;       // Keep pointer to old bucket array
 
-    capacity *= 2;
-    table = new Node *[capacity];
+    capacity *= 2;                // Double number of buckets
+    table = new Node *[capacity]; // Allocate new bucket array
     for (size_t i = 0; i < capacity; ++i)
     {
-        table[i] = nullptr;
+        table[i] = nullptr; // Initialize all buckets as empty
     }
-    count = 0;
 
-    // Move elements from old table to new table
+    count = 0; // Will be recomputed as we re-insert nodes
+
+    // Re-insert each key-value pair from old table into new table.
+    // Note: this recomputes hash indices based on new capacity.
     for (size_t i = 0; i < oldCapacity; ++i)
     {
         Node *current = oldTable[i];
         while (current != nullptr)
         {
+            // Insert using move to avoid unnecessary copies of value.
             insert(current->key, std::move(current->value));
-            Node *temp = current;
-            current = current->next;
-            delete temp;
+
+            Node *temp = current;    // Save pointer to node to delete
+            current = current->next; // Advance before deleting
+            delete temp;             // Free old node
         }
     }
 
-    delete[] oldTable;
+    delete[] oldTable; // Free the old bucket array
 }
 
-// Constructor initializes buckets
+// Construct hash table with given capacity and load factor limit.
 template <typename K, typename V>
 HashTable<K, V>::HashTable(size_t initialCapacity, float loadFactor)
-    : capacity(initialCapacity), count(0), loadFactorLimit(loadFactor)
+    : capacity(initialCapacity),
+      count(0),
+      loadFactorLimit(loadFactor)
 {
-    table = new Node *[capacity];
+    table = new Node *[capacity]; // Allocate array of bucket pointers
     for (size_t i = 0; i < capacity; ++i)
     {
-        table[i] = nullptr;
+        table[i] = nullptr; // All buckets start empty
     }
 }
 
-// Destructor cleans up all allocated memory
+// Destructor releases all stored nodes and the bucket array.
 template <typename K, typename V>
 HashTable<K, V>::~HashTable()
 {
-    clear();
-    delete[] table;
+    clear();        // Delete all nodes in all buckets
+    delete[] table; // Delete bucket array
 }
 
-// Copy constructor for deep cloning another hash table
+// Copy constructor: deep copy of another HashTable.
 template <typename K, typename V>
 HashTable<K, V>::HashTable(const HashTable &other)
-    : capacity(other.capacity), count(0), loadFactorLimit(other.loadFactorLimit)
+    : capacity(other.capacity),
+      count(0), // Will be updated via insert()
+      loadFactorLimit(other.loadFactorLimit)
 {
-    table = new Node *[capacity];
+    table = new Node *[capacity]; // New bucket array
     for (size_t i = 0; i < capacity; ++i)
     {
-        table[i] = nullptr;
+        table[i] = nullptr; // Initialize buckets as empty
     }
 
+    // Copy all key-value pairs by inserting them into this table.
     for (size_t i = 0; i < other.capacity; ++i)
     {
         Node *current = other.table[i];
         while (current != nullptr)
         {
-            insert(current->key, current->value);
+            insert(current->key, current->value); // Use copy insert
             current = current->next;
         }
     }
 }
 
-// Copy assignment operator
+// Copy assignment: clear current contents, then deep copy from other.
 template <typename K, typename V>
 HashTable<K, V> &HashTable<K, V>::operator=(const HashTable &other)
 {
-    if (this != &other)
+    if (this != &other) // Protect against self-assignment
     {
-        clear();
-        delete[] table;
+        clear();        // Remove all existing nodes
+        delete[] table; // Free existing bucket array
 
         capacity = other.capacity;
-        count = 0;
+        count = 0; // Recomputed as we insert
         loadFactorLimit = other.loadFactorLimit;
 
-        table = new Node *[capacity];
+        table = new Node *[capacity]; // Allocate new buckets
         for (size_t i = 0; i < capacity; ++i)
         {
             table[i] = nullptr;
         }
 
+        // Insert all key-value pairs from other
         for (size_t i = 0; i < other.capacity; ++i)
         {
             Node *current = other.table[i];
@@ -216,88 +235,92 @@ HashTable<K, V> &HashTable<K, V>::operator=(const HashTable &other)
     return *this;
 }
 
-// Inserts a key-value pair or updates existing one (copy version)
+// Insert or update key-value pair using copy semantics for value.
 template <typename K, typename V>
 void HashTable<K, V>::insert(const K &key, const V &value)
 {
-    size_t index = hash(key);
+    size_t index = hash(key); // Compute bucket index
     Node *current = table[index];
 
-    // Check for existing key
+    // Traverse chain to find existing key
     while (current != nullptr)
     {
         if (current->key == key)
         {
+            // Key already exists: overwrite value and return
             current->value = value;
             return;
         }
         current = current->next;
     }
 
-    // Insert new node at bucket head
+    // Key not found: create new node and insert at bucket head
     Node *newNode = new Node(key, value);
-    newNode->next = table[index];
-    table[index] = newNode;
-    count++;
+    newNode->next = table[index]; // Link existing head after new node
+    table[index] = newNode;       // New node becomes bucket head
+    ++count;
 
-    // Resize if load factor exceeded
-    if (static_cast<float>(count) / capacity > loadFactorLimit)
+    // Check current load factor and resize if limit exceeded
+    if (static_cast<float>(count) / static_cast<float>(capacity) > loadFactorLimit)
     {
         resize();
     }
 }
 
-// Inserts a key-value pair or updates existing one (move version)
+// Insert or update key-value pair using move semantics for value.
 template <typename K, typename V>
 void HashTable<K, V>::insert(const K &key, V &&value)
 {
     size_t index = hash(key);
     Node *current = table[index];
 
-    // Check for existing key
+    // Look for existing key in the chain
     while (current != nullptr)
     {
         if (current->key == key)
         {
+            // Overwrite existing value by move
             current->value = std::move(value);
             return;
         }
         current = current->next;
     }
 
-    // Insert new node using move semantics
+    // Insert a new node at head using move to construct value
     Node *newNode = new Node(key, std::move(value));
     newNode->next = table[index];
     table[index] = newNode;
-    count++;
+    ++count;
 
-    // Resize if load factor exceeded
-    if (static_cast<float>(count) / capacity > loadFactorLimit)
+    // Resize if load factor threshold exceeded
+    if (static_cast<float>(count) / static_cast<float>(capacity) > loadFactorLimit)
     {
         resize();
     }
 }
 
-// Retrieves reference to value by key (throws if not found)
+// Get mutable reference to value for key. Throws if key not present.
 template <typename K, typename V>
 V &HashTable<K, V>::get(const K &key)
 {
     size_t index = hash(key);
     Node *current = table[index];
 
+    // Traverse bucket chain to find matching key
     while (current != nullptr)
     {
         if (current->key == key)
         {
-            return current->value;
+            return current->value; // Return reference to stored value
         }
         current = current->next;
     }
 
+    // If we reach here, key was not found
     throw std::runtime_error("Key not found in hash table");
 }
 
-// Const version of get()
+// Const version of get() for read-only tables.
 template <typename K, typename V>
 const V &HashTable<K, V>::get(const K &key) const
 {
@@ -316,7 +339,7 @@ const V &HashTable<K, V>::get(const K &key) const
     throw std::runtime_error("Key not found in hash table");
 }
 
-// Returns value or default if key is missing
+// Return value for key if present; otherwise return copy of defaultValue.
 template <typename K, typename V>
 V HashTable<K, V>::getOrDefault(const K &key, const V &defaultValue) const
 {
@@ -327,15 +350,16 @@ V HashTable<K, V>::getOrDefault(const K &key, const V &defaultValue) const
     {
         if (current->key == key)
         {
-            return current->value;
+            return current->value; // Return found value by copy
         }
         current = current->next;
     }
 
+    // Key not found: return provided default value
     return defaultValue;
 }
 
-// Checks whether a key exists
+// Check if key exists in table by scanning the appropriate bucket chain.
 template <typename K, typename V>
 bool HashTable<K, V>::contains(const K &key) const
 {
@@ -354,7 +378,7 @@ bool HashTable<K, V>::contains(const K &key) const
     return false;
 }
 
-// Removes a key-value pair if found
+// Remove key-value pair from table if present. Returns true if removal happened.
 template <typename K, typename V>
 bool HashTable<K, V>::remove(const K &key)
 {
@@ -362,31 +386,35 @@ bool HashTable<K, V>::remove(const K &key)
     Node *current = table[index];
     Node *prev = nullptr;
 
+    // Traverse chain while tracking previous pointer
     while (current != nullptr)
     {
         if (current->key == key)
         {
-            // Remove node from chain
+            // Adjust bucket head or previous->next to skip current
             if (prev == nullptr)
             {
-                table[index] = current->next;
+                table[index] = current->next; // Removing head of bucket
             }
             else
             {
-                prev->next = current->next;
+                prev->next = current->next; // Removing node in middle/end
             }
-            delete current;
-            count--;
+
+            delete current; // Free removed node
+            --count;
             return true;
         }
+
         prev = current;
         current = current->next;
     }
 
+    // Key not found
     return false;
 }
 
-// Clears all elements from the table
+// Delete all nodes from all buckets and reset count to zero.
 template <typename K, typename V>
 void HashTable<K, V>::clear()
 {
@@ -397,52 +425,58 @@ void HashTable<K, V>::clear()
         {
             Node *temp = current;
             current = current->next;
-            delete temp;
+            delete temp; // Free node
         }
-        table[i] = nullptr;
+        table[i] = nullptr; // Bucket now empty
     }
+
     count = 0;
 }
 
-// Returns current number of key-value pairs
+// Return how many key-value pairs are stored.
 template <typename K, typename V>
 size_t HashTable<K, V>::size() const
 {
     return count;
 }
 
-// Checks if table contains no elements
+// True if no key-value pairs stored.
 template <typename K, typename V>
 bool HashTable<K, V>::isEmpty() const
 {
     return count == 0;
 }
 
-// Access or create a key-value pair using operator[]
+// Access value for key, inserting a default-constructed value if key not present.
 template <typename K, typename V>
 V &HashTable<K, V>::operator[](const K &key)
 {
     if (!contains(key))
     {
+        // Insert a new key with default-constructed value
         insert(key, V());
     }
-    return get(key);
+    return get(key); // Now guaranteed to exist
 }
 
-// Returns all key-value pairs as an array of pairs
+// Return all key-value pairs as an array of std::pair<K, V>.
+// outCount is set to number of elements, and the caller owns the returned array.
 template <typename K, typename V>
 std::unique_ptr<std::pair<K, V>[]> HashTable<K, V>::getAllPairs(size_t &outCount) const
 {
     outCount = count;
+
     if (count == 0)
     {
+        // Return null pointer when table is empty
         return nullptr;
     }
 
+    // Allocate array big enough for all pairs
     auto result = std::make_unique<std::pair<K, V>[]>(count);
-    size_t index = 0;
+    size_t index = 0; // Current index in result array
 
-    // Copy all pairs into result array
+    // Copy each key-value pair from every bucket chain
     for (size_t i = 0; i < capacity; ++i)
     {
         Node *current = table[i];
@@ -456,25 +490,24 @@ std::unique_ptr<std::pair<K, V>[]> HashTable<K, V>::getAllPairs(size_t &outCount
     return result;
 }
 
-// Returns number of buckets currently allocated
+// Number of buckets allocated in this hash table.
 template <typename K, typename V>
 size_t HashTable<K, V>::bucketCount() const
 {
     return capacity;
 }
 
-// Returns current load factor
+// Compute current load factor (ratio of entries to buckets).
 template <typename K, typename V>
 float HashTable<K, V>::loadFactor() const
 {
     if (capacity == 0)
-    {
         return 0.0f;
-    }
+
     return static_cast<float>(count) / static_cast<float>(capacity);
 }
 
-// Returns bucket index that stores the provided key
+// Return bucket index where key currently lives; throws if key not present.
 template <typename K, typename V>
 size_t HashTable<K, V>::bucketIndex(const K &key) const
 {
@@ -485,7 +518,7 @@ size_t HashTable<K, V>::bucketIndex(const K &key) const
     {
         if (current->key == key)
         {
-            return index;
+            return index; // We found the key in this bucket
         }
         current = current->next;
     }
@@ -493,11 +526,12 @@ size_t HashTable<K, V>::bucketIndex(const K &key) const
     throw std::runtime_error("Key not found in hash table");
 }
 
-// Counts buckets that contain at least one node
+// Count how many buckets are non-empty (contain at least one node).
 template <typename K, typename V>
 size_t HashTable<K, V>::nonEmptyBucketCount() const
 {
     size_t used = 0;
+
     for (size_t i = 0; i < capacity; ++i)
     {
         if (table[i] != nullptr)
@@ -505,39 +539,46 @@ size_t HashTable<K, V>::nonEmptyBucketCount() const
             ++used;
         }
     }
+
     return used;
 }
 
-// Computes the longest linked-list chain length
+// Compute the maximum length of any bucket's linked-list chain.
 template <typename K, typename V>
 size_t HashTable<K, V>::longestChainLength() const
 {
     size_t maxLength = 0;
+
     for (size_t i = 0; i < capacity; ++i)
     {
         size_t length = 0;
         Node *current = table[i];
+
         while (current != nullptr)
         {
             ++length;
             current = current->next;
         }
+
         if (length > maxLength)
         {
             maxLength = length;
         }
     }
+
     return maxLength;
 }
 
-// Computes the average chain length for populated buckets
+// Compute average chain length across only the buckets that are populated.
 template <typename K, typename V>
 double HashTable<K, V>::averageChainLength() const
 {
     size_t usedBuckets = nonEmptyBucketCount();
     if (usedBuckets == 0)
     {
-        return 0.0;
+        return 0.0; // Avoid division by zero when table is empty
     }
+
+    // Average chain size is total nodes divided by number of non-empty buckets
     return static_cast<double>(count) / static_cast<double>(usedBuckets);
 }

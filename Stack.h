@@ -1,198 +1,202 @@
 #pragma once
 
-#include <iostream>  // For potential debugging/logging hooks
-#include <stdexcept> // For consistent exception reporting
+#include <iostream>  // For optional debugging/logging
+#include <stdexcept> // For exceptions
 #include "Constants.h"
 
 // Template class implementing a basic stack using a singly linked list.
-// Provides push/pop, indexed peek, top access, clear, and move semantics with
-// predictable O(1) operations for the common stack behaviors.
 template <typename T>
 class Stack
 {
 private:
-    // Node structure for stack elements
+    // Node structure holding one stack element and a pointer to the next node.
     struct Node
     {
-        T data;                                                                               // Payload stored in this node
-        Node *next;                                                                           // Pointer to the node below the current one
-        Node(const T &value, Node *nextNode = nullptr) : data(value), next(nextNode) {}       // Copy constructor retains caller data
-        Node(T &&value, Node *nextNode = nullptr) : data(std::move(value)), next(nextNode) {} // Move constructor for efficiency on temporaries
+        T data;     // Stored value
+        Node *next; // Pointer to the node below this one
+
+        Node(const T &value, Node *nextNode = nullptr); // Copy constructor
+        Node(T &&value, Node *nextNode = nullptr);      // Move constructor
     };
 
-    Node *topNode; // Pointer to the stack's head (most recently pushed element)
-    int count;     // Number of elements currently stored (helps implement O(1) size/peek checks)
+    Node *topNode; // Pointer to the top node in the stack
+    int count;     // Number of stored elements
 
 public:
-    Stack();                                  // Default constructor initializes an empty stack
-    ~Stack();                                 // Destructor clears all nodes to avoid leaks
-    Stack(const Stack &) = delete;            // Disable copy constructor
+    Stack();  // Default constructor creates an empty stack
+    ~Stack(); // Destructor clears all nodes
+
+    Stack(const Stack &) = delete;            // Disable copying
     Stack &operator=(const Stack &) = delete; // Disable copy assignment
 
-    Stack(Stack &&other) noexcept;            // Move constructor transfers ownership
-    Stack &operator=(Stack &&other) noexcept; // Move assignment steals nodes
+    Stack(Stack &&other) noexcept;            // Move constructor
+    Stack &operator=(Stack &&other) noexcept; // Move assignment
 
-    void push(const T &value); // Push element by copying value
-    void push(T &&value);      // Push element by moving value
+    void push(const T &value); // Push an element by copy
+    void push(T &&value);      // Push an element by move
 
-    void pop(); // Pop top element, throwing if empty
+    void pop(); // Remove top element, throws if empty
 
-    T &top();             // Non-const access to top element
-    const T &top() const; // Const access to top element
+    T &top();             // Non-const reference to top element
+    const T &top() const; // Const reference to top element
 
-    T &peek(int level);             // Peek element at specific level from top
-    const T &peek(int level) const; // Const peek
+    T &peek(int level);             // Peek element deeper in the stack
+    const T &peek(int level) const; // Const version of peek
 
-    bool isEmpty() const; // Check if stack is empty
-    int size() const;     // Number of stored elements
-    void clear();         // Remove all nodes
+    bool isEmpty() const; // True if stack is empty
+    int size() const;     // Number of stored nodes
+    void clear();         // Delete all nodes
 };
 
-// ---------- Implementation ----------
+// -------------------- Implementation --------------------
 
-// Default constructor initializes an empty stack (null head, zero count).
+// Node copy constructor
 template <typename T>
-Stack<T>::Stack() : topNode(nullptr), count(0) {}
+Stack<T>::Node::Node(const T &value, Node *nextNode)
+    : data(value), next(nextNode) // Store a copy of the value and link node
+{
+}
 
-// Destructor clears all nodes to avoid leaks.
+// Node move constructor
+template <typename T>
+Stack<T>::Node::Node(T &&value, Node *nextNode)
+    : data(std::move(value)), next(nextNode) // Move payload and link
+{
+}
+
+// Default constructor
+template <typename T>
+Stack<T>::Stack()
+    : topNode(nullptr), count(0) // Start with empty stack
+{
+}
+
+// Destructor
 template <typename T>
 Stack<T>::~Stack()
 {
-    clear();
+    clear(); // Release all nodes
 }
 
-// Move constructor transfers ownership of the node chain from another stack.
+// Move constructor: steal node chain
 template <typename T>
-Stack<T>::Stack(Stack &&other) noexcept : topNode(other.topNode), count(other.count)
+Stack<T>::Stack(Stack &&other) noexcept
+    : topNode(other.topNode), count(other.count)
 {
-    other.topNode = nullptr;
+    other.topNode = nullptr; // Reset donor
     other.count = 0;
 }
 
-// Move assignment operator clears current contents and steals nodes.
+// Move assignment operator: clear then steal
 template <typename T>
 Stack<T> &Stack<T>::operator=(Stack &&other) noexcept
 {
     if (this != &other)
     {
-        clear(); // delete current nodes before stealing
+        clear(); // Remove current nodes
         topNode = other.topNode;
         count = other.count;
-        other.topNode = nullptr;
+
+        other.topNode = nullptr; // Leave other empty
         other.count = 0;
     }
     return *this;
 }
 
-// Push element by copying value to the top of the stack.
-// The new node becomes the new head and the previous head becomes its next pointer.
+// Push by copying value
 template <typename T>
 void Stack<T>::push(const T &value)
 {
-    Node *newNode = new Node(value, topNode); // new node points to previous head
+    Node *newNode = new Node(value, topNode); // New node becomes top
     topNode = newNode;
     ++count;
 }
 
-// Push element by moving value to the top of the stack.
-// Useful when the caller owns a temporary and wants to avoid a copy.
+// Push by moving value
 template <typename T>
 void Stack<T>::push(T &&value)
 {
-    Node *newNode = new Node(std::move(value), topNode); // move payload to new head
+    Node *newNode = new Node(std::move(value), topNode);
     topNode = newNode;
     ++count;
 }
 
-// Pop top element from stack, throwing if the stack is empty.
-// The removed node is deleted and the next node becomes the new head.
+// Pop removes top element
 template <typename T>
 void Stack<T>::pop()
 {
     if (isEmpty())
-    {
         throw std::runtime_error("Stack::pop() called on empty stack");
-    }
-    Node *oldTop = topNode;  // keep pointer so we can delete after relinking
-    topNode = topNode->next; // drop one level down the stack
-    delete oldTop;           // free node memory
+
+    Node *oldTop = topNode;  // Save node to delete
+    topNode = topNode->next; // Move down one level
+    delete oldTop;           // Free memory
     --count;
 }
 
-// Access top element (non-const) and throw if empty.
-// Returned reference aliases the stored data; caller should avoid holding it past pop().
+// Access non-const top element
 template <typename T>
 T &Stack<T>::top()
 {
     if (isEmpty())
-    {
         throw std::runtime_error("Stack::top() called on empty stack");
-    }
+
     return topNode->data;
 }
 
-// Access top element (const) and throw if empty.
-// Allows const stacks to inspect the head element without mutation.
+// Access const top element
 template <typename T>
 const T &Stack<T>::top() const
 {
     if (isEmpty())
-    {
         throw std::runtime_error("Stack::top() called on empty stack");
-    }
+
     return topNode->data;
 }
 
-// Peek element at specific level from top (0 == top), throwing for invalid level.
-// Useful for debugging the stack or rendering state without popping.
+// Peek deeper into stack (0 = top)
 template <typename T>
 T &Stack<T>::peek(int level)
 {
     if (level < 0 || level >= count)
-    {
         throw std::out_of_range("Stack::peek() level out of range");
-    }
+
     Node *current = topNode;
-    for (int i = 0; i < level; ++i) // walk down until we reach desired depth
-    {
+    for (int i = 0; i < level; ++i)
         current = current->next;
-    }
+
     return current->data;
 }
 
-// Const version of peek with the same bounds checking.
+// Const peek
 template <typename T>
 const T &Stack<T>::peek(int level) const
 {
     if (level < 0 || level >= count)
-    {
         throw std::out_of_range("Stack::peek() level out of range");
-    }
+
     Node *current = topNode;
-    for (int i = 0; i < level; ++i) // walk down until we reach desired depth
-    {
+    for (int i = 0; i < level; ++i)
         current = current->next;
-    }
+
     return current->data;
 }
 
-// Check if stack is empty.
-// Equivalent to checking count == 0 but avoids depending on an int comparison.
+// Check if empty
 template <typename T>
 bool Stack<T>::isEmpty() const
 {
     return topNode == nullptr;
 }
 
-// Return number of elements currently stored.
+// Number of elements
 template <typename T>
 int Stack<T>::size() const
 {
     return count;
 }
 
-// Clear all elements in the stack, deleting allocated nodes.
-// Safe to call even if the stack is already empty.
+// Clear all nodes
 template <typename T>
 void Stack<T>::clear()
 {

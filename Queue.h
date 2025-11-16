@@ -4,7 +4,7 @@
 #include <utility>
 
 // Simple templated linked-list queue implementation.
-// Supports enqueue/dequeue, iteration through forEach, and conditional removal.
+// Supports enqueue/dequeue, iteration (forEach), and conditional removal (removeIf).
 template <typename T>
 class Queue
 {
@@ -12,81 +12,83 @@ private:
     // Node struct represents one queue element
     struct Node
     {
-        T data;     // Stored data value
-        Node *next; // Pointer to next node in the queue
+        T data;     // Stored data in this node
+        Node *next; // Pointer to next node in queue
 
-        Node(const T &value); // Copy-construct node from value
-        Node(T &&value);      // Move-construct node from value
+        Node(const T &value); // Constructor for copying value
+        Node(T &&value);      // Constructor for moving value
     };
 
-    Node *frontNode; // Pointer to current front element
-    Node *rearNode;  // Pointer to current rear element
-    int count;       // Number of stored elements
+    Node *frontNode; // Pointer to first element in the queue
+    Node *rearNode;  // Pointer to last element in the queue
+    int count;       // Number of elements currently stored
 
 public:
-    Queue();  // Default constructor initializes empty queue.
-    ~Queue(); // Destructor clears all elements to avoid leaks.
+    Queue();  // Creates an empty queue
+    ~Queue(); // Frees all nodes to avoid memory leaks
 
-    void enqueue(const T &value); // Add element by copy to the back
-    void enqueue(T &&value);      // Add element by move to the back
+    void enqueue(const T &value); // Add element to back (copy)
+    void enqueue(T &&value);      // Add element to back (move)
 
-    void dequeue(); // Remove front element, throwing if empty
+    void dequeue(); // Remove the front element, throws if empty
 
-    T &front();             // Non-const access to front element
-    const T &front() const; // Const access to front element
+    T &front();             // Get reference to front element (non-const)
+    const T &front() const; // Get reference to front element (const)
 
-    bool isEmpty() const; // Check if queue is empty
-    int size() const;     // Get queue size
-    void clear();         // Remove all elements
+    bool isEmpty() const; // Returns true if queue is empty
+    int size() const;     // Returns the number of stored elements
+    void clear();         // Delete all nodes
 
     template <typename Func>
     void forEach(Func func); // Apply function to each element
 
     template <typename Predicate>
-    void removeIf(Predicate pred); // Remove elements satisfying predicate
+    void removeIf(Predicate pred); // Remove all elements matching predicate
 };
 
 // ---------- Implementation ----------
 
-// Copy-construct node from value and point to null by default.
+// Copy-construct node from value and set next to nullptr.
 template <typename T>
 Queue<T>::Node::Node(const T &value) : data(value), next(nullptr) {}
 
-// Move-construct node from value.
+// Move-construct node from value and set next to nullptr.
 template <typename T>
 Queue<T>::Node::Node(T &&value) : data(std::move(value)), next(nullptr) {}
 
-// Default constructor initializes empty queue.
+// Initialize an empty queue with null pointers and count = 0.
 template <typename T>
 Queue<T>::Queue() : frontNode(nullptr), rearNode(nullptr), count(0) {}
 
-// Destructor clears all elements to avoid leaks.
+// Destructor deletes all nodes to prevent memory leaks.
 template <typename T>
 Queue<T>::~Queue()
 {
-    clear();
+    clear(); // Removes every node safely
 }
 
-// Add element by copy (value preserved) to the back of the queue.
+// Add element by copying and attach it at the end of the queue.
 template <typename T>
 void Queue<T>::enqueue(const T &value)
 {
-    Node *newNode = new Node(value);
+    Node *newNode = new Node(value); // Allocate a new node
 
     if (isEmpty())
     {
-        frontNode = rearNode = newNode; // first element sets both pointers
+        // If queue is empty, front and rear become the new node
+        frontNode = rearNode = newNode;
     }
     else
     {
+        // Otherwise append to rear
         rearNode->next = newNode;
         rearNode = newNode;
     }
 
-    count++;
+    count++; // Increase size
 }
 
-// Add element by move (value reused) to the back of the queue.
+// Add element by move semantics (avoids copying large objects).
 template <typename T>
 void Queue<T>::enqueue(T &&value)
 {
@@ -105,7 +107,7 @@ void Queue<T>::enqueue(T &&value)
     count++;
 }
 
-// Remove front element, throwing if queue is empty.
+// Remove the element at the front of the queue. Throws if the queue is empty.
 template <typename T>
 void Queue<T>::dequeue()
 {
@@ -114,19 +116,19 @@ void Queue<T>::dequeue()
         throw std::runtime_error("Queue is empty - cannot dequeue");
     }
 
-    Node *temp = frontNode;
-    frontNode = frontNode->next;
+    Node *temp = frontNode;      // Store node to delete
+    frontNode = frontNode->next; // Move front pointer forward
 
     if (frontNode == nullptr)
     {
-        rearNode = nullptr; // queue became empty, reset rear as well
+        rearNode = nullptr; // Queue is now empty
     }
 
-    delete temp;
-    count--;
+    delete temp; // Free old front node
+    count--;     // Decrease size
 }
 
-// Return reference to front element (non-const).
+// Returns reference to the front data (modifiable).
 template <typename T>
 T &Queue<T>::front()
 {
@@ -137,7 +139,7 @@ T &Queue<T>::front()
     return frontNode->data;
 }
 
-// Const version of front(), still throwing if empty.
+// Returns reference to front data (read-only).
 template <typename T>
 const T &Queue<T>::front() const
 {
@@ -148,44 +150,44 @@ const T &Queue<T>::front() const
     return frontNode->data;
 }
 
-// Check if queue is empty.
+// Returns true if queue has no elements.
 template <typename T>
 bool Queue<T>::isEmpty() const
 {
     return frontNode == nullptr;
 }
 
-// Get queue size (number of stored items).
+// Returns number of nodes stored.
 template <typename T>
 int Queue<T>::size() const
 {
     return count;
 }
 
-// Remove all elements by repeatedly dequeuing.
+// Removes every node in the queue.
 template <typename T>
 void Queue<T>::clear()
 {
     while (!isEmpty())
     {
-        dequeue();
+        dequeue(); // Reuse dequeue() to delete nodes safely
     }
 }
 
-// Apply function to each element in order without modifying the queue.
+// Execute function 'func' on every node's data.
 template <typename T>
 template <typename Func>
 void Queue<T>::forEach(Func func)
 {
-    Node *current = frontNode;
+    Node *current = frontNode; // Start at front
     while (current != nullptr)
     {
-        func(current->data);
-        current = current->next;
+        func(current->data);     // Apply function to current element
+        current = current->next; // Move to next
     }
 }
 
-// Remove elements satisfying predicate while preserving relative order of remaining nodes.
+// Remove all elements where predicate(pred(data)) returns true.
 template <typename T>
 template <typename Predicate>
 void Queue<T>::removeIf(Predicate pred)
@@ -195,34 +197,41 @@ void Queue<T>::removeIf(Predicate pred)
 
     while (current != nullptr)
     {
-        Node *next = current->next;
+        Node *next = current->next; // Save next pointer before modifications
+
         if (pred(current->data))
         {
+            // Node must be removed
             if (previous == nullptr)
             {
+                // Removing the first node
                 frontNode = next;
+
                 if (frontNode == nullptr)
                 {
-                    rearNode = nullptr;
+                    rearNode = nullptr; // Queue now empty
                 }
             }
             else
             {
+                // Removing node in the middle or end
                 previous->next = next;
+
                 if (current == rearNode)
                 {
-                    rearNode = previous;
+                    rearNode = previous; // Update rear if needed
                 }
             }
 
-            delete current;
-            count--;
+            delete current; // Free memory
+            count--;        // Adjust size
         }
         else
         {
+            // Keep node, move previous pointer
             previous = current;
         }
 
-        current = next;
+        current = next; // Move forward
     }
 }

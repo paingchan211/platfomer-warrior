@@ -97,20 +97,33 @@ bool ResourceManager::loadFont()
 // Loads general textures into the texture hash table
 bool ResourceManager::loadTextures()
 {
-    // Lambda function for inserting textures into hash table
+    // Lambda function responsible for loading a texture from disk
+    // and inserting it into the texture hash table.
     auto loadAndInsert = [this](const std::string &name, const char *path) -> bool
     {
+        // Create a new texture on the heap using a unique_ptr
         auto texture = std::make_unique<sf::Texture>();
+
+        // Attempt to load texture from the specified file path
         if (!texture->loadFromFile(path))
         {
+            // Print an error message if loading fails
             std::cerr << "Failed to load texture: " << path << std::endl;
-            return false;
+            return false; // Stop insertion since texture is invalid
         }
-        size_t previousSize = textureMap.size();
-        size_t previousBucketCount = textureMap.bucketCount();
+
+        // Record table statistics *before* insertion
+        size_t previousSize = textureMap.size();               // Number of textures currently stored
+        size_t previousBucketCount = textureMap.bucketCount(); // Current number of hash table buckets
+
+        // Insert the newly loaded texture into the hash table
+        // Uses move semantics to transfer ownership of the unique_ptr
         textureMap.insert(name, std::move(texture));
+
+        // Log information about the insertion (size change, resizing, etc.)
         logTextureInsertion(name, previousSize, previousBucketCount);
-        return true;
+
+        return true; // Successfully loaded and inserted
     };
 
     // Load all required textures
@@ -443,20 +456,35 @@ void ResourceManager::printHashTableStats() const
 }
 
 // Gets a texture by its name from the hash table
+// Gets a texture by its name from the hash table
 sf::Texture &ResourceManager::getTexture(const std::string &name)
 {
+    // Record the start time of the lookup for performance measurement
     auto start = std::chrono::steady_clock::now();
+
     try
     {
+        // Attempt to retrieve the stored unique_ptr<sf::Texture> from the hash table
         std::unique_ptr<sf::Texture> &texture = textureMap.get(name);
+
+        // Calculate lookup duration in nanoseconds
         long long lookupNs =
-            std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - start).count();
+            std::chrono::duration_cast<std::chrono::nanoseconds>(
+                std::chrono::steady_clock::now() - start)
+                .count();
+
+        // Log the successful lookup along with timing information
         logTextureLookup(name, lookupNs);
+
+        // Return the actual sf::Texture object by dereferencing the unique_ptr
         return *texture;
     }
     catch (const std::runtime_error &)
     {
+        // If key is missing, print an error message to the debug console
         std::cerr << "ERROR: Texture '" << name << "' not found in hash table!" << std::endl;
+
+        // Return a safe fallback texture (“floor”) instead of crashing
         return *textureMap.get("floor");
     }
 }
@@ -483,12 +511,18 @@ Animation &ResourceManager::getAnimation(const std::string &name)
 // Returns reference to main font
 sf::Font &ResourceManager::getFont() { return font; }
 
-// Retrieves meteor textures for external use
+// Retrieves meteor textures and writes them into the caller-provided array
 void ResourceManager::getMeteorTextures(sf::Texture *outTextures[5])
 {
+    // Loop through the 5 meteor texture names: "meteor_1" → "meteor_5"
     for (int i = 0; i < 5; ++i)
     {
+        // Construct the texture key used in the hash table
         std::string name = "meteor_" + std::to_string(i + 1);
+
+        // Retrieve the texture using the getTexture() method,
+        // which performs a hash table lookup and returns a reference.
+        // The returned reference is converted to a pointer for storage.
         outTextures[i] = &getTexture(name);
     }
 }
