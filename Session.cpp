@@ -1015,13 +1015,15 @@ void Session::renderStateStack()
     cameraController.applyToWindow(window);
 }
 
-// ==============================
-// Combat Log + Floating Text Helpers
-// ==============================
+// Combat Log Management Functions
+// These functions demonstrate how the SinglyLinkedList is used in practice
 
+// Add a new combat event message to the log
+// Automatically maintains maximum capacity by removing oldest entries
 void Session::addCombatLog(const std::string &message)
 {
-    // Append new message
+    // Step 1: Append new message to the end of the log (newest entry)
+    // This uses pushBack() which is O(1) due to tail pointer
     combatLog.pushBack(message);
     if (combatLogStdoutEnabled)
     {
@@ -1029,15 +1031,16 @@ void Session::addCombatLog(const std::string &message)
         std::cout << "[SinglyLinkedList] [Session] Combat Log Size: " << combatLog.size() << "\n\n";
     }
 
-    // Maintain ring buffer size
+    // Step 2: Check if we exceeded maximum capacity (100 entries)
+    // If so, remove oldest entries from the front to maintain limit
     while (combatLog.size() > MAX_COMBAT_LOG_ENTRIES)
     {
         if (combatLogStdoutEnabled)
         {
             std::cout << "[SinglyLinkedList] [Session] Ring buffer full - removing oldest entry\n";
-            std::cout << "[SinglyLinkedList] [Session] Combat Log Entry Removed: \"" << combatLog.front() << "\"\n";
+            std::cout << "[SinglyLinkedList] [Session] Combat Log Entry Removed: \"" << combatLog.front() << "\"\n"; // Get oldest entry for logging
         }
-        combatLog.popFront();
+        combatLog.popFront(); // Remove oldest entry (O(1))
         if (combatLogStdoutEnabled)
         {
             std::cout << "[SinglyLinkedList] [Session] Combat Log Size: " << combatLog.size()
