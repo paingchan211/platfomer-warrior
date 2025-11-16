@@ -237,10 +237,6 @@ class Character {
 }
 
 class Player {
-- runAnim: Animation*
-- idleAnim: Animation*
-- attack1Anim: Animation*
-- attack2Anim: Animation*
 - currentFrame: int
 - animationTimer: float
 - isRunning: bool
@@ -270,10 +266,9 @@ class Player {
 - hpPotions: int
 - maxHpPotions: int
 + struct LevelUpInfo { bool leveledUp; int newLevel; int hpGained; int damageGained; }
-+ Player(Animation* run, Animation* idle, Animation* atk1, Animation* atk2, float startX, float startY, float charHeight, float grav, float jump)
++ Player(float startX, float startY, float charHeight, float grav, float jump)
 + void update(float dt) override
 + void handleInput(float dt, const KeyBindingManager* keyManager = nullptr, bool sprintDisabled = false)
-+ void updateAnimation(float dt)
 + void updatePhysics(float dt, float groundLevel, Platform** platforms, int platformCount)
 + sf::FloatRect getBounds() const override
 + sf::FloatRect getCollisionBounds() const
@@ -298,7 +293,6 @@ class Player {
 + float getCollisionHeight() const
 + float getCollisionOffsetX() const
 + float getCollisionOffsetY() const
-+ Animation* getCurrentAnimation() const
 + void setFacingRight(bool facing)
 + void resetJumpCount()
 + void attack(int type)
@@ -313,7 +307,6 @@ class Enemy {
 - patrolRight: float
 - movingRight: bool
 - facingRight: bool
-- animation: EnemyAnimation
 - currentFrame: int
 - animationTimer: float
 - velocityY: float
@@ -331,7 +324,7 @@ class Enemy {
 - burnDamage: int
 - burnDuration: float
 - burnTickTimer: float
-+ Enemy(float x, float y, float leftBound, float rightBound, const EnemyAnimation& anim)
++ Enemy(float x, float y, float leftBound, float rightBound)
 + void update(float dt) override
 + void update(float dt, float gravity, const Player& player)
 + sf::FloatRect getBounds() const override
@@ -344,7 +337,6 @@ class Enemy {
 + float getPatrolLeft() const
 + float getPatrolRight() const
 + bool getMovingRight() const
-+ const EnemyAnimation& getAnimation() const
 + bool isFacingRight() const
 + float getAttackRange() const
 + void setVelocityY(float vy)
@@ -360,14 +352,13 @@ class Enemy {
 }
 
 class Boss {
-- bossAnimation: BossAnimation
 - bossState: BossState
 - spawnTimer: float
 - isRegenerating: bool
 - hasRegeneratedOnce: bool
 - regenerationRate: float
 - accumulatedHealing: float
-+ explicit Boss(const BossAnimation& bossAnim)
++ Boss()
 + void spawn(sf::Vector2f spawnPos)
 + void update(float dt, float gravity, const Player& player, bool isEnraged = false)
 + sf::FloatRect getBounds() const override
@@ -377,10 +368,8 @@ class Boss {
 + bool getIsAttacking() const
 + int getAttackFrame() const
 + float getAttackRange() const
-+ const BossAnimation& getAnimation() const
 + void setBossState(BossState newState)
 + sf::FloatRect computeAttackBounds(bool playerOnRight) const
-- static EnemyAnimation* getDummyAnimation()
 }
 
 class Platform {
@@ -536,104 +525,6 @@ Player *-- SkillTree
 SkillTree *-- NTree
 SkillTree --> SkillNode
 
-%% ================= UI & EFFECTS =================
-class FloatingText {
-- text: sf::Text
-- velocity: sf::Vector2f
-- lifetime: float
-- maxLifetime: float
-- baseColor: sf::Color
-+ FloatingText(const sf::Font& font, int damage, sf::Vector2f position, const sf::Color& color = sf::Color::Red, bool isHealing = false)
-+ ~FloatingText()
-+ void update(float dt)
-+ void draw(sf::RenderWindow& window) const
-+ bool isExpired() const
-}
-
-class UISystem {
-- resourceManager: ResourceManager&
-- toastMessage: std::string
-- toastTimer: float
-- toastColor: sf::Color
-+ UISystem(ResourceManager& resourceManager)
-+ ~UISystem()
-+ void renderGameOverScreen(sf::RenderWindow& window, bool gameWon, const Player& player, const std::unique_ptr<std::unique_ptr<Enemy>[]>& enemies, std::size_t enemyCount, const DoublyLinkedList<std::unique_ptr<FireProjectile>>& fireProjectiles, const DoublyLinkedList<std::unique_ptr<HPPotion>>& hpPotions, const DoublyLinkedList<std::unique_ptr<Meteor>>& meteors, const std::unique_ptr<sf::Sprite[]>& floorTiles, std::size_t floorTileCount, const std::unique_ptr<std::unique_ptr<Platform>[]>& platforms, std::size_t platformCount)
-+ void renderPlayerEntity(sf::RenderWindow& window, const Player& player, bool rageModeActive)
-+ void renderEnemyEntity(sf::RenderWindow& window, const Enemy& enemy)
-+ void renderBossEntity(sf::RenderWindow& window, const Boss& boss, bool bossRageModeActive)
-+ void renderPlatformEntity(sf::RenderWindow& window, const Platform& platform)
-+ void renderHPPotionEntity(sf::RenderWindow& window, const HPPotion& potion)
-+ void renderFireProjectileEntity(sf::RenderWindow& window, const FireProjectile& projectile)
-+ void renderIceProjectileEntity(sf::RenderWindow& window, const IceProjectile& projectile)
-+ void renderMeteorEntity(sf::RenderWindow& window, const Meteor& meteor)
-+ void renderHUD(sf::RenderWindow& window, const Player& player, int projectileAmmo, float projectileCooldown, int specialAttackAmmo, float specialAttackCooldown, bool isFireProjectile, bool rageMode = false, bool meteorFuryMode = false, bool bossRageMode = false)
-+ void renderEnemyHealthBar(sf::RenderWindow& window, const Enemy& enemy, const sf::Vector2f& frameSize)
-+ void renderEnemyStatusEffects(sf::RenderWindow& window, const Enemy& enemy)
-+ void renderBossHealthBar(sf::RenderWindow& window, const Boss& boss, const sf::Vector2f& frameSize, float scale)
-+ void renderBossStatusEffects(sf::RenderWindow& window, const Boss& boss, bool bossRageMode)
-+ void renderCenteredAlert(sf::RenderWindow& window, const std::string& message, float yOffset, const sf::Color& textColor, const sf::Color& boxColor, unsigned int fontSize = 28)
-+ void renderCurrentMenus(sf::RenderWindow& window, sf::View& camera, const Stack<GameStateData>& stateStack, Player* player, Boss* boss, SinglyLinkedList<std::string>& combatLog, int combatLogCurrentNode, int combatLogTraversalCount, int combatLogDeleteCount, const KeyBindingManager* keyManager = nullptr)
-+ void renderMainMenu(sf::RenderWindow& window, const GameStateData& mainMenuState)
-+ void renderPauseMenu(sf::RenderWindow& window, const GameStateData& pauseState)
-+ void renderLowHpWarning(sf::RenderWindow& window, float lowHpWarningTimer, const Player* player)
-+ void renderInventoryScreen(sf::RenderWindow& window, const Player* player)
-+ void renderPlayerStatsScreen(sf::RenderWindow& window, const Player* player)
-+ void renderInventoryOnlyScreen(sf::RenderWindow& window, const Player* player)
-+ void renderSkillTreeScreen(sf::RenderWindow& window, const Player* player, int selectedSkillIndex = 1)
-+ void renderHelpScreen(sf::RenderWindow& window)
-+ void renderCombatLog(sf::RenderWindow& window, SinglyLinkedList<std::string>& combatLog, int combatLogCurrentNode, int combatLogTraversalCount, int combatLogDeleteCount)
-+ void renderSettingsMenu(sf::RenderWindow& window, const GameStateData& settingsState)
-+ void renderAudioSettings(sf::RenderWindow& window, const GameStateData& audioState)
-+ void renderControlsMenu(sf::RenderWindow& window, const GameStateData& controlsState, const KeyBindingManager& keyManager)
-+ void renderConfirmDialog(sf::RenderWindow& window, const GameStateData& confirmState)
-+ void renderSaveGameMenu(sf::RenderWindow& window, const GameStateData& saveState, SaveGameManager* saveManager = nullptr)
-+ void renderLoadGameMenu(sf::RenderWindow& window, const GameStateData& loadState, SaveGameManager* saveManager = nullptr)
-+ void showToast(const std::string& message, sf::Color color = sf::Color::White)
-+ void updateToast(float dt)
-+ void renderToast(sf::RenderWindow& window)
-+ static sf::RectangleShape makeBar(sf::Vector2f position, sf::Vector2f size, const sf::Color& fill, const sf::Color& outline, float outlineThickness)
-+ static sf::Sprite makeTintedSprite(const sf::Sprite& sprite, const sf::Color& tint)
-- void renderHealthBar(sf::RenderWindow& window, const Player& player)
-- void renderXPBar(sf::RenderWindow& window, const Player& player)
-- void renderInventoryDisplay(sf::RenderWindow& window, const Player& player)
-- void renderProjectileAmmo(sf::RenderWindow& window, int ammo, float cooldown, const Player& player, bool isFireProjectile)
-- void renderSpecialAttackAmmo(sf::RenderWindow& window, int ammo, float cooldown, bool unlocked)
-- void renderControlsText(sf::RenderWindow& window)
-}
-
-class DebugRenderer {
-- window: sf::RenderWindow&
-- OUTLINE_THICKNESS: static constexpr float = 2.f
-+ explicit DebugRenderer(sf::RenderWindow& window)
-+ void draw(const Player& player)
-+ void draw(const Enemy& enemy)
-+ void draw(const Boss& boss)
-+ void draw(const Platform& platform)
-+ void draw(const HPPotion& potion)
-+ void draw(const FireProjectile& projectile)
-+ void draw(const IceProjectile& projectile)
-+ void draw(const Meteor& meteor)
-- void drawBounds(const sf::FloatRect& bounds, const sf::Color& color) const
-}
-
-Queue *-- FloatingText
-UISystem o--> ResourceManager
-UISystem --> Player
-UISystem --> Boss
-UISystem --> Enemy
-UISystem --> Stack
-UISystem --> GameStateData
-UISystem --> SinglyLinkedList
-UISystem --> KeyBindingManager
-UISystem --> SaveGameManager
-DebugRenderer --> Player
-DebugRenderer --> Enemy
-DebugRenderer --> Boss
-DebugRenderer --> Platform
-DebugRenderer --> HPPotion
-DebugRenderer --> FireProjectile
-DebugRenderer --> IceProjectile
-DebugRenderer --> Meteor
 
 %% ================= SYSTEMS =================
 class CombatSystem {
@@ -827,7 +718,7 @@ class InputManager {
 - combatLogStdoutEnabled: bool
 + InputManager()
 + ~InputManager()
-+ void processEvent(const sf::Event& event, Stack<GameStateData>& stateStack, bool gameOver, Player* player, ResourceManager& resourceManager, SinglyLinkedList<std::string>& combatLog, int& combatLogCurrentNode, int& combatLogTraversalCount, int& combatLogDeleteCount, bool& requestExit, UISystem* uiSystem, KeyBindingManager* keyManager = nullptr, SaveGameManager* saveManager = nullptr)
++ void processEvent(const sf::Event& event, Stack<GameStateData>& stateStack, bool gameOver, Player* player, ResourceManager& resourceManager, SinglyLinkedList<std::string>& combatLog, int& combatLogCurrentNode, int& combatLogTraversalCount, int& combatLogDeleteCount, bool& requestExit, KeyBindingManager* keyManager = nullptr, SaveGameManager* saveManager = nullptr)
 + bool isKeyDown(sf::Keyboard::Key key) const
 + void resetKeyStates()
 + bool isActionPressed(GameAction action, const KeyBindingManager* keyManager = nullptr) const
@@ -848,12 +739,12 @@ class InputManager {
 - void handleGameInput(const sf::Event& event, Stack<GameStateData>& stateStack, bool gameOver, ResourceManager& resourceManager, KeyBindingManager* keyManager = nullptr)
 - void handlePauseMenuInput(const sf::Event& event, Stack<GameStateData>& stateStack, SinglyLinkedList<std::string>& combatLog, int& combatLogCurrentNode, int& combatLogTraversalCount, int& combatLogDeleteCount)
 - void handleSettingsMenuInput(const sf::Event& event, Stack<GameStateData>& stateStack)
-- void handleControlsMenuInput(const sf::Event& event, Stack<GameStateData>& stateStack, KeyBindingManager* keyManager, UISystem* uiSystem)
+- void handleControlsMenuInput(const sf::Event& event, Stack<GameStateData>& stateStack, KeyBindingManager* keyManager)
 - void handleAudioSettingsInput(const sf::Event& event, Stack<GameStateData>& stateStack, ResourceManager& resourceManager)
-- void handleConfirmDialogInput(const sf::Event& event, Stack<GameStateData>& stateStack, Player* player, SaveGameManager* saveManager = nullptr, UISystem* uiSystem = nullptr)
-- void handleSaveGameMenuInput(const sf::Event& event, Stack<GameStateData>& stateStack, Player* player, SaveGameManager* saveManager, UISystem* uiSystem)
-- void handleLoadGameMenuInput(const sf::Event& event, Stack<GameStateData>& stateStack, Player* player, SaveGameManager* saveManager, UISystem* uiSystem)
-- void handleSimpleScreenInput(const sf::Event& event, Stack<GameStateData>& stateStack, Player* player, SinglyLinkedList<std::string>& combatLog, UISystem* uiSystem, KeyBindingManager* keyManager = nullptr)
+- void handleConfirmDialogInput(const sf::Event& event, Stack<GameStateData>& stateStack, Player* player, SaveGameManager* saveManager = nullptr)
+- void handleSaveGameMenuInput(const sf::Event& event, Stack<GameStateData>& stateStack, Player* player, SaveGameManager* saveManager)
+- void handleLoadGameMenuInput(const sf::Event& event, Stack<GameStateData>& stateStack, Player* player, SaveGameManager* saveManager)
+- void handleSimpleScreenInput(const sf::Event& event, Stack<GameStateData>& stateStack, Player* player, SinglyLinkedList<std::string>& combatLog, KeyBindingManager* keyManager = nullptr)
 - void handleCombatLogInput(const sf::Event& event, Stack<GameStateData>& stateStack, SinglyLinkedList<std::string>& combatLog, int& combatLogCurrentNode, int& combatLogTraversalCount, int& combatLogDeleteCount)
 - void appendCombatLogEntry(SinglyLinkedList<std::string>& combatLog, const std::string& message)
 }
@@ -923,7 +814,6 @@ InputManager --> Stack
 InputManager --> Player
 InputManager --> ResourceManager
 InputManager --> SinglyLinkedList
-InputManager --> UISystem
 InputManager --> KeyBindingManager
 InputManager --> SaveGameManager
 SaveGameManager --> Player
