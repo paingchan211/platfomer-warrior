@@ -107,6 +107,7 @@ void Session::resetGame()
 // Main Loop
 // ==============================
 
+// Runs the main application loop
 void Session::run()
 {
     // Abort if initialization fails
@@ -126,6 +127,7 @@ void Session::run()
     {
         processEvents(); // Handle inputs and window events
 
+        // Determine current game state
         GameStateType currentState = getCurrentState();
 
         // Render Main Menu if active
@@ -133,8 +135,10 @@ void Session::run()
         {
             if (!stateStack.isEmpty())
             {
+                // Render main menu overlay
                 uiSystem.renderMainMenu(window, stateStack.top());
             }
+            // Display the rendered frame
             window.display();
             continue;
         }
@@ -1077,50 +1081,51 @@ void Session::clearFloatingTexts(const char *context)
 // State & Flow Control
 // ==============================
 
+// State stack manipulation functions
 void Session::pushState(GameStateType type)
 {
-    // Push a new state with the entry timestamp
+    // Create a new state and record its entry time
     GameStateData newState(type);
     newState.timeEntered = deltaClock.getElapsedTime();
+
+    // Push it onto the state stack
     stateStack.push(newState);
 }
 
 void Session::popState()
 {
-    // Pop if available
+    // Remove the current state if the stack isn't empty
     if (!stateStack.isEmpty())
-    {
         stateStack.pop();
-    }
 }
 
 void Session::changeState(GameStateType type)
 {
-    // Replace current state with a new one
+    // Remove the current state if present
     if (!stateStack.isEmpty())
-    {
         stateStack.pop();
-    }
+
+    // Push the new state
     pushState(type);
 }
 
 GameStateType Session::getCurrentState() const
 {
-    // Default to MainMenu if there's no state yet
+    // If no states exist, default to MainMenu
     if (stateStack.isEmpty())
-    {
         return GameStateType::MainMenu;
-    }
+
+    // Return the type of the top state
     return stateStack.top().type;
 }
 
 bool Session::isGamePaused() const
 {
-    // Paused if top state indicates so
+    // If no states, game isn't paused
     if (stateStack.isEmpty())
-    {
         return false;
-    }
+
+    // Check if the top state's behavior pauses game logic
     return stateStack.top().behavior().pausesGameLogic();
 }
 
