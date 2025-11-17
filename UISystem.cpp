@@ -735,7 +735,7 @@ void UISystem::renderMainMenu(sf::RenderWindow &window,
     window.draw(controlsText);
 }
 
-// Renders whichever menu corresponds to the current state on top of the world view
+// Renders the appropriate UI menu based on the current game state
 void UISystem::renderCurrentMenus(sf::RenderWindow &window,
                                   sf::View &camera,
                                   const Stack<GameStateData> &stateStack,
@@ -747,62 +747,71 @@ void UISystem::renderCurrentMenus(sf::RenderWindow &window,
                                   int combatLogDeleteCount,
                                   const KeyBindingManager *keyManager)
 {
-    // No states -> nothing to draw
+    // If no states exist, nothing to render
     if (stateStack.isEmpty())
         return;
 
-    // Check current state at the top of stack
+    // Get the top-most active state
     GameStateType currentState = stateStack.top().type;
 
-    // Each condition draws its respective menu, then restores the gameplay camera
+    // Render pause menu
     if (currentState == GameStateType::Paused)
     {
         renderPauseMenu(window, stateStack.top());
-        window.setView(camera);
+        window.setView(camera); // Restore gameplay view
     }
 
+    // Render player stats menu
     if (currentState == GameStateType::PlayerStatsScreen)
     {
         renderPlayerStatsScreen(window, player);
         window.setView(camera);
     }
 
+    // Render inventory-only view
     if (currentState == GameStateType::InventoryOnlyScreen)
     {
         renderInventoryOnlyScreen(window, player);
         window.setView(camera);
     }
 
+    // Render help/instructions menu
     if (currentState == GameStateType::HelpScreen)
     {
         renderHelpScreen(window);
         window.setView(camera);
     }
 
+    // Render combat log screen
     if (currentState == GameStateType::CombatLogScreen)
     {
-        renderCombatLog(window, combatLog, combatLogCurrentNode, combatLogTraversalCount, combatLogDeleteCount);
+        renderCombatLog(window, combatLog, combatLogCurrentNode,
+                        combatLogTraversalCount, combatLogDeleteCount);
         window.setView(camera);
     }
 
+    // Render settings menu
     if (currentState == GameStateType::SettingsMenu)
     {
         renderSettingsMenu(window, stateStack.top());
         window.setView(camera);
     }
 
+    // Render audio settings menu
     if (currentState == GameStateType::AudioSettings)
     {
         renderAudioSettings(window, stateStack.top());
         window.setView(camera);
     }
 
+    // Render controls/keybind menu
     if (currentState == GameStateType::ControlsMenu && keyManager)
     {
         renderControlsMenu(window, stateStack.top(), *keyManager);
         window.setView(camera);
     }
 
+    // Render confirmation dialogs (quit, restart, overwrite)
     if (currentState == GameStateType::ConfirmQuitToMenu ||
         currentState == GameStateType::ConfirmRestart ||
         currentState == GameStateType::ConfirmOverwriteSave)
