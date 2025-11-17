@@ -1,8 +1,28 @@
 #pragma once
 
-#include <iostream>  // Optional debugging/logging support
 #include <stdexcept> // For throwing exceptions
 #include "Constants.h"
+
+// Forward declarations so Stack can emit debug info without requiring the full header here
+enum class GameStateType;
+struct GameStateData;
+const char *toString(GameStateType type);
+
+// Default logger does nothing for most stack element types
+template <typename T>
+struct StackDebugLogger
+{
+    static void pushed(const T &) {}
+    static void popped(const T &) {}
+};
+
+// Specialization for GameStateData so we can trace the session state stack
+template <>
+struct StackDebugLogger<GameStateData>
+{
+    static void pushed(const GameStateData &state);
+    static void popped(const GameStateData &state);
+};
 
 // Template class implementing a basic stack using a singly linked list.
 // Stores elements of type T. Supports move semantics but disables copying.
@@ -125,6 +145,7 @@ void Stack<T>::push(const T &value)
     Node *newNode = new Node(value, topNode); // Allocate new node
     topNode = newNode;                        // New node becomes the top
     ++count;
+    StackDebugLogger<T>::pushed(newNode->data);
 }
 
 // Push an element onto the stack by moving the value
@@ -134,6 +155,7 @@ void Stack<T>::push(T &&value)
     Node *newNode = new Node(std::move(value), topNode);
     topNode = newNode;
     ++count;
+    StackDebugLogger<T>::pushed(newNode->data);
 }
 
 // Pop removes the top element from the stack
@@ -145,6 +167,7 @@ void Stack<T>::pop()
 
     Node *oldTop = topNode;  // Save pointer to delete
     topNode = topNode->next; // Move top downward
+    StackDebugLogger<T>::popped(oldTop->data);
     delete oldTop;           // Free removed node
     --count;
 }

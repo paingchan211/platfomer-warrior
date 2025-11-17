@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cmath>
 #include <iostream>
+#include <vector>
 
 // ==============================
 // Constructors / Destructors
@@ -137,6 +138,11 @@ void Session::run()
             {
                 // Render main menu overlay
                 uiSystem.renderMainMenu(window, stateStack.top());
+
+                if (debugMode)
+                {
+                    renderStateStack();
+                }
             }
             // Display the rendered frame
             window.display();
@@ -891,6 +897,9 @@ void Session::renderKeyDisplay()
 
 void Session::renderStateStack()
 {
+    // Preserve the currently active view so we can restore it after drawing
+    sf::View previousView = window.getView();
+
     // Switch to screen-space view for UI overlay
     sf::View screenView(sf::FloatRect(0.f, 0.f, SCREEN_WIDTH, SCREEN_HEIGHT));
     window.setView(screenView);
@@ -965,60 +974,95 @@ void Session::renderStateStack()
         }
     };
 
-    // List the top of the stack downwards
-    float textY = panelY + 40.f;
+    const int maxVisibleStates = 8;
+    const int stackSize = stateStack.size();
+    const int statesToDisplay = std::min(maxVisibleStates, stackSize);
 
-    for (int i = 0; i < 8 && !stateStack.isEmpty(); ++i)
+    if (statesToDisplay <= 0)
+    {
+        window.setView(previousView);
+        return;
+    }
+
+    std::vector<const GameStateData *> visibleStates;
+    visibleStates.reserve(statesToDisplay);
+    for (int depth = 0; depth < statesToDisplay; ++depth)
     {
         try
         {
-            const GameStateData &state = stateStack.peek(i);
-            auto [stateName, stateColor] = getStateInfo(state.type);
-
-            sf::RectangleShape stateBox(sf::Vector2f(panelWidth - 10.f, 28.f));
-            stateBox.setPosition(panelX + 5.f, textY + i * 32.f);
-
-            if (i == 0)
-            {
-                // Highlight the active state
-                stateBox.setFillColor(sf::Color(80, 150, 200, 200));
-                stateBox.setOutlineColor(stateColor);
-                stateBox.setOutlineThickness(2.f);
-            }
-            else
-            {
-                stateBox.setFillColor(sf::Color(40, 60, 90, 150));
-                stateBox.setOutlineColor(sf::Color(60, 90, 120));
-                stateBox.setOutlineThickness(1.f);
-            }
-
-            window.draw(stateBox);
-
-            sf::Text stateText;
-            stateText.setFont(font);
-            stateText.setString(stateName);
-            stateText.setCharacterSize(18);
-            stateText.setFillColor(stateColor);
-
-            if (i == 0)
-            {
-                stateText.setStyle(sf::Text::Bold);
-            }
-
-            sf::FloatRect textBounds = stateText.getLocalBounds();
-            float boxCenterX = panelX + 5.f + (panelWidth - 10.f) / 2.f;
-            stateText.setOrigin(textBounds.width / 2.f, 0.f);
-            stateText.setPosition(boxCenterX, textY + i * 32.f + 5.f);
-            window.draw(stateText);
+            visibleStates.push_back(&stateStack.peek(depth));
         }
         catch (const std::exception &)
         {
-            break; // If peek beyond size throws, stop rendering list
+            break;
         }
     }
 
-    // Restore world camera after screen-space drawing
-    cameraController.applyToWindow(window);
+    if (visibleStates.empty())
+    {
+        window.setView(previousView);
+        return;
+    }
+
+    const float entryHeight = 28.f;
+    const float entrySpacing = 32.f;
+    const float listTopPadding = 40.f;
+    const float listBottomPadding = 12.f;
+    const float bottomRowY = panelY + panelHeight - listBottomPadding - entryHeight;
+
+    float desiredStartY = bottomRowY - (static_cast<float>(visibleStates.size()) - 1.f) * entrySpacing;
+    float startY = std::max(panelY + listTopPadding, desiredStartY);
+
+    if (visibleStates.size() == 1)
+    {
+        startY = bottomRowY;
+    }
+
+    for (std::size_t i = 0; i < visibleStates.size(); ++i)
+    {
+        const GameStateData &state = *visibleStates[i];
+        auto [stateName, stateColor] = getStateInfo(state.type);
+        float rowY = startY + static_cast<float>(i) * entrySpacing;
+
+        sf::RectangleShape stateBox(sf::Vector2f(panelWidth - 10.f, entryHeight));
+        stateBox.setPosition(panelX + 5.f, rowY);
+
+        if (i == 0)
+        {
+            // Highlight the active state
+            stateBox.setFillColor(sf::Color(80, 150, 200, 200));
+            stateBox.setOutlineColor(stateColor);
+            stateBox.setOutlineThickness(2.f);
+        }
+        else
+        {
+            stateBox.setFillColor(sf::Color(40, 60, 90, 150));
+            stateBox.setOutlineColor(sf::Color(60, 90, 120));
+            stateBox.setOutlineThickness(1.f);
+        }
+
+        window.draw(stateBox);
+
+        sf::Text stateText;
+        stateText.setFont(font);
+        stateText.setString(stateName);
+        stateText.setCharacterSize(18);
+        stateText.setFillColor(stateColor);
+
+        if (i == 0)
+        {
+            stateText.setStyle(sf::Text::Bold);
+        }
+
+        sf::FloatRect textBounds = stateText.getLocalBounds();
+        float boxCenterX = panelX + 5.f + (panelWidth - 10.f) / 2.f;
+        stateText.setOrigin(textBounds.width / 2.f, 0.f);
+        stateText.setPosition(boxCenterX, rowY + 5.f);
+        window.draw(stateText);
+    }
+
+    // Restore whichever view was active before we drew the overlay
+    window.setView(previousView);
 }
 
 // Combat Log Management Functions

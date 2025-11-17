@@ -1,6 +1,18 @@
 #include "GameState.h"
+#include "Stack.h"
 
+#include <iostream>
 #include <stdexcept>
+
+void StackDebugLogger<GameStateData>::pushed(const GameStateData &state)
+{
+    std::cout << "[Stack] " << toString(state.type) << " pushed into the StateStack" << std::endl;
+}
+
+void StackDebugLogger<GameStateData>::popped(const GameStateData &state)
+{
+    std::cout << "[Stack] " << toString(state.type) << " popped out of the StateStack" << std::endl;
+}
 
 namespace
 {
@@ -126,6 +138,51 @@ const GameStateBehavior &getGameStateBehavior(GameStateType type)
         return menuState(type);
     default:
         throw std::logic_error("Unknown GameStateType");
+    }
+}
+
+const char *toString(GameStateType type)
+{
+    switch (type)
+    {
+    case GameStateType::MainMenu:
+        return "MainMenu";
+    case GameStateType::LoadGameMenu:
+        return "LoadGameMenu";
+    case GameStateType::SaveGameMenu:
+        return "SaveGameMenu";
+    case GameStateType::Playing:
+        return "Playing";
+    case GameStateType::Paused:
+        return "Paused";
+    case GameStateType::GameOver:
+        return "GameOver";
+    case GameStateType::BossDeathSlowMotion:
+        return "BossDeathSlowMotion";
+    case GameStateType::SettingsMenu:
+        return "SettingsMenu";
+    case GameStateType::AudioSettings:
+        return "AudioSettings";
+    case GameStateType::ControlsMenu:
+        return "ControlsMenu";
+    case GameStateType::PlayerStatsScreen:
+        return "PlayerStatsScreen";
+    case GameStateType::InventoryOnlyScreen:
+        return "InventoryOnlyScreen";
+    case GameStateType::SkillTreeScreen:
+        return "SkillTreeScreen";
+    case GameStateType::HelpScreen:
+        return "HelpScreen";
+    case GameStateType::CombatLogScreen:
+        return "CombatLogScreen";
+    case GameStateType::ConfirmQuitToMenu:
+        return "ConfirmQuitToMenu";
+    case GameStateType::ConfirmRestart:
+        return "ConfirmRestart";
+    case GameStateType::ConfirmOverwriteSave:
+        return "ConfirmOverwriteSave";
+    default:
+        return "Unknown";
     }
 }
 

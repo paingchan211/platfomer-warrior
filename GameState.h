@@ -31,10 +31,13 @@ class GameStateBehavior;
 // Returns a behavior instance for the requested state type
 const GameStateBehavior &getGameStateBehavior(GameStateType type);
 
+// Utility to convert a state type into a readable string for logging/debug
+const char *toString(GameStateType type);
+
 // Holds detailed state information for current game mode
 struct GameStateData
 {
-    GameStateData();                    // Default constructor (Playing)
+    GameStateData(); // Default constructor (Playing)
     explicit GameStateData(GameStateType stateType);
 
     GameStateType type;      // Current state type
