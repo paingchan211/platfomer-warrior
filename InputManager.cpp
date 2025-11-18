@@ -884,12 +884,12 @@ void InputManager::handleAudioSettingsInput(const sf::Event &event,
         {
         case 0: // Music -
             audioState.musicVolume = std::max(0.0f, audioState.musicVolume - 5.0f);
-            ResourceManager::getInstance().setMusicVolume(audioState.musicVolume);
+            resourceManager.setMusicVolume(audioState.musicVolume);
             break;
 
         case 1: // SFX -
             audioState.sfxVolume = std::max(0.0f, audioState.sfxVolume - 5.0f);
-            ResourceManager::getInstance().setSFXVolume(audioState.sfxVolume);
+            resourceManager.setSFXVolume(audioState.sfxVolume);
             break;
         }
     }
@@ -902,12 +902,12 @@ void InputManager::handleAudioSettingsInput(const sf::Event &event,
         {
         case 0: // Music +
             audioState.musicVolume = std::min(100.0f, audioState.musicVolume + 5.0f);
-            ResourceManager::getInstance().setMusicVolume(audioState.musicVolume);
+            resourceManager.setMusicVolume(audioState.musicVolume);
             break;
 
         case 1: // SFX +
             audioState.sfxVolume = std::min(100.0f, audioState.sfxVolume + 5.0f);
-            ResourceManager::getInstance().setSFXVolume(audioState.sfxVolume);
+            resourceManager.setSFXVolume(audioState.sfxVolume);
             break;
         }
     }
@@ -921,8 +921,8 @@ void InputManager::handleAudioSettingsInput(const sf::Event &event,
         case 2: // Reset volumes to defaults
             audioState.musicVolume = 80.0f;
             audioState.sfxVolume = 80.0f;
-            ResourceManager::getInstance().setMusicVolume(audioState.musicVolume);
-            ResourceManager::getInstance().setSFXVolume(audioState.sfxVolume);
+            resourceManager.setMusicVolume(audioState.musicVolume);
+            resourceManager.setSFXVolume(audioState.sfxVolume);
             break;
 
         case 3: // Back

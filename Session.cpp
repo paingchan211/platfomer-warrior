@@ -9,16 +9,17 @@
 // Constructors / Destructors
 // ==============================
 
-Session::Session()
-    : window(sf::VideoMode(static_cast<unsigned int>(SCREEN_WIDTH), static_cast<unsigned int>(SCREEN_HEIGHT)),
+Session::Session(ResourceManager &resourceManagerRef)
+    : resourceManager(resourceManagerRef),
+      window(sf::VideoMode(static_cast<unsigned int>(SCREEN_WIDTH), static_cast<unsigned int>(SCREEN_HEIGHT)),
              "SFML Action Prototype"),
-      gameWorld(ResourceManager::getInstance()),
+      gameWorld(resourceManagerRef),
       cameraController(SCREEN_WIDTH, SCREEN_HEIGHT, WORLD_WIDTH),
-      uiSystem(ResourceManager::getInstance()),
-      combatSystem(ResourceManager::getInstance(), inputManager, [this](const std::string &msg)
-                   { addCombatLog(msg); }, [this](int damage, sf::Vector2f position, const sf::Color &color, bool isHealing)
-                   { spawnFloatingText(damage, position, color, isHealing); }, [this](GameStateType type)
-                   { pushState(type); })
+      uiSystem(resourceManagerRef),
+      combatSystem(resourceManagerRef, inputManager, [this](const std::string &msg)
+                    { addCombatLog(msg); }, [this](int damage, sf::Vector2f position, const sf::Color &color, bool isHealing)
+                    { spawnFloatingText(damage, position, color, isHealing); }, [this](GameStateType type)
+                    { pushState(type); })
 {
     window.setFramerateLimit(120); // Limit FPS to stabilize timing
     inputManager.setCombatLogStdoutEnabled(combatLogStdoutEnabled);
@@ -37,14 +38,14 @@ Session::~Session()
 bool Session::initialize()
 {
     // Load all resources (textures, fonts, audio, etc.)
-    if (!ResourceManager::getInstance().loadAll())
+    if (!resourceManager.isLoaded() && !resourceManager.loadAll())
     {
         std::cerr << "Failed to load game resources" << std::endl;
         return false;
     }
 
     // Start background music
-    ResourceManager::getInstance().getBackgroundMusic().play();
+    resourceManager.getBackgroundMusic().play();
 
     // Initialize world content (tiles, entities, etc.)
     if (!gameWorld.initialize())
@@ -226,9 +227,9 @@ void Session::processEvents()
             }
 
             // Route to input manager with current context
-            inputManager.processEvent(event, stateStack, gameOver, gameWorld.getPlayer(), ResourceManager::getInstance(),
-                                      combatLog,
-                                      combatLogCurrentNode, combatLogTraversalCount, combatLogDeleteCount, requestExit, &uiSystem, &keyBindingManager, &saveGameManager);
+            inputManager.processEvent(event, stateStack, gameOver, gameWorld.getPlayer(), resourceManager,
+                                       combatLog,
+                                       combatLogCurrentNode, combatLogTraversalCount, combatLogDeleteCount, requestExit, &uiSystem, &keyBindingManager, &saveGameManager);
 
             // Handle state transitions that require immediate actions
             if (!stateStack.isEmpty())
@@ -266,9 +267,9 @@ void Session::processEvents()
         else
         {
             // Forward non-keypress events (mouse, key releases, etc.)
-            inputManager.processEvent(event, stateStack, gameOver, gameWorld.getPlayer(), ResourceManager::getInstance(),
-                                      combatLog,
-                                      combatLogCurrentNode, combatLogTraversalCount, combatLogDeleteCount, requestExit, &uiSystem, &keyBindingManager, &saveGameManager);
+            inputManager.processEvent(event, stateStack, gameOver, gameWorld.getPlayer(), resourceManager,
+                                       combatLog,
+                                       combatLogCurrentNode, combatLogTraversalCount, combatLogDeleteCount, requestExit, &uiSystem, &keyBindingManager, &saveGameManager);
         }
     }
 }
@@ -311,8 +312,8 @@ void Session::update(float dt)
             popState();
             gameWon = true;
 
-            ResourceManager::getInstance().stopWalkSound();
-            ResourceManager::getInstance().playVictorySound();
+            resourceManager.stopWalkSound();
+            resourceManager.playVictorySound();
         }
         return;
     }
@@ -378,7 +379,7 @@ void Session::updatePlayer(float dt)
     bool didJump = player->jump(dt, &keyBindingManager);
     if (didJump)
     {
-        ResourceManager::getInstance().playJumpSound();
+        resourceManager.playJumpSound();
     }
 
     // For landing sound detection
@@ -391,7 +392,7 @@ void Session::updatePlayer(float dt)
     // Landed this frame?
     if (wasInAir && player->getOnGround())
     {
-        ResourceManager::getInstance().playLandSound();
+        resourceManager.playLandSound();
     }
 
     // Footstep audio while moving on ground and not attacking
@@ -402,11 +403,11 @@ void Session::updatePlayer(float dt)
 
     if (isMoving)
     {
-        ResourceManager::getInstance().playWalkSound();
+        resourceManager.playWalkSound();
     }
     else
     {
-        ResourceManager::getInstance().stopWalkSound();
+        resourceManager.stopWalkSound();
     }
 
     // Clamp position horizontally within world bounds (considering sprite frame width)
@@ -461,7 +462,7 @@ void Session::updateEnemies(float dt)
                 player->takeDamage(damage);
                 enemyAttackDamageApplied[i] = true;
 
-                ResourceManager::getInstance().playGotHitSound();
+                resourceManager.playGotHitSound();
                 spawnFloatingText(damage, sf::Vector2f(playerCollision.left + playerCollision.width / 2.f, playerCollision.top), sf::Color::Red);
                 addCombatLog("Enemy attacked! Took " + std::to_string(damage) + " damage");
             }
@@ -520,7 +521,7 @@ void Session::updateBoss(float dt)
                 player->takeDamage(damage);
                 bossAttackDamageApplied = true;
 
-                ResourceManager::getInstance().playGotHitSound();
+                resourceManager.playGotHitSound();
                 spawnFloatingText(damage, sf::Vector2f(playerCollision.left + playerCollision.width / 2.f, playerCollision.top), sf::Color::Red);
                 addCombatLog("BOSS attacked! Took " + std::to_string(damage) + " damage!");
             }
@@ -601,7 +602,7 @@ void Session::render()
     }
 
     // GameMaster visual overlays (e.g., sand storm) before HUD so bars remain readable
-    gameMaster.render(window, cameraController.getView(), gameWorld.getPlayer());
+    gameMaster.render(window, cameraController.getView(), gameWorld.getPlayer(), resourceManager.getFont());
 
     // HUD and dynamic status indicators
     uiSystem.renderHUD(window,
@@ -798,11 +799,11 @@ void Session::renderGameOver()
         gameOverSoundPlayed = true;
         if (gameWon)
         {
-            ResourceManager::getInstance().playVictorySound();
+            resourceManager.playVictorySound();
         }
         else
         {
-            ResourceManager::getInstance().playFailSound();
+            resourceManager.playFailSound();
         }
     }
 
@@ -906,7 +907,7 @@ void Session::renderKeyDisplay()
 
     // Text showing last key pressed (or "None")
     sf::Text keyText;
-    keyText.setFont(ResourceManager::getInstance().getFont());
+    keyText.setFont(resourceManager.getFont());
     keyText.setString(lastPressedKeyName.empty() ? "None" : lastPressedKeyName);
     keyText.setCharacterSize(28);
     keyText.setFillColor(sf::Color::Yellow);
@@ -931,7 +932,7 @@ void Session::renderStateStack()
     sf::View screenView(sf::FloatRect(0.f, 0.f, SCREEN_WIDTH, SCREEN_HEIGHT));
     window.setView(screenView);
 
-    const sf::Font &font = ResourceManager::getInstance().getFont();
+    const sf::Font &font = resourceManager.getFont();
 
     // Panel layout constants
     const float panelX = SCREEN_WIDTH - 210.f;
@@ -1136,7 +1137,7 @@ void Session::clearCombatLog()
 void Session::spawnFloatingText(int damage, sf::Vector2f position, const sf::Color &color, bool isHealing)
 {
     // Create and enqueue a new floating text element
-    auto newText = std::make_unique<FloatingText>(ResourceManager::getInstance().getFont(), damage, position, color, isHealing);
+    auto newText = std::make_unique<FloatingText>(resourceManager.getFont(), damage, position, color, isHealing);
     floatingTexts.enqueue(std::move(newText)); // ownership transferred
 }
 
@@ -1225,8 +1226,8 @@ void Session::checkGameOver()
     {
         gameOver = true;
 
-        ResourceManager::getInstance().stopWalkSound();
-        ResourceManager::getInstance().stopMeteorSound();
+        resourceManager.stopWalkSound();
+        resourceManager.stopMeteorSound();
         gameMaster.stopAllSounds();
     }
 
@@ -1235,8 +1236,8 @@ void Session::checkGameOver()
     {
         gameOver = true;
 
-        ResourceManager::getInstance().stopWalkSound();
-        ResourceManager::getInstance().stopMeteorSound();
+        resourceManager.stopWalkSound();
+        resourceManager.stopMeteorSound();
         gameMaster.stopAllSounds();
     }
 }

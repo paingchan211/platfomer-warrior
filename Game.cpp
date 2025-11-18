@@ -2,17 +2,20 @@
 #include "Session.h"
 #include <iostream>
 
-// Default constructor initializing session and running state
-Game::Game()
-    : session(nullptr), running(false) {}
+Game &Game::getInstance()
+{
+    static Game instance;
+    return instance;
+}
 
-// Destructor that cleans up the session
+Game::Game()
+    : resourceManager(), session(nullptr), running(false) {}
+
 Game::~Game()
 {
     session.reset();
 }
 
-// Runs the main game logic safely within a try-catch block
 void Game::run()
 {
     try
@@ -29,14 +32,12 @@ void Game::run()
     }
 }
 
-// Starts a new game by creating a new session
 void Game::newGame()
 {
-    session = std::make_unique<Session>();
+    session = std::make_unique<Session>(resourceManager);
     session->run();
 }
 
-// Stops the game and cleans up the session
 void Game::exit()
 {
     running = false;
@@ -47,7 +48,6 @@ void Game::exit()
     }
 }
 
-// Returns true if the game is currently running
 bool Game::isRunning() const
 {
     return running;

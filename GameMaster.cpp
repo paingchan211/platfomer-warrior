@@ -3,7 +3,6 @@
 #include "Enemy.h"
 #include "GameWorld.h"
 #include "Constants.h"
-#include "ResourceManager.h"
 #include <algorithm>
 #include <cmath>
 #include <iostream>
@@ -79,7 +78,7 @@ void GameMaster::update(float dt, const Player &player, const GameWorld &gameWor
 }
 
 // Renders overlays for rage mode and the sand storm event
-void GameMaster::render(sf::RenderWindow &window, const sf::View &worldView, const Player *player)
+void GameMaster::render(sf::RenderWindow &window, const sf::View &worldView, const Player *player, const sf::Font &font)
 {
     bool drawRageOverlay = overlayAlpha > 0.0f;
     bool drawSandStorm = sandStormWarningActive || sandStormInProgress;
@@ -118,7 +117,7 @@ void GameMaster::render(sf::RenderWindow &window, const sf::View &worldView, con
 
     if (drawSandStorm)
     {
-        renderSandStorm(window, sandStormFocus);
+        renderSandStorm(window, sandStormFocus, font);
     }
 
     window.setView(previousView);
@@ -464,14 +463,14 @@ void GameMaster::ensureSandStormTexture(const sf::Vector2u &windowSize)
 }
 
 // Renders the fog overlay and warning text for the sand storm
-void GameMaster::renderSandStorm(sf::RenderWindow &window, const sf::Vector2f &focusPoint)
+void GameMaster::renderSandStorm(sf::RenderWindow &window, const sf::Vector2f &focusPoint, const sf::Font &font)
 {
     const sf::Vector2u windowSize = window.getSize();
 
     if (sandStormWarningActive)
     {
         sf::Text warningText;
-        warningText.setFont(ResourceManager::getInstance().getFont());
+        warningText.setFont(font);
         warningText.setString("Sand storm approaching in about 3 seconds.");
         warningText.setCharacterSize(26);
         warningText.setFillColor(sf::Color(255, 235, 180));

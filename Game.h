@@ -2,22 +2,31 @@
 
 #include <memory>
 
+#include "ResourceManager.h"
+
 class Session;
 
-// Main Game class responsible for managing sessions and state
 class Game
 {
 public:
-    Game();  // Constructor
-    ~Game(); // Destructor
+    static Game &getInstance();
 
-    void run();     // Runs the main game
-    void newGame(); // Starts a new game session
-    void exit();    // Exits the game and cleans up
+    void run();
+    void newGame();
+    void exit();
 
-    bool isRunning() const; // Returns whether the game is active
+    bool isRunning() const;
 
 private:
-    std::unique_ptr<Session> session; // Pointer to the current game session
-    bool running;                     // Tracks if the game is currently running
+    Game();
+    ~Game();
+
+    Game(const Game &) = delete;
+    Game &operator=(const Game &) = delete;
+    Game(Game &&) = delete;
+    Game &operator=(Game &&) = delete;
+
+    ResourceManager resourceManager;
+    std::unique_ptr<Session> session;
+    bool running;
 };

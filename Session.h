@@ -28,6 +28,8 @@
 class Session
 {
 private:
+    ResourceManager &resourceManager; // Shared game resources
+
     // ---------- Game Window ----------
     sf::RenderWindow window; // Main render window
 
@@ -81,8 +83,8 @@ private:
 
 public:
     // ---------- Constructor & Destructor ----------
-    Session();  // Constructor
-    ~Session(); // Destructor
+    explicit Session(ResourceManager &resourceManager); // Constructor
+    ~Session();                                         // Destructor
 
     // ---------- Main Game Loop ----------
     void run();              // Runs the main game loop

@@ -17,7 +17,7 @@ public:
     bool initialize(); // Loads sounds and initializes variables
 
     void update(float dt, const Player &player, const GameWorld &gameWorld);                // Updates all active modes
-    void render(sf::RenderWindow &window, const sf::View &worldView, const Player *player); // Renders rage overlay + events
+    void render(sf::RenderWindow &window, const sf::View &worldView, const Player *player, const sf::Font &font); // Renders rage overlay + events
     void reset();                                                                           // Resets all states
     void stopAllSounds();                                                                   // Stops playing sounds
 
@@ -48,7 +48,7 @@ private:
 
     // Sand storm helpers
     void updateSandStorm(float dt, const GameWorld &gameWorld);
-    void renderSandStorm(sf::RenderWindow &window, const sf::Vector2f &focusPoint);
+    void renderSandStorm(sf::RenderWindow &window, const sf::Vector2f &focusPoint, const sf::Font &font);
     void ensureSandStormTexture(const sf::Vector2u &windowSize);
     int getDefeatedEnemyCount(const GameWorld &gameWorld) const;
 

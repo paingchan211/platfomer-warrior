@@ -53,13 +53,6 @@ ResourceManager::ResourceManager()
 {
 }
 
-// Returns a singleton instance of ResourceManager
-ResourceManager &ResourceManager::getInstance()
-{
-    static ResourceManager instance;
-    return instance;
-}
-
 // Loads all game assets including fonts, textures, animations, and audio
 bool ResourceManager::loadAll()
 {

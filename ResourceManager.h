@@ -1,7 +1,7 @@
 #pragma once
 
-#include <SFML/Graphics.hpp>
 #include <SFML/Audio.hpp>
+#include <SFML/Graphics.hpp>
 #include <memory>
 #include <string>
 
@@ -12,13 +12,13 @@
 class ResourceManager
 {
 public:
-    // Delete copy constructor to enforce singleton
-    ResourceManager(const ResourceManager &) = delete;
-    // Delete copy assignment operator
-    ResourceManager &operator=(const ResourceManager &) = delete;
+    ResourceManager();
+    ~ResourceManager() = default;
 
-    // Returns singleton instance
-    static ResourceManager &getInstance();
+    ResourceManager(const ResourceManager &) = delete;
+    ResourceManager &operator=(const ResourceManager &) = delete;
+    ResourceManager(ResourceManager &&) = delete;
+    ResourceManager &operator=(ResourceManager &&) = delete;
 
     // Loads all game resources (textures, audio, etc.)
     bool loadAll();
@@ -67,12 +67,6 @@ public:
     bool isLoaded() const;
 
 private:
-    // Private constructor for singleton pattern
-    ResourceManager();
-
-    // Default destructor
-    ~ResourceManager() = default;
-
     // Internal helper functions to load each type of resource
     bool loadFont();
     bool loadTextures();
