@@ -5,6 +5,11 @@
 #include <iostream>
 #include "Constants.h"
 
+// Debug flag for iterator logging (set to false in production)
+#ifndef ITERATOR_DEBUG_LOGGING
+#define ITERATOR_DEBUG_LOGGING true
+#endif
+
 // Node class for doubly linked list implementation
 template <typename DataType>
 class DoublyLinkedNode
@@ -199,7 +204,7 @@ public:
     template <bool is_const>
     class BasicIterator
     {
-        friend class DoublyLinkedList;
+        friend class DoublyLinkedList; // Allow DoublyLinkedList to access private members
 
     public:
         struct iterator_category // Iterator category for STL compatibility
@@ -780,13 +785,18 @@ template <typename Func>
 void DoublyLinkedList<T>::forEach(Func func)
 {
     Node *cur = head_;
+    int elementCount = 0;
 
     // Iterate through all nodes and apply function
     while (!cur->isNIL())
     {
         func(cur->getValueRef());
         cur = cur->getNext();
+        elementCount++;
     }
+
+    if (ITERATOR_DEBUG_LOGGING && elementCount > 0)
+        std::cout << "[Iterator] forEach() processed " << elementCount << " elements" << std::endl;
 }
 
 // Applies a function to each element in the list (const)

@@ -71,18 +71,18 @@ void UISystem::renderGameOverScreen(sf::RenderWindow &window,
     // Draw projectiles, potions, and meteors if active
     fireProjectiles.forEach([&window](const std::unique_ptr<FireProjectile> &proj)
                             {
-        if (proj && proj->isActive())
-            window.draw(proj->getSprite()); });
+    if (proj && proj->isActive())
+        window.draw(proj->getSprite()); }); // Draw active fire projectiles
 
     hpPotions.forEach([&window](const std::unique_ptr<HPPotion> &potion)
                       {
-        if (potion && potion->isActive())
-            window.draw(potion->getSprite()); });
+    if (potion && potion->isActive())
+        window.draw(potion->getSprite()); }); // Draw active HP potions
 
     meteors.forEach([&window](const std::unique_ptr<Meteor> &meteor)
                     {
-        if (meteor && meteor->isActive())
-            window.draw(meteor->getSprite()); });
+    if (meteor && meteor->isActive())
+        window.draw(meteor->getSprite()); }); // Draw active meteors
 
     // Tint the player sprite
     window.draw(makeTintedSprite(player.getSprite(), sf::Color(160, 160, 160, 220)));

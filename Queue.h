@@ -22,14 +22,14 @@ struct QueueDebugLogger<std::unique_ptr<FloatingText>>
 {
     static void enqueued(const std::unique_ptr<FloatingText> &value)
     {
-        if (value)
+        if (value && ENABLE_QUEUE_STDOUT)
             std::cout << "[Queue] '" << value->getDisplayString()
                       << "' enqueued\n";
     }
 
     static void dequeued(const std::unique_ptr<FloatingText> &value)
     {
-        if (value)
+        if (value && ENABLE_QUEUE_STDOUT)
             std::cout << "[Queue] '" << value->getDisplayString()
                       << "' dequeued\n";
     }

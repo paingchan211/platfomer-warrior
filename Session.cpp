@@ -561,6 +561,13 @@ void Session::updateBoss(float dt)
 void Session::updateFloatingTexts(float dt)
 {
     // Tick animations
+    static bool forEachLogged = false;
+    if (!forEachLogged && floatingTexts.size() > 0)
+    {
+        std::cout << "[Iterator] forEach() with lambda updating " << floatingTexts.size() << " floating text elements" << std::endl;
+        forEachLogged = true;
+    }
+
     floatingTexts.forEach([dt](std::unique_ptr<FloatingText> &dt_ptr)
                           {
         if (dt_ptr)
@@ -704,6 +711,15 @@ void Session::renderWorld()
     }
 
     // Potions and meteors (world-attached entities)
+    static bool rangeBasedLogged = false;
+    if (!rangeBasedLogged && (combatSystem.getHPPotions().size() > 0 || combatSystem.getMeteors().size() > 0))
+    {
+        std::cout << "[Iterator] Range-based for loop rendering "
+                  << combatSystem.getHPPotions().size() << " potions and "
+                  << combatSystem.getMeteors().size() << " meteors" << std::endl;
+        rangeBasedLogged = true;
+    }
+
     for (const auto &potion : combatSystem.getHPPotions())
     {
         if (potion)
@@ -717,6 +733,15 @@ void Session::renderWorld()
     }
 
     // Fire projectiles
+    static bool iteratorLogged = false;
+    if (!iteratorLogged && (combatSystem.getFireProjectiles().size() > 0 || combatSystem.getIceProjectiles().size() > 0))
+    {
+        std::cout << "[Iterator] Traditional iterator pattern (begin/end) rendering "
+                  << combatSystem.getFireProjectiles().size() << " fire and "
+                  << combatSystem.getIceProjectiles().size() << " ice projectiles" << std::endl;
+        iteratorLogged = true;
+    }
+
     for (auto it = combatSystem.getFireProjectiles().begin(); it != combatSystem.getFireProjectiles().end(); ++it)
     {
         auto &projectile = *it;
@@ -751,10 +776,10 @@ void Session::renderWorld()
     // Screen-space floating text
     floatingTexts.forEach([this](std::unique_ptr<FloatingText> &dt_ptr)
                           {
-        if (dt_ptr)
-        {
-            dt_ptr->draw(window);
-        } });
+    if (dt_ptr)
+    {
+        dt_ptr->draw(window);
+    } });
 }
 
 void Session::renderGameOver()
@@ -798,6 +823,7 @@ void Session::renderGameOver()
 
 // ---------- Debug rendering helpers ----------
 
+// Render collision bounds and hitboxes for all entities
 void Session::renderDebugCollisions()
 {
     DebugRenderer debugRenderer(window);
@@ -855,7 +881,7 @@ void Session::renderDebugCollisions()
             debugRenderer.draw(*projectile);
     }
 
-    // Meteors
+    // Draw meteors last so they appear above projectiles
     for (const auto &meteor : combatSystem.getMeteors())
     {
         if (meteor)

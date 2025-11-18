@@ -6,12 +6,14 @@
 
 void StackDebugLogger<GameStateData>::pushed(const GameStateData &state)
 {
-    std::cout << "[Stack] " << toString(state.type) << " pushed into the StateStack" << std::endl;
+    if (ENABLE_STACK_STDOUT)
+        std::cout << "[Stack] " << toString(state.type) << " pushed into the StateStack" << std::endl;
 }
 
 void StackDebugLogger<GameStateData>::popped(const GameStateData &state)
 {
-    std::cout << "[Stack] " << toString(state.type) << " popped out of the StateStack" << std::endl;
+    if (ENABLE_STACK_STDOUT)
+        std::cout << "[Stack] " << toString(state.type) << " popped out of the StateStack" << std::endl;
 }
 
 namespace
