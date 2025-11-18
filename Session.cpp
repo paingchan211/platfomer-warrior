@@ -557,6 +557,7 @@ void Session::updateBoss(float dt)
                            { spawnFloatingText(damage, position, color, isHealing); });
 }
 
+// update floating texts: animate and remove expired
 void Session::updateFloatingTexts(float dt)
 {
     // Tick animations
@@ -564,15 +565,15 @@ void Session::updateFloatingTexts(float dt)
                           {
         if (dt_ptr)
         {
-            dt_ptr->update(dt);
+            dt_ptr->update(dt); // advance animation
         } });
 
     // Remove expired entries from the front of the queue
     int removedCount = 0;
     while (!floatingTexts.isEmpty() && floatingTexts.front()->isExpired())
     {
-        floatingTexts.dequeue();
-        removedCount++;
+        floatingTexts.dequeue(); // remove expired floating text
+        removedCount++;          // for debug logging
     }
 }
 
@@ -1105,19 +1106,21 @@ void Session::clearCombatLog()
     combatLog.clear();
 }
 
+// spawn floating text for damage/healing feedback
 void Session::spawnFloatingText(int damage, sf::Vector2f position, const sf::Color &color, bool isHealing)
 {
     // Create and enqueue a new floating text element
     auto newText = std::make_unique<FloatingText>(ResourceManager::getInstance().getFont(), damage, position, color, isHealing);
-    floatingTexts.enqueue(std::move(newText));
+    floatingTexts.enqueue(std::move(newText)); // ownership transferred
 }
 
+// clear all floating texts
 void Session::clearFloatingTexts(const char *context)
 {
     // Flush all floating texts from the queue
     while (!floatingTexts.isEmpty())
     {
-        floatingTexts.dequeue();
+        floatingTexts.dequeue(); // remove front entry which is expired or no longer needed
     }
 }
 
