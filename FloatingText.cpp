@@ -80,3 +80,8 @@ bool FloatingText::isExpired() const
 {
     return lifetime <= 0.f;
 }
+
+std::string FloatingText::getDisplayString() const
+{
+    return text.getString().toAnsiString();
+}

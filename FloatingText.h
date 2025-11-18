@@ -22,6 +22,9 @@ public:
     // Checks if the floating text has expired (fully faded out)
     bool isExpired() const;
 
+    // Returns the text currently being displayed (e.g., damage/heal amount)
+    std::string getDisplayString() const;
+
 private:
     sf::Text text;         // SFML text object used for displaying damage/heal value
     sf::Vector2f velocity; // Movement speed and direction (e.g., floating upward)

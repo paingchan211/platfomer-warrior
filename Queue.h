@@ -1,7 +1,39 @@
 #pragma once
 
+#include <iostream>
+#include <memory>
 #include <stdexcept>
 #include <utility>
+#include "FloatingText.h"
+
+// Default logger that does nothing; specialized types can override
+template <typename T>
+struct QueueDebugLogger
+{
+    static void enqueued(const T &) {}
+    static void dequeued(const T &) {}
+};
+
+// Specialization for floating text queue entries
+template <>
+struct QueueDebugLogger<std::unique_ptr<FloatingText>>
+{
+    static void enqueued(const std::unique_ptr<FloatingText> &value)
+    {
+        if (value)
+        {
+            std::cout << "[Queue] '" << value->getDisplayString() << "' enqueued" << std::endl;
+        }
+    }
+
+    static void dequeued(const std::unique_ptr<FloatingText> &value)
+    {
+        if (value)
+        {
+            std::cout << "[Queue] '" << value->getDisplayString() << "' dequeued" << std::endl;
+        }
+    }
+};
 
 // Simple templated linked-list queue implementation.
 // Supports enqueue/dequeue, iteration (forEach), and conditional removal (removeIf).
@@ -86,6 +118,7 @@ void Queue<T>::enqueue(const T &value)
     }
 
     count++; // Increase size
+    QueueDebugLogger<T>::enqueued(newNode->data);
 }
 
 // Add element by move semantics (avoids copying large objects).
@@ -105,6 +138,7 @@ void Queue<T>::enqueue(T &&value)
     }
 
     count++;
+    QueueDebugLogger<T>::enqueued(newNode->data);
 }
 
 // Remove the element at the front of the queue. Throws if the queue is empty.
@@ -124,6 +158,7 @@ void Queue<T>::dequeue()
         rearNode = nullptr; // Queue is now empty
     }
 
+    QueueDebugLogger<T>::dequeued(temp->data);
     delete temp; // Free old front node
     count--;     // Decrease size
 }
