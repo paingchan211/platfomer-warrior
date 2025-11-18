@@ -265,7 +265,6 @@ class Player {
 - expToNextLevel: int
 - hpPotions: int
 - maxHpPotions: int
-+ struct LevelUpInfo { bool leveledUp; int newLevel; int hpGained; int damageGained; }
 + Player(float startX, float startY, float charHeight, float grav, float jump)
 + void update(float dt) override
 + void handleInput(float dt, const KeyBindingManager* keyManager = nullptr, bool sprintDisabled = false)
@@ -300,6 +299,13 @@ class Player {
 + bool jump(float dt, const KeyBindingManager* keyManager = nullptr)
 + void move(float deltaX)
 + void applyLevelUpBonuses(const LevelUpInfo& info)
+}
+
+class LevelUpInfo {
+ + leveledUp: bool
+ + newLevel: int
+ + hpGained: int
+ + damageGained: int
 }
 
 class Enemy {
@@ -554,7 +560,6 @@ class CombatSystem {
 - pendingAttackType: int
 - meteorShowerTimer: float
 - nextMeteorShower: float
-- enum ProjectileType { FIRE, ICE }
 - currentProjectileType: ProjectileType
 + CombatSystem(ResourceManager& resourceManager, InputManager& inputManager, CombatLogCallback combatLogCallback, FloatingTextCallback floatingTextCallback, PushStateCallback pushStateCallback)
 + void reset(std::mt19937& rng, const Player& player)
