@@ -17,11 +17,12 @@ public:
     // Struct holding data about what happens during a level-up
     struct LevelUpInfo
     {
-        bool leveledUp;
-        int newLevel;
-        int hpGained;
-        int damageGained;
+        bool leveledUp;   // Whether a level-up occurred
+        int newLevel;     // New player level after leveling up
+        int hpGained;     // Health points gained during level-up
+        int damageGained; // Damage points gained during level-up
 
+        // Default constructor initializing all fields to zero/false
         LevelUpInfo() : leveledUp(false), newLevel(0), hpGained(0), damageGained(0) {}
     };
 
@@ -68,12 +69,11 @@ private:
     SkillTree skillTree; // Tracks player skills and upgrades
 
     // Progression and inventory
-    int level;
-    int experience;
-    int expToNextLevel;
-    int hpPotions;
-    int maxHpPotions;
-
+    int level;          // Player's current level
+    int experience;     // Current experience points
+    int expToNextLevel; // Experience required for next level
+    int hpPotions;      // Number of health potions
+    int maxHpPotions;   // Maximum health potions allowed
     void initializeProgressionStats();
 
 public:
