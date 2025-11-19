@@ -17,9 +17,9 @@ Session::Session(ResourceManager &resourceManagerRef)
       cameraController(SCREEN_WIDTH, SCREEN_HEIGHT, WORLD_WIDTH),
       uiSystem(resourceManagerRef),
       combatSystem(resourceManagerRef, inputManager, [this](const std::string &msg)
-                    { addCombatLog(msg); }, [this](int damage, sf::Vector2f position, const sf::Color &color, bool isHealing)
-                    { spawnFloatingText(damage, position, color, isHealing); }, [this](GameStateType type)
-                    { pushState(type); })
+                   { addCombatLog(msg); }, [this](int damage, sf::Vector2f position, const sf::Color &color, bool isHealing)
+                   { spawnFloatingText(damage, position, color, isHealing); }, [this](GameStateType type)
+                   { pushState(type); })
 {
     window.setFramerateLimit(120); // Limit FPS to stabilize timing
     inputManager.setCombatLogStdoutEnabled(combatLogStdoutEnabled);
@@ -228,8 +228,8 @@ void Session::processEvents()
 
             // Route to input manager with current context
             inputManager.processEvent(event, stateStack, gameOver, gameWorld.getPlayer(), resourceManager,
-                                       combatLog,
-                                       combatLogCurrentNode, combatLogTraversalCount, combatLogDeleteCount, requestExit, &uiSystem, &keyBindingManager, &saveGameManager);
+                                      combatLog,
+                                      combatLogCurrentNode, combatLogTraversalCount, combatLogDeleteCount, requestExit, &uiSystem, &keyBindingManager, &saveGameManager);
 
             // Handle state transitions that require immediate actions
             if (!stateStack.isEmpty())
@@ -268,8 +268,8 @@ void Session::processEvents()
         {
             // Forward non-keypress events (mouse, key releases, etc.)
             inputManager.processEvent(event, stateStack, gameOver, gameWorld.getPlayer(), resourceManager,
-                                       combatLog,
-                                       combatLogCurrentNode, combatLogTraversalCount, combatLogDeleteCount, requestExit, &uiSystem, &keyBindingManager, &saveGameManager);
+                                      combatLog,
+                                      combatLogCurrentNode, combatLogTraversalCount, combatLogDeleteCount, requestExit, &uiSystem, &keyBindingManager, &saveGameManager);
         }
     }
 }
@@ -565,7 +565,8 @@ void Session::updateFloatingTexts(float dt)
     static bool forEachLogged = false;
     if (!forEachLogged && floatingTexts.size() > 0)
     {
-        std::cout << "[Iterator] forEach() with lambda updating " << floatingTexts.size() << " floating text elements" << std::endl;
+        if (ENABLE_ITERATOR_STDOUT)
+            std::cout << "[Iterator] forEach() with lambda updating " << floatingTexts.size() << " floating text elements" << std::endl;
         forEachLogged = true;
     }
 
@@ -715,9 +716,10 @@ void Session::renderWorld()
     static bool rangeBasedLogged = false;
     if (!rangeBasedLogged && (combatSystem.getHPPotions().size() > 0 || combatSystem.getMeteors().size() > 0))
     {
-        std::cout << "[Iterator] Range-based for loop rendering "
-                  << combatSystem.getHPPotions().size() << " potions and "
-                  << combatSystem.getMeteors().size() << " meteors" << std::endl;
+        if (ENABLE_ITERATOR_STDOUT)
+            std::cout << "[Iterator] Range-based for loop rendering "
+                      << combatSystem.getHPPotions().size() << " potions and "
+                      << combatSystem.getMeteors().size() << " meteors" << std::endl;
         rangeBasedLogged = true;
     }
 
@@ -737,9 +739,10 @@ void Session::renderWorld()
     static bool iteratorLogged = false;
     if (!iteratorLogged && (combatSystem.getFireProjectiles().size() > 0 || combatSystem.getIceProjectiles().size() > 0))
     {
-        std::cout << "[Iterator] Traditional iterator pattern (begin/end) rendering "
-                  << combatSystem.getFireProjectiles().size() << " fire and "
-                  << combatSystem.getIceProjectiles().size() << " ice projectiles" << std::endl;
+        if (ENABLE_ITERATOR_STDOUT)
+            std::cout << "[Iterator] Traditional iterator pattern (begin/end) rendering "
+                      << combatSystem.getFireProjectiles().size() << " fire and "
+                      << combatSystem.getIceProjectiles().size() << " ice projectiles" << std::endl;
         iteratorLogged = true;
     }
 

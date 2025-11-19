@@ -8,7 +8,8 @@ constexpr bool ENABLE_DOUBLY_LINKED_LIST_STDOUT = false; // Mirror DoublyLinkedL
 constexpr bool ENABLE_HASH_TABLE_STDOUT = false;         // Mirror HashTable insert/lookups/stats
 constexpr bool ENABLE_QUEUE_STDOUT = false;              // Mirror Queue operations to std::cout when true
 constexpr bool ENABLE_STACK_STDOUT = false;              // Mirror Stack operations to std::cout when true
-constexpr bool ENABLE_SINGLETON_STDOUT = true;           // Mirror Singleton creation/destruction to std::cout when true
+constexpr bool ENABLE_SINGLETON_STDOUT = false;          // Mirror Singleton creation/destruction to std::cout when true
+constexpr bool ENABLE_ITERATOR_STDOUT = false;           // Mirror Iterator operations to std::cout when true
 
 // Screen and world dimensions
 constexpr float SCREEN_WIDTH = 1200.f;        // Width of the game screen in pixels

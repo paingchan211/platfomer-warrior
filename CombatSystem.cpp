@@ -62,8 +62,10 @@ namespace
         {
             logListState(label, active, pool);
             std::cout << "    action: reclaimed " << reclaimed << " inactive node(s) into pool" << std::endl;
-            std::cout << "[Iterator] Traditional iterator (begin/end/erase) used to traverse and remove "
-                      << reclaimed << " inactive " << label << " node(s)" << std::endl;
+
+            if (ENABLE_ITERATOR_STDOUT)
+                std::cout << "[Iterator] Traditional iterator (begin/end/erase) used to traverse and remove "
+                          << reclaimed << " inactive " << label << " node(s)" << std::endl;
         }
     }
 }
@@ -1315,7 +1317,9 @@ void CombatSystem::spawnMeteorBurst(DoublyLinkedList<std::unique_ptr<Meteor>> &m
     {
         logListState("Meteors", meteors, meteorPool);
         std::cout << "    action: spawned " << spawned << " meteor(s)" << std::endl;
-        std::cout << "[Iterator] DoublyLinkedList iterator operations used for meteor spawn management" << std::endl;
+
+        if (ENABLE_ITERATOR_STDOUT)
+            std::cout << "[Iterator] DoublyLinkedList iterator operations used for meteor spawn management" << std::endl;
     }
 }
 

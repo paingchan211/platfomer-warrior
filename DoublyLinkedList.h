@@ -795,7 +795,7 @@ void DoublyLinkedList<T>::forEach(Func func)
         elementCount++;
     }
 
-    if (ITERATOR_DEBUG_LOGGING && elementCount > 0)
+    if (ENABLE_ITERATOR_STDOUT && elementCount > 0)
         std::cout << "[Iterator] forEach() processed " << elementCount << " elements" << std::endl;
 }
 
