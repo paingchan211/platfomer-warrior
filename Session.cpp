@@ -5,6 +5,15 @@
 #include <iostream>
 #include <vector>
 
+// Helper function for polymorphic dispatch logging
+static void logPolymorphicDispatch(const Entity *entity, const std::string &baseClass, const std::string &method)
+{
+    if (entity)
+    {
+        std::cout << "  - " << typeid(*entity).name() << "::" << method << " called";
+    }
+}
+
 // ==============================
 // Constructors / Destructors
 // ==============================
@@ -280,6 +289,16 @@ void Session::processEvents()
 
 void Session::update(float dt)
 {
+    // Frame counter for polymorphism logging
+    static int frameCounter = 0;
+    frameCounter++;
+
+    if (ENABLE_POLYMORPHISM_STDOUT && frameCounter == 120)
+    {
+        std::cout << "\n[Frame " << frameCounter << "] Polymorphism Demo - Updating entities polymorphically\n";
+        std::cout << "================================================================\n";
+    }
+
     // Update transient UI toasts
     uiSystem.updateToast(dt);
 
@@ -366,6 +385,64 @@ void Session::update(float dt)
     // UI fluff and camera follow
     updateFloatingTexts(dt);
     cameraController.followPlayer(gameWorld.getPlayer());
+
+    // Polymorphism collision demonstration (frame 120 only)
+    static int collisionFrameCounter = 0;
+    collisionFrameCounter++;
+    if (ENABLE_POLYMORPHISM_STDOUT && collisionFrameCounter == 120)
+    {
+        std::cout << "\n[Collision] Polymorphic getBounds() usage:\n";
+        Player *player = gameWorld.getPlayer();
+        sf::FloatRect playerBounds = player->getBounds();
+        std::cout << "[Collision] Player bounds: ("
+                  << playerBounds.left << ", " << playerBounds.top << ", "
+                  << playerBounds.width << ", " << playerBounds.height << ")\n";
+        std::cout << "[Collision] Checking projectile collisions...\n";
+
+        // Check fire projectiles
+        auto &fireProjs = combatSystem.getFireProjectiles();
+        int fireIdx = 0;
+        for (auto it = fireProjs.begin(); it != fireProjs.end(); ++it)
+        {
+            if ((*it)->isActive())
+            {
+                sf::FloatRect projBounds = (*it)->getBounds();
+                bool collision = playerBounds.intersects(projBounds);
+                std::cout << "  - FireProjectile[" << fireIdx << "] bounds: ("
+                          << projBounds.left << ", " << projBounds.top << ", "
+                          << projBounds.width << ", " << projBounds.height << ") - "
+                          << (collision ? "COLLISION DETECTED!" : "No collision") << "\n";
+                fireIdx++;
+                if (fireIdx >= 2)
+                    break; // Limit output
+            }
+        }
+
+        // Check ice projectiles
+        auto &iceProjs = combatSystem.getIceProjectiles();
+        int iceIdx = 0;
+        for (auto it = iceProjs.begin(); it != iceProjs.end(); ++it)
+        {
+            if ((*it)->isActive())
+            {
+                sf::FloatRect projBounds = (*it)->getBounds();
+                bool collision = playerBounds.intersects(projBounds);
+                std::cout << "  - IceProjectile[" << iceIdx << "] bounds: ("
+                          << projBounds.left << ", " << projBounds.top << ", "
+                          << projBounds.width << ", " << projBounds.height << ") - "
+                          << (collision ? "COLLISION DETECTED!" : "No collision") << "\n";
+                if (collision)
+                {
+                    std::cout << "       -> Applying ice slow effect to Player\n";
+                }
+                iceIdx++;
+                if (iceIdx >= 2)
+                    break; // Limit output
+            }
+        }
+
+        std::cout << "================================================================\n\n";
+    }
 }
 
 // ---------- Update helpers ----------
@@ -373,6 +450,14 @@ void Session::update(float dt)
 void Session::updatePlayer(float dt)
 {
     Player *player = gameWorld.getPlayer();
+
+    // Polymorphism logging: Entity* -> Player::update() via virtual dispatch
+    static int frameCounter = 0;
+    frameCounter++;
+    if (ENABLE_POLYMORPHISM_STDOUT && frameCounter == 120)
+    {
+        std::cout << "  - Player::update() called (input handling, jump physics)\n";
+    }
 
     // Movement input + jump handling
     player->handleInput(dt, &keyBindingManager, gameMaster.isSandStormActive());
@@ -432,6 +517,9 @@ void Session::updateEnemies(float dt)
 
     const sf::FloatRect playerCollision = player->getCollisionBounds();
 
+    static int frameCounter = 0;
+    frameCounter++;
+
     for (std::size_t i = 0; i < enemiesCount; ++i)
     {
         auto &enemy = enemies[i];
@@ -439,6 +527,16 @@ void Session::updateEnemies(float dt)
         {
             enemyAttackDamageApplied[i] = false;
             continue;
+        }
+
+        // Polymorphism logging for enemies
+        if (ENABLE_POLYMORPHISM_STDOUT && frameCounter == 120)
+        {
+            Entity *entityPtr = enemy.get();
+            std::string state = enemy->getState() == EnemyState::PATROLLING ? "PATROLLING" : enemy->getState() == EnemyState::CHASING ? "CHASING"
+                                                                                         : enemy->getState() == EnemyState::ATTACKING ? "ATTACKING"
+                                                                                                                                      : "IDLE";
+            std::cout << "  - Enemy[" << i << "]::update() called (AI state: " << state << ")\n";
         }
 
         // AI + internal timers
@@ -495,6 +593,18 @@ void Session::updateBoss(float dt)
     // No boss logic when not spawned or dead
     if (!bossSpawned || !boss->isAlive())
         return;
+
+    static int frameCounter = 0;
+    frameCounter++;
+    if (ENABLE_POLYMORPHISM_STDOUT && frameCounter == 120 && boss->isAlive())
+    {
+        Entity *entityPtr = boss;
+        std::string state = boss->getBossState() == BossState::SPAWNING ? "SPAWNING" : boss->getBossState() == BossState::IDLE    ? "IDLE"
+                                                                                   : boss->getBossState() == BossState::CHASING   ? "CHASING"
+                                                                                   : boss->getBossState() == BossState::ATTACKING ? "ATTACKING"
+                                                                                                                                  : "INACTIVE";
+        std::cout << "  - Boss::update() called (state: " << state << ")\n";
+    }
 
     const sf::FloatRect playerCollision = player->getCollisionBounds();
 

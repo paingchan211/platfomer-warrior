@@ -11,8 +11,8 @@ constexpr bool ENABLE_STACK_STDOUT = false;              // Mirror Stack operati
 constexpr bool ENABLE_SINGLETON_STDOUT = false;          // Mirror Singleton creation/destruction to std::cout when true
 constexpr bool ENABLE_ITERATOR_STDOUT = false;           // Mirror Iterator operations to std::cout when true
 constexpr bool ENABLE_INHERITANCE_STDOUT = false;        // Mirror base/derived constructor activity
-constexpr bool ENABLE_POLYMORPHISM_STDOUT = true;        // Mirror virtual dispatch usage to std::cout when true
-constexpr int POLYMORPHISM_LOG_LIMIT = 1;                // Max logs per polymorphic dispatch site
+constexpr bool ENABLE_POLYMORPHISM_STDOUT = false;       // Mirror virtual dispatch usage to std::cout when true
+constexpr int POLYMORPHISM_LOG_LIMIT = 9999;             // Max logs per polymorphic dispatch site (unlimited for full frame logging)
 
 // Screen and world dimensions
 constexpr float SCREEN_WIDTH = 1200.f;        // Width of the game screen in pixels

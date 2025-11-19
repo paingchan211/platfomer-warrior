@@ -164,6 +164,9 @@ void GameWorld::createBoss()
 // Updates all moving platforms in the world
 void GameWorld::updatePlatforms(float dt)
 {
+    static int platformFrameCounter = 0;
+    platformFrameCounter++;
+
     bool loggedDispatch = false;
     for (std::size_t i = 0; i < platformsCount; ++i)
     {
@@ -172,6 +175,10 @@ void GameWorld::updatePlatforms(float dt)
             Entity *platformEntity = platforms[i].get();
             if (!loggedDispatch)
             {
+                if (ENABLE_POLYMORPHISM_STDOUT && platformFrameCounter == 120)
+                {
+                    std::cout << "  - Platform[" << i << "]::update() called (moving platform)\n";
+                }
                 logPolymorphicDispatch(platformEntity, "Entity", "update(float)");
                 loggedDispatch = true;
             }

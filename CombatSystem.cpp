@@ -780,6 +780,10 @@ void CombatSystem::handleProjectileCollisions(float dt,
 {
 
     // Process all fire projectiles
+    static int fireFrameCounter = 0;
+    fireFrameCounter++;
+
+    int fireIndex = 0;
     for (auto it = fireProjectiles.begin(); it != fireProjectiles.end(); ++it)
     {
         auto &projectile = *it;
@@ -788,8 +792,13 @@ void CombatSystem::handleProjectileCollisions(float dt,
             continue;
 
         // Update projectile position and state
+        if (ENABLE_POLYMORPHISM_STDOUT && fireFrameCounter == 120 && fireIndex == 0)
+        {
+            std::cout << "  - FireProjectile[" << fireIndex << "]::update() called (animating)\n";
+        }
         logPolymorphicDispatch(baseProjectile, "Projectile", "update(float)");
         baseProjectile->update(dt);
+        fireIndex++;
         const sf::FloatRect projectileBounds = baseProjectile->getBounds();
 
         // Collision with enemies
@@ -900,6 +909,10 @@ void CombatSystem::handleProjectileCollisions(float dt,
     }
 
     // Process all ice projectiles
+    static int iceFrameCounter = 0;
+    iceFrameCounter++;
+
+    int iceIndex = 0;
     for (auto it = iceProjectiles.begin(); it != iceProjectiles.end(); ++it)
     {
         auto &projectile = *it;
@@ -908,8 +921,13 @@ void CombatSystem::handleProjectileCollisions(float dt,
             continue;
 
         // Update projectile position and state
+        if (ENABLE_POLYMORPHISM_STDOUT && iceFrameCounter == 120 && iceIndex == 0)
+        {
+            std::cout << "  - IceProjectile[" << iceIndex << "]::update() called (animating)\n";
+        }
         logPolymorphicDispatch(baseProjectile, "Projectile", "update(float)");
         baseProjectile->update(dt);
+        iceIndex++;
         const sf::FloatRect projectileBounds = baseProjectile->getBounds();
 
         // Collision with enemies
@@ -979,7 +997,7 @@ void CombatSystem::handleProjectileCollisions(float dt,
 
             boss->takeDamage(damage);
             boss->applyIceStack();
-                baseProjectile->setActive(false);
+            baseProjectile->setActive(false);
             auto levelUpInfo = player.gainExperience(20);
             player.applyLevelUpBonuses(levelUpInfo);
 
@@ -1078,6 +1096,10 @@ void CombatSystem::updateMeteors(float dt,
     const sf::FloatRect playerCollision = player.getCollisionBounds();
 
     // Update each meteor and resolve collisions and ground impact
+    static int meteorFrameCounter = 0;
+    meteorFrameCounter++;
+
+    int meteorIndex = 0;
     for (auto it = meteors.begin(); it != meteors.end();)
     {
         auto &meteor = *it;
@@ -1088,8 +1110,13 @@ void CombatSystem::updateMeteors(float dt,
             continue;
         }
 
+        if (ENABLE_POLYMORPHISM_STDOUT && meteorFrameCounter == 120 && meteorIndex == 0)
+        {
+            std::cout << "  - Meteor[" << meteorIndex << "]::update() called (falling)\n";
+        }
         logPolymorphicDispatch(baseMeteor, "Projectile", "update(float)");
         baseMeteor->update(dt);
+        meteorIndex++;
 
         const sf::FloatRect bounds = baseMeteor->getBounds();
         const float bottom = bounds.top + bounds.height;
