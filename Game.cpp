@@ -1,11 +1,16 @@
 #include "Game.h"
 #include "Session.h"
+#include "Constants.h"
 #include <iostream>
 
 Game &Game::getInstance()
 {
     // Static local instance ensures only one Game object exists (Singleton)
     static Game instance;
+
+    if (ENABLE_SINGLETON_STDOUT)
+        std::cout << "[Singleton] Game::getInstance() called - returning global Game instance" << std::endl;
+
     return instance;
 }
 
@@ -26,11 +31,17 @@ void Game::run()
         // Mark game as running before starting a session
         running = true;
 
+        if (ENABLE_SINGLETON_STDOUT)
+            std::cout << "[Singleton] Game::run() - main loop starting" << std::endl;
+
         // Create and run a new session
         newGame();
 
         // When session ends normally, mark game as not running
         running = false;
+
+        if (ENABLE_SINGLETON_STDOUT)
+            std::cout << "[Singleton] Game::run() - main loop finished" << std::endl;
     }
     catch (const std::exception &e)
     {
@@ -39,6 +50,9 @@ void Game::run()
 
         // Ensure game stops running after an exception
         running = false;
+
+        if (ENABLE_SINGLETON_STDOUT)
+            std::cout << "[Singleton] Game::run() - exception occurred, shutting down" << std::endl;
     }
 }
 
@@ -46,6 +60,9 @@ void Game::newGame()
 {
     // Create a new gameplay session, passing in the shared resource manager
     session = std::make_unique<Session>(resourceManager);
+
+    if (ENABLE_SINGLETON_STDOUT)
+        std::cout << "[Singleton] Game::newGame() - new Session created with shared ResourceManager" << std::endl;
 
     // Start running the session loop
     session->run();
