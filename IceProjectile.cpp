@@ -6,10 +6,12 @@
 IceProjectile::IceProjectile(const sf::Texture &texture, const sf::Vector2f &startPos, bool facingRight)
     : Projectile()
 {
+    // Set sprite texture and position
     sprite.setTexture(texture);
     position = startPos;
     sprite.setPosition(position);
 
+    // Initialize animation state
     currentFrame = 0;
     animTime = 0.f;
     sprite.setTextureRect(sf::IntRect({0, 0}, {FRAME_WIDTH, FRAME_HEIGHT}));
@@ -41,10 +43,12 @@ void IceProjectile::reset() {}
 // Resets projectile with new texture, position, and direction
 void IceProjectile::reset(const sf::Texture &texture, const sf::Vector2f &startPos, bool facingRight)
 {
+    // Update sprite texture and position
     sprite.setTexture(texture);
     position = startPos;
     sprite.setPosition(position);
 
+    // Reset animation state
     currentFrame = 0;
     animTime = 0.f;
     sprite.setTextureRect(sf::IntRect({0, 0}, {FRAME_WIDTH, FRAME_HEIGHT}));
