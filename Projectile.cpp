@@ -1,9 +1,17 @@
 #include "Projectile.h"
+#include "Constants.h"
+#include <iostream>
 
 // Default constructor sets basic values
 Projectile::Projectile()
     : Entity(), damage(10), lifetime(5.0f)
 {
+    if (ENABLE_INHERITANCE_STDOUT)
+    {
+        std::cout << "[Inheritance] Projectile::Projectile() extends Entity | "
+                  << "damage=" << damage
+                  << ", lifetime=" << lifetime << std::endl;
+    }
 }
 
 // Return projectile damage

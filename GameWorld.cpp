@@ -1,5 +1,6 @@
 #include "GameWorld.h"
 #include "ResourceManager.h"
+#include "PolymorphismLogger.h"
 #include <cmath>
 #include <iostream>
 
@@ -163,11 +164,18 @@ void GameWorld::createBoss()
 // Updates all moving platforms in the world
 void GameWorld::updatePlatforms(float dt)
 {
+    bool loggedDispatch = false;
     for (std::size_t i = 0; i < platformsCount; ++i)
     {
         if (platforms[i])
         {
-            platforms[i]->update(dt);
+            Entity *platformEntity = platforms[i].get();
+            if (!loggedDispatch)
+            {
+                logPolymorphicDispatch(platformEntity, "Entity", "update(float)");
+                loggedDispatch = true;
+            }
+            platformEntity->update(dt);
         }
     }
 }

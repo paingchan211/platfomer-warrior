@@ -3,6 +3,7 @@
 #include "HPPotion.h"
 #include "Constants.h"
 #include "KeyBindingManager.h"
+#include <iostream>
 
 // Constructor initializes animations, stats, physics, and collision
 Player::Player(Animation *run, Animation *idle, Animation *atk1, Animation *atk2,
@@ -61,6 +62,15 @@ Player::Player(Animation *run, Animation *idle, Animation *atk1, Animation *atk2
     initializeProgressionStats();
     hpPotions = 0;
     maxHpPotions = 5;
+
+    if (ENABLE_INHERITANCE_STDOUT)
+    {
+        std::cout << "[Inheritance] Player constructed -> Character -> Entity | "
+                  << "pos=(" << position.x << ", " << position.y << "), "
+                  << "level=" << level
+                  << ", hp=" << getHp() << "/" << getMaxHp()
+                  << ", damage=" << getDamage() << std::endl;
+    }
 }
 
 // Update animation logic each frame

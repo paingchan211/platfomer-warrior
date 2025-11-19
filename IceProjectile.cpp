@@ -1,4 +1,6 @@
 #include "IceProjectile.h"
+#include "Constants.h"
+#include <iostream>
 
 // Constructor initializing projectile visuals, movement, and freezing effect
 IceProjectile::IceProjectile(const sf::Texture &texture, const sf::Vector2f &startPos, bool facingRight)
@@ -23,6 +25,14 @@ IceProjectile::IceProjectile(const sf::Texture &texture, const sf::Vector2f &sta
     freezeDuration = 2.0f;
     slowAmount = 0.5f;
     initializeProjectile(8, 3.0f);
+
+    if (ENABLE_INHERITANCE_STDOUT)
+    {
+        std::cout << "[Inheritance] IceProjectile constructed -> Projectile -> Entity | "
+                  << "freezeDuration=" << freezeDuration
+                  << ", slowAmount=" << slowAmount
+                  << ", facingRight=" << (facingRight ? "true" : "false") << std::endl;
+    }
 }
 
 // Resets projectile (no behavior defined)

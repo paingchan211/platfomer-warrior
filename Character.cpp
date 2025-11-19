@@ -1,9 +1,18 @@
 #include "Character.h"
+#include "Constants.h"
+#include <iostream>
 
 // Default constructor that initializes character with default values
 Character::Character()
     : Entity(), hp(100), maxHp(100), damage(10), onGround(false), speed(100.f)
 {
+    if (ENABLE_INHERITANCE_STDOUT)
+    {
+        std::cout << "[Inheritance] Character::Character() extends Entity | "
+                  << "hp=" << hp << "/" << maxHp
+                  << ", damage=" << damage
+                  << ", speed=" << speed << std::endl;
+    }
 }
 
 // Applies damage to the character

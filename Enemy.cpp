@@ -2,6 +2,7 @@
 #include "Constants.h"
 #include <algorithm>
 #include <cmath>
+#include <iostream>
 
 // Constructor that initializes the enemy at a position with patrol boundaries and animation
 Enemy::Enemy(float x, float y, float leftBound, float rightBound,
@@ -48,6 +49,14 @@ Enemy::Enemy(float x, float y, float leftBound, float rightBound,
     initializeCombatStats(ENEMY_STARTING_HP, ENEMY_STARTING_DAMAGE);
     speed = ENEMY_MOVEMENT_SPEED;
     setOnGround(false);
+
+    if (ENABLE_INHERITANCE_STDOUT)
+    {
+        std::cout << "[Inheritance] Enemy constructed -> Character -> Entity | "
+                  << "patrol=[" << patrolLeft << ", " << patrolRight << "], "
+                  << "hp=" << getHp() << "/" << getMaxHp()
+                  << ", damage=" << getDamage() << std::endl;
+    }
 }
 
 // Updates ice stack duration and removes stacks when they expire

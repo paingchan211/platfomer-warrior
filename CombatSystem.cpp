@@ -12,6 +12,7 @@
 #include "Enemy.h"
 #include "Player.h"
 #include "GameMaster.h"
+#include "PolymorphismLogger.h"
 
 // Anonymous namespace for internal helper utilities not exposed outside this file
 namespace
@@ -782,12 +783,14 @@ void CombatSystem::handleProjectileCollisions(float dt,
     for (auto it = fireProjectiles.begin(); it != fireProjectiles.end(); ++it)
     {
         auto &projectile = *it;
-        if (!projectile || !projectile->isActive())
+        Projectile *baseProjectile = projectile.get();
+        if (!baseProjectile || !baseProjectile->isActive())
             continue;
 
         // Update projectile position and state
-        projectile->update(dt);
-        const sf::FloatRect projectileBounds = projectile->getBounds();
+        logPolymorphicDispatch(baseProjectile, "Projectile", "update(float)");
+        baseProjectile->update(dt);
+        const sf::FloatRect projectileBounds = baseProjectile->getBounds();
 
         // Collision with enemies
         for (std::size_t ei = 0; ei < enemiesCount; ++ei)
@@ -809,7 +812,7 @@ void CombatSystem::handleProjectileCollisions(float dt,
                 enemy->applyBurn(projectile->getBurnDamage(), projectile->getBurnDuration());
 
                 // Deactivate projectile after hit
-                projectile->setActive(false);
+                baseProjectile->setActive(false);
                 auto levelUpInfo = player.gainExperience(10);
                 player.applyLevelUpBonuses(levelUpInfo);
 
@@ -900,12 +903,14 @@ void CombatSystem::handleProjectileCollisions(float dt,
     for (auto it = iceProjectiles.begin(); it != iceProjectiles.end(); ++it)
     {
         auto &projectile = *it;
-        if (!projectile || !projectile->isActive())
+        Projectile *baseProjectile = projectile.get();
+        if (!baseProjectile || !baseProjectile->isActive())
             continue;
 
         // Update projectile position and state
-        projectile->update(dt);
-        const sf::FloatRect projectileBounds = projectile->getBounds();
+        logPolymorphicDispatch(baseProjectile, "Projectile", "update(float)");
+        baseProjectile->update(dt);
+        const sf::FloatRect projectileBounds = baseProjectile->getBounds();
 
         // Collision with enemies
         for (std::size_t ei = 0; ei < enemiesCount; ++ei)
@@ -921,7 +926,7 @@ void CombatSystem::handleProjectileCollisions(float dt,
 
                 enemy->takeDamage(damage);
                 enemy->applyIceStack(); // Apply stacking slow/freeze mechanic
-                projectile->setActive(false);
+                baseProjectile->setActive(false);
                 auto levelUpInfo = player.gainExperience(10);
                 player.applyLevelUpBonuses(levelUpInfo);
 
@@ -974,7 +979,7 @@ void CombatSystem::handleProjectileCollisions(float dt,
 
             boss->takeDamage(damage);
             boss->applyIceStack();
-            projectile->setActive(false);
+                baseProjectile->setActive(false);
             auto levelUpInfo = player.gainExperience(20);
             player.applyLevelUpBonuses(levelUpInfo);
 
@@ -1018,25 +1023,28 @@ void CombatSystem::updatePotions(float dt, Player &player)
     for (auto it = hpPotions.begin(); it != hpPotions.end();)
     {
         auto &potion = *it;
-        if (!potion || !potion->isActive())
+        HPPotion *hpPotion = potion.get();
+        Entity *potionEntity = hpPotion;
+        if (!potionEntity || !potionEntity->isActive())
         {
             ++it;
             continue;
         }
 
         // Update potion animation/behavior
-        potion->update(dt);
+        logPolymorphicDispatch(potionEntity, "Entity", "update(float)");
+        potionEntity->update(dt);
 
         // Check collision between player and potion
-        if (checkRectIntersection(playerCollision, potion->getBounds()))
+        if (checkRectIntersection(playerCollision, potionEntity->getBounds()))
         {
             // If player is not at full HP, auto-heal
             if (player.getHp() < player.getMaxHp())
             {
-                int healAmount = potion->getHealingValue();
+                int healAmount = hpPotion->getHealingValue();
                 int newHp = player.getHp() + healAmount;
                 player.setHp(newHp);
-                potion->setActive(false);
+                potionEntity->setActive(false);
 
                 if (floatingTextCallback)
                 {
@@ -1049,7 +1057,7 @@ void CombatSystem::updatePotions(float dt, Player &player)
             // Otherwise, add potion to inventory if possible
             else if (player.addHpPotion())
             {
-                potion->setActive(false);
+                potionEntity->setActive(false);
             }
         }
         ++it;
@@ -1073,21 +1081,23 @@ void CombatSystem::updateMeteors(float dt,
     for (auto it = meteors.begin(); it != meteors.end();)
     {
         auto &meteor = *it;
-        if (!meteor || !meteor->isActive())
+        Projectile *baseMeteor = meteor.get();
+        if (!baseMeteor || !baseMeteor->isActive())
         {
             ++it;
             continue;
         }
 
-        meteor->update(dt);
+        logPolymorphicDispatch(baseMeteor, "Projectile", "update(float)");
+        baseMeteor->update(dt);
 
-        const sf::FloatRect bounds = meteor->getBounds();
+        const sf::FloatRect bounds = baseMeteor->getBounds();
         const float bottom = bounds.top + bounds.height;
 
         // Deactivate meteor when it hits the ground or goes out of world bounds
-        if (bottom >= groundLevel || meteor->getPosition().y > WORLD_HEIGHT + 200.f)
+        if (bottom >= groundLevel || baseMeteor->getPosition().y > WORLD_HEIGHT + 200.f)
         {
-            meteor->setActive(false);
+            baseMeteor->setActive(false);
             ++it;
             continue;
         }
@@ -1095,9 +1105,9 @@ void CombatSystem::updateMeteors(float dt,
         // Check if meteor hits the player
         if (checkRectIntersection(bounds, playerCollision))
         {
-            int damage = meteor->getDamage();
+            int damage = baseMeteor->getDamage();
             player.takeDamage(damage);
-            meteor->setActive(false);
+            baseMeteor->setActive(false);
 
             resourceManager.playGotHitSound();
             if (floatingTextCallback)
@@ -1123,7 +1133,8 @@ void CombatSystem::updateMeteors(float dt,
     for (auto it = meteors.begin(); it != meteors.end(); ++it)
     {
         auto &meteor = *it;
-        if (meteor && meteor->isActive())
+        Projectile *meteorProjectile = meteor.get();
+        if (meteorProjectile && meteorProjectile->isActive())
         {
             anyMeteorActive = true;
             break;

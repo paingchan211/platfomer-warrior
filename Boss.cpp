@@ -1,6 +1,7 @@
 #include "Boss.h"
 #include "Constants.h"
 #include <cmath>
+#include <iostream>
 
 // Returns a dummy animation for Enemy base class initialization (boss uses BossAnimation instead)
 EnemyAnimation *Boss::getDummyAnimation()
@@ -61,6 +62,14 @@ Boss::Boss(const BossAnimation &bossAnim)
 
     // Boss initially faces right
     facingRight = true;
+
+    if (ENABLE_INHERITANCE_STDOUT)
+    {
+        std::cout << "[Inheritance] Boss constructed -> Enemy -> Character -> Entity | "
+                  << "hp=" << getHp() << "/" << getMaxHp()
+                  << ", damage=" << getDamage()
+                  << ", state=INACTIVE" << std::endl;
+    }
 }
 
 // Spawns the boss at the specified position

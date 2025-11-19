@@ -1,4 +1,6 @@
 #include "FireProjectile.h"
+#include "Constants.h"
+#include <iostream>
 
 // Constructor that initializes the fire projectile with texture, position, and direction
 FireProjectile::FireProjectile(const sf::Texture &texture, const sf::Vector2f &startPos, bool facingRight)
@@ -31,6 +33,14 @@ FireProjectile::FireProjectile(const sf::Texture &texture, const sf::Vector2f &s
     // Initialize burn effect properties
     burnDamage = 5;
     burnDuration = 3.0f;
+
+    if (ENABLE_INHERITANCE_STDOUT)
+    {
+        std::cout << "[Inheritance] FireProjectile constructed -> Projectile -> Entity | "
+                  << "burnDamage=" << burnDamage
+                  << ", duration=" << burnDuration
+                  << ", facingRight=" << (facingRight ? "true" : "false") << std::endl;
+    }
 }
 
 // Resets the projectile to default state (empty implementation)

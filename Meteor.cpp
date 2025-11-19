@@ -1,5 +1,7 @@
 #include "Meteor.h"
+#include "Constants.h"
 #include <cstdlib>
+#include <iostream>
 
 // Constructor initializes meteor with textures and position
 Meteor::Meteor(sf::Texture *meteorTextures[5], sf::Vector2f startPos)
@@ -28,6 +30,14 @@ Meteor::Meteor(sf::Texture *meteorTextures[5], sf::Vector2f startPos)
 
     // Scale meteor sprite
     sprite.setScale({3.f, 3.f});
+
+    if (ENABLE_INHERITANCE_STDOUT)
+    {
+        std::cout << "[Inheritance] Meteor constructed -> Projectile -> Entity | "
+                  << "pos=(" << position.x << ", " << position.y << "), "
+                  << "fallSpeed=" << velocity.y
+                  << ", damage=" << getDamage() << std::endl;
+    }
 }
 
 // Update meteor position, animation, and lifetime

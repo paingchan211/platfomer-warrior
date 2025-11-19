@@ -1,8 +1,15 @@
 #include "Entity.h"
+#include "Constants.h"
+#include <iostream>
 
 // Default constructor that initializes entity with default values
 Entity::Entity() : position(0.f, 0.f), velocity(0.f, 0.f), active(true)
 {
+    if (ENABLE_INHERITANCE_STDOUT)
+    {
+        std::cout << "[Inheritance] Entity::Entity() base constructed at position "
+                  << "(" << position.x << ", " << position.y << ")" << std::endl;
+    }
 }
 
 // Returns the global bounds of the entity sprite

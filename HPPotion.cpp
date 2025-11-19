@@ -1,4 +1,6 @@
 #include "HPPotion.h"
+#include "Constants.h"
+#include <iostream>
 
 // Constructor initializing position, animation, and lifetime
 HPPotion::HPPotion(const sf::Texture &texture, sf::Vector2f startPos)
@@ -15,6 +17,14 @@ HPPotion::HPPotion(const sf::Texture &texture, sf::Vector2f startPos)
     // Set initial animation frame and scale
     sprite.setTextureRect(sf::IntRect({0, 0}, {FRAME_WIDTH, FRAME_HEIGHT}));
     sprite.setScale({2.0f, 2.0f});
+
+    if (ENABLE_INHERITANCE_STDOUT)
+    {
+        std::cout << "[Inheritance] HPPotion constructed -> Entity | "
+                  << "pos=(" << position.x << ", " << position.y << "), "
+                  << "healing=" << healingValue
+                  << ", lifetime=" << lifetime << std::endl;
+    }
 }
 
 // Updates potion animation and lifetime

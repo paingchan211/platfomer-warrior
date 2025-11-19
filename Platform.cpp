@@ -1,4 +1,6 @@
 #include "Platform.h"
+#include "Constants.h"
+#include <iostream>
 
 // Constructor for static platform
 Platform::Platform(const sf::Texture &texture, float x, float y)
@@ -13,6 +15,13 @@ Platform::Platform(const sf::Texture &texture, float x, float y)
     collisionOffset = {PLATFORM_MARGIN_WIDTH, PLATFORM_MARGIN_HEIGHT};
     active = true;
     velocity = {0.f, 0.f};
+
+    if (ENABLE_INHERITANCE_STDOUT)
+    {
+        std::cout << "[Inheritance] Platform(static) constructed -> Entity | "
+                  << "pos=(" << position.x << ", " << position.y << "), "
+                  << "size=(" << size.x << ", " << size.y << ")" << std::endl;
+    }
 }
 
 // Constructor for moving platform
@@ -28,6 +37,14 @@ Platform::Platform(const sf::Texture &texture, float x, float y, float moveDista
     collisionOffset = {PLATFORM_MARGIN_WIDTH, PLATFORM_MARGIN_HEIGHT};
     active = true;
     velocity = {0.f, 0.f};
+
+    if (ENABLE_INHERITANCE_STDOUT)
+    {
+        std::cout << "[Inheritance] Platform(moving) constructed -> Entity | "
+                  << "pos=(" << position.x << ", " << position.y << "), "
+                  << "rangeY=[" << minY << ", " << maxY << "], "
+                  << "speed=" << moveSpeed << std::endl;
+    }
 }
 
 // Update position if platform is moving
