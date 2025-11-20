@@ -4,11 +4,7 @@
 #include <utility>
 #include <iostream>
 #include "Constants.h"
-
-// Debug flag for iterator logging (set to false in production)
-#ifndef ITERATOR_DEBUG_LOGGING
-#define ITERATOR_DEBUG_LOGGING true
-#endif
+#include "DoublyLinkedNodeIterator.h"
 
 // Node class for doubly linked list implementation
 template <typename DataType>
@@ -187,7 +183,7 @@ bool DoublyLinkedNode<DataType>::isNIL() const
 template <typename DataType>
 DoublyLinkedNode<DataType> DoublyLinkedNode<DataType>::NIL;
 
-// Doubly linked list container class with iterator support
+// Doubly linked list container class
 template <typename T>
 class DoublyLinkedList
 {
@@ -195,73 +191,12 @@ public:
     using Node = DoublyLinkedNode<T>; // Type alias for node type
 
 private:
-    Node *head_{&Node::NIL}; // Pointer to the first node in the list
-    Node *tail_{&Node::NIL}; // Pointer to the last node in the list
-    unsigned long size_{0};  // Number of elements in the list
+    Node *head{&Node::NIL}; // Pointer to the first node in the list
+    Node *tail{&Node::NIL}; // Pointer to the last node in the list
+    int count{0};           // Number of elements in the list
 
 public:
-    // Iterator class template that supports both const and non-const iteration
-    template <bool is_const>
-    class BasicIterator
-    {
-        friend class DoublyLinkedList; // Allow DoublyLinkedList to access private members
-
-    public:
-        struct iterator_category // Iterator category for STL compatibility
-        {
-        };
-        using difference_type = long; // Type for iterator difference
-
-        // Conditional type selection based on constness
-        template <bool B, typename X, typename Y>
-        struct conditional
-        {
-            using type = X;
-        };
-        template <typename X, typename Y>
-        struct conditional<false, X, Y>
-        {
-            using type = Y;
-        };
-
-        using pointer = typename conditional<is_const, const T *, T *>::type;   // Pointer type based on constness
-        using reference = typename conditional<is_const, const T &, T &>::type; // Reference type based on constness
-
-        // Default constructor that initializes iterator to NIL
-        BasicIterator();
-        // Constructor that initializes iterator with a node pointer
-        explicit BasicIterator(Node *n);
-
-        // Copy constructor and assignment operator
-        BasicIterator(const BasicIterator &other) = default;
-        BasicIterator &operator=(const BasicIterator &other) = default;
-
-        // Dereference operator to access the value
-        reference operator*() const;
-        // Arrow operator to access members of the value
-        pointer operator->() const;
-
-        // Pre-increment operator (moves to next node)
-        BasicIterator &operator++();
-        // Post-increment operator (moves to next node)
-        BasicIterator operator++(int);
-
-        // Pre-decrement operator (moves to previous node)
-        BasicIterator &operator--();
-        // Post-decrement operator (moves to previous node)
-        BasicIterator operator--(int);
-
-        // Equality comparison operator
-        bool operator==(const BasicIterator &other) const;
-        // Inequality comparison operator
-        bool operator!=(const BasicIterator &other) const;
-
-    private:
-        Node *node_; // Pointer to the current node
-    };
-
-    using iterator = BasicIterator<false>;      // Non-const iterator type
-    using const_iterator = BasicIterator<true>; // Const iterator type
+    using iterator = DoublyLinkedNodeIterator<T>; // Iterator type
 
     // Default constructor that creates an empty list
     DoublyLinkedList() noexcept = default;
@@ -280,49 +215,28 @@ public:
     ~DoublyLinkedList();
 
     // Checks if the list is empty
-    bool empty() const noexcept;
+    bool isEmpty() const noexcept;
     // Returns the number of elements in the list
-    unsigned long size() const noexcept;
+    int size() const noexcept;
 
     // Returns an iterator to the first element (non-const)
     iterator begin() noexcept;
     // Returns an iterator to the end of the list (non-const)
     iterator end() noexcept;
-    // Returns a const iterator to the first element
-    const_iterator begin() const noexcept;
-    // Returns a const iterator to the end of the list
-    const_iterator end() const noexcept;
-    // Returns a const iterator to the first element
-    const_iterator cbegin() const noexcept;
-    // Returns a const iterator to the end of the list
-    const_iterator cend() const noexcept;
 
     // Returns a reference to the first element (non-const)
     T &front();
-    // Returns a const reference to the first element
-    const T &front() const;
     // Returns a reference to the last element (non-const)
     T &back();
-    // Returns a const reference to the last element
-    const T &back() const;
 
-    // Adds an element to the front of the list (copy)
-    void push_front(const T &value);
     // Adds an element to the front of the list (move)
-    void push_front(T &&value);
-    // Adds an element to the back of the list (copy)
-    void push_back(const T &value);
+    void pushFront(T &&value);
     // Adds an element to the back of the list (move)
-    void push_back(T &&value);
+    void pushBack(T &&value);
     // Removes the first element from the list
-    void pop_front();
+    void popFront();
     // Removes the last element from the list
-    void pop_back();
-
-    // Inserts an element before the specified position (copy)
-    iterator insert(const_iterator pos, const T &value);
-    // Inserts an element before the specified position (move)
-    iterator insert(const_iterator pos, T &&value);
+    void popBack();
 
     // Removes the element at the specified position
     iterator erase(iterator pos);
@@ -341,111 +255,19 @@ public:
 
     // Removes all elements from the list
     void clear() noexcept;
-
-private:
-    // Helper function to add a node to the front of the list
-    void push_front_node(Node *n);
-    // Helper function to add a node to the back of the list
-    void push_back_node(Node *n);
 };
-
-// Default constructor that initializes iterator to NIL
-template <typename T>
-template <bool is_const>
-DoublyLinkedList<T>::BasicIterator<is_const>::BasicIterator() : node_(&Node::NIL) {}
-
-// Constructor that initializes iterator with a node pointer
-template <typename T>
-template <bool is_const>
-DoublyLinkedList<T>::BasicIterator<is_const>::BasicIterator(Node *n) : node_(n) {}
-
-// Dereference operator to access the value
-template <typename T>
-template <bool is_const>
-typename DoublyLinkedList<T>::template BasicIterator<is_const>::reference
-DoublyLinkedList<T>::BasicIterator<is_const>::operator*() const
-{
-    return node_->getValueRef();
-}
-
-// Arrow operator to access members of the value
-template <typename T>
-template <bool is_const>
-typename DoublyLinkedList<T>::template BasicIterator<is_const>::pointer
-DoublyLinkedList<T>::BasicIterator<is_const>::operator->() const
-{
-    return &node_->getValueRef();
-}
-
-// Pre-increment operator (moves to next node)
-template <typename T>
-template <bool is_const>
-typename DoublyLinkedList<T>::template BasicIterator<is_const> &
-DoublyLinkedList<T>::BasicIterator<is_const>::operator++()
-{
-    node_ = node_->getNext();
-    return *this;
-}
-
-// Post-increment operator (moves to next node)
-template <typename T>
-template <bool is_const>
-typename DoublyLinkedList<T>::template BasicIterator<is_const>
-DoublyLinkedList<T>::BasicIterator<is_const>::operator++(int)
-{
-    BasicIterator tmp(*this);
-    ++(*this);
-    return tmp;
-}
-
-// Pre-decrement operator (moves to previous node)
-template <typename T>
-template <bool is_const>
-typename DoublyLinkedList<T>::template BasicIterator<is_const> &
-DoublyLinkedList<T>::BasicIterator<is_const>::operator--()
-{
-    node_ = node_->getPrevious();
-    return *this;
-}
-
-// Post-decrement operator (moves to previous node)
-template <typename T>
-template <bool is_const>
-typename DoublyLinkedList<T>::template BasicIterator<is_const>
-DoublyLinkedList<T>::BasicIterator<is_const>::operator--(int)
-{
-    BasicIterator tmp(*this);
-    --(*this);
-    return tmp;
-}
-
-// Equality comparison operator
-template <typename T>
-template <bool is_const>
-bool DoublyLinkedList<T>::BasicIterator<is_const>::operator==(const BasicIterator &other) const
-{
-    return node_ == other.node_;
-}
-
-// Inequality comparison operator
-template <typename T>
-template <bool is_const>
-bool DoublyLinkedList<T>::BasicIterator<is_const>::operator!=(const BasicIterator &other) const
-{
-    return node_ != other.node_;
-}
 
 // Move constructor that transfers ownership from another list
 template <typename T>
 DoublyLinkedList<T>::DoublyLinkedList(DoublyLinkedList &&other) noexcept
 {
     // Transfer ownership of nodes and size
-    head_ = other.head_;
-    tail_ = other.tail_;
-    size_ = other.size_;
+    head = other.head;
+    tail = other.tail;
+    count = other.count;
     // Reset other list to empty state
-    other.head_ = other.tail_ = &Node::NIL;
-    other.size_ = 0;
+    other.head = other.tail = &Node::NIL;
+    other.count = 0;
 }
 
 // Move assignment operator that transfers ownership from another list
@@ -458,12 +280,12 @@ DoublyLinkedList<T> &DoublyLinkedList<T>::operator=(DoublyLinkedList &&other) no
         // Clear this list first
         clear();
         // Transfer ownership of nodes and size
-        head_ = other.head_;
-        tail_ = other.tail_;
-        size_ = other.size_;
+        head = other.head;
+        tail = other.tail;
+        count = other.count;
         // Reset other list to empty state
-        other.head_ = other.tail_ = &Node::NIL;
-        other.size_ = 0;
+        other.head = other.tail = &Node::NIL;
+        other.count = 0;
     }
     return *this;
 }
@@ -477,23 +299,23 @@ DoublyLinkedList<T>::~DoublyLinkedList()
 
 // Checks if the list is empty
 template <typename T>
-bool DoublyLinkedList<T>::empty() const noexcept
+bool DoublyLinkedList<T>::isEmpty() const noexcept
 {
-    return size_ == 0;
+    return count == 0;
 }
 
 // Returns the number of elements in the list
 template <typename T>
-unsigned long DoublyLinkedList<T>::size() const noexcept
+int DoublyLinkedList<T>::size() const noexcept
 {
-    return size_;
+    return count;
 }
 
 // Returns an iterator to the first element (non-const)
 template <typename T>
 typename DoublyLinkedList<T>::iterator DoublyLinkedList<T>::begin() noexcept
 {
-    return iterator(head_);
+    return iterator(head);
 }
 
 // Returns an iterator to the end of the list (non-const)
@@ -503,52 +325,14 @@ typename DoublyLinkedList<T>::iterator DoublyLinkedList<T>::end() noexcept
     return iterator(&Node::NIL);
 }
 
-// Returns a const iterator to the first element
-template <typename T>
-typename DoublyLinkedList<T>::const_iterator DoublyLinkedList<T>::begin() const noexcept
-{
-    return const_iterator(head_);
-}
-
-// Returns a const iterator to the end of the list
-template <typename T>
-typename DoublyLinkedList<T>::const_iterator DoublyLinkedList<T>::end() const noexcept
-{
-    return const_iterator(&Node::NIL);
-}
-
-// Returns a const iterator to the first element
-template <typename T>
-typename DoublyLinkedList<T>::const_iterator DoublyLinkedList<T>::cbegin() const noexcept
-{
-    return const_iterator(head_);
-}
-
-// Returns a const iterator to the end of the list
-template <typename T>
-typename DoublyLinkedList<T>::const_iterator DoublyLinkedList<T>::cend() const noexcept
-{
-    return const_iterator(&Node::NIL);
-}
-
 // Returns a reference to the first element (non-const)
 template <typename T>
 T &DoublyLinkedList<T>::front()
 {
     // Throw exception if list is empty
-    if (head_->isNIL())
+    if (head->isNIL())
         throw std::runtime_error("DoublyLinkedList::front on empty list");
-    return head_->getValueRef();
-}
-
-// Returns a const reference to the first element
-template <typename T>
-const T &DoublyLinkedList<T>::front() const
-{
-    // Throw exception if list is empty
-    if (head_->isNIL())
-        throw std::runtime_error("DoublyLinkedList::front on empty list");
-    return head_->getValueRef();
+    return head->getValueRef();
 }
 
 // Returns a reference to the last element (non-const)
@@ -556,149 +340,96 @@ template <typename T>
 T &DoublyLinkedList<T>::back()
 {
     // Throw exception if list is empty
-    if (tail_->isNIL())
+    if (tail->isNIL())
         throw std::runtime_error("DoublyLinkedList::back on empty list");
-    return tail_->getValueRef();
-}
-
-// Returns a const reference to the last element
-template <typename T>
-const T &DoublyLinkedList<T>::back() const
-{
-    // Throw exception if list is empty
-    if (tail_->isNIL())
-        throw std::runtime_error("DoublyLinkedList::back on empty list");
-    return tail_->getValueRef();
-}
-
-// Adds an element to the front of the list (copy)
-template <typename T>
-void DoublyLinkedList<T>::push_front(const T &value)
-{
-    Node *n = new Node(value);
-    push_front_node(n);
+    return tail->getValueRef();
 }
 
 // Adds an element to the front of the list (move)
 template <typename T>
-void DoublyLinkedList<T>::push_front(T &&value)
+void DoublyLinkedList<T>::pushFront(T &&value)
 {
     Node *n = new Node(std::move(value));
-    push_front_node(n);
-}
+    // Set new node's pointers
+    n->setNext(head);
+    n->setPrevious(&Node::NIL);
 
-// Adds an element to the back of the list (copy)
-template <typename T>
-void DoublyLinkedList<T>::push_back(const T &value)
-{
-    Node *n = new Node(value);
-    push_back_node(n);
+    // Update head's previous pointer if list is not empty, otherwise set tail
+    if (!head->isNIL())
+        head->setPrevious(n);
+    else
+        tail = n;
+
+    // Update head and increment size
+    head = n;
+    ++count;
 }
 
 // Adds an element to the back of the list (move)
 template <typename T>
-void DoublyLinkedList<T>::push_back(T &&value)
+void DoublyLinkedList<T>::pushBack(T &&value)
 {
     Node *n = new Node(std::move(value));
-    push_back_node(n);
+
+    // Set new node's pointers
+    n->setPrevious(tail);
+    n->setNext(&Node::NIL);
+
+    // Update tail's next pointer if list is not empty, otherwise set head
+    if (!tail->isNIL())
+        tail->setNext(n);
+    else
+        head = n;
+
+    // Update tail and increment size
+    tail = n;
+    ++count;
 }
 
 // Removes the first element from the list
 template <typename T>
-void DoublyLinkedList<T>::pop_front()
+void DoublyLinkedList<T>::popFront()
 {
     // Return early if list is empty
-    if (head_->isNIL())
+    if (head->isNIL())
         return;
 
     // Save head node and move head to next node
-    Node *n = head_;
-    head_ = head_->getNext();
+    Node *n = head;
+    head = head->getNext();
 
     // Update links: if new head exists, set its previous to NIL, otherwise set tail to NIL
-    if (!head_->isNIL())
-        head_->setPrevious(&Node::NIL);
+    if (!head->isNIL())
+        head->setPrevious(&Node::NIL);
     else
-        tail_ = &Node::NIL;
+        tail = &Node::NIL;
 
     // Delete the old head node and decrement size
     delete n;
-    --size_;
+    --count;
 }
 
 // Removes the last element from the list
 template <typename T>
-void DoublyLinkedList<T>::pop_back()
+void DoublyLinkedList<T>::popBack()
 {
     // Return early if list is empty
-    if (tail_->isNIL())
+    if (tail->isNIL())
         return;
 
     // Save tail node and move tail to previous node
-    Node *n = tail_;
-    tail_ = tail_->getPrevious();
+    Node *n = tail;
+    tail = tail->getPrevious();
 
     // Update links: if new tail exists, set its next to NIL, otherwise set head to NIL
-    if (!tail_->isNIL())
-        tail_->setNext(&Node::NIL);
+    if (!tail->isNIL())
+        tail->setNext(&Node::NIL);
     else
-        head_ = &Node::NIL;
+        head = &Node::NIL;
 
     // Delete the old tail node and decrement size
     delete n;
-    --size_;
-}
-
-// Inserts an element before the specified position (copy)
-template <typename T>
-typename DoublyLinkedList<T>::iterator
-DoublyLinkedList<T>::insert(const_iterator pos, const T &value)
-{
-    // If position is end, append to back
-    if (pos.node_->isNIL())
-    {
-        push_back(value);
-        return iterator(tail_);
-    }
-
-    // Create new node and insert before current node
-    Node *current = pos.node_;
-    Node *n = new Node(value);
-
-    current->prepend(n);
-
-    // Update head if inserting at the beginning
-    if (current == head_)
-        head_ = n;
-
-    ++size_;
-    return iterator(n);
-}
-
-// Inserts an element before the specified position (move)
-template <typename T>
-typename DoublyLinkedList<T>::iterator
-DoublyLinkedList<T>::insert(const_iterator pos, T &&value)
-{
-    // If position is end, append to back
-    if (pos.node_->isNIL())
-    {
-        push_back(std::move(value));
-        return iterator(tail_);
-    }
-
-    // Create new node and insert before current node
-    Node *current = pos.node_;
-    Node *n = new Node(std::move(value));
-
-    current->prepend(n);
-
-    // Update head if inserting at the beginning
-    if (current == head_)
-        head_ = n;
-
-    ++size_;
-    return iterator(n);
+    --count;
 }
 
 // Removes the element at the specified position
@@ -706,7 +437,7 @@ template <typename T>
 typename DoublyLinkedList<T>::iterator
 DoublyLinkedList<T>::erase(iterator pos)
 {
-    Node *current = pos.node_;
+    Node *current = pos.node;
     // Return end iterator if position is NIL
     if (current->isNIL())
         return end();
@@ -719,18 +450,18 @@ DoublyLinkedList<T>::erase(iterator pos)
     if (!prev->isNIL())
         prev->setNext(next);
     else
-        head_ = next;
+        head = next;
 
     // Update next node's previous pointer, or update tail if at end
     if (!next->isNIL())
         next->setPrevious(prev);
     else
-        tail_ = prev;
+        tail = prev;
 
     // Save iterator to next node before deleting
     iterator ret(next);
     delete current;
-    --size_;
+    --count;
 
     return ret;
 }
@@ -741,7 +472,7 @@ template <typename Predicate>
 int DoublyLinkedList<T>::removeIf(Predicate pred)
 {
     int removed = 0;
-    Node *cur = head_;
+    Node *cur = head;
 
     // Iterate through all nodes
     while (!cur->isNIL())
@@ -758,17 +489,17 @@ int DoublyLinkedList<T>::removeIf(Predicate pred)
             if (!prev->isNIL())
                 prev->setNext(cur->getNext());
             else
-                head_ = cur->getNext();
+                head = cur->getNext();
 
             // Update next node's previous pointer, or update tail if at end
             if (!cur->getNext()->isNIL())
                 cur->getNext()->setPrevious(prev);
             else
-                tail_ = prev;
+                tail = prev;
 
             // Delete node and update counters
             delete cur;
-            --size_;
+            --count;
             ++removed;
         }
 
@@ -784,7 +515,7 @@ template <typename T>
 template <typename Func>
 void DoublyLinkedList<T>::forEach(Func func)
 {
-    Node *cur = head_;
+    Node *cur = head;
     int elementCount = 0;
 
     // Iterate through all nodes and apply function
@@ -804,7 +535,7 @@ template <typename T>
 template <typename Func>
 void DoublyLinkedList<T>::forEach(Func func) const
 {
-    Node *cur = head_;
+    Node *cur = head;
 
     // Iterate through all nodes and apply function
     while (!cur->isNIL())
@@ -818,7 +549,7 @@ void DoublyLinkedList<T>::forEach(Func func) const
 template <typename T>
 void DoublyLinkedList<T>::clear() noexcept
 {
-    Node *cur = head_;
+    Node *cur = head;
 
     // Delete all nodes in the list
     while (!cur->isNIL())
@@ -829,44 +560,6 @@ void DoublyLinkedList<T>::clear() noexcept
     }
 
     // Reset list to empty state
-    head_ = tail_ = &Node::NIL;
-    size_ = 0;
-}
-
-// Helper function to add a node to the front of the list
-template <typename T>
-void DoublyLinkedList<T>::push_front_node(Node *n)
-{
-    // Set new node's pointers
-    n->setNext(head_);
-    n->setPrevious(&Node::NIL);
-
-    // Update head's previous pointer if list is not empty, otherwise set tail
-    if (!head_->isNIL())
-        head_->setPrevious(n);
-    else
-        tail_ = n;
-
-    // Update head and increment size
-    head_ = n;
-    ++size_;
-}
-
-// Helper function to add a node to the back of the list
-template <typename T>
-void DoublyLinkedList<T>::push_back_node(Node *n)
-{
-    // Set new node's pointers
-    n->setPrevious(tail_);
-    n->setNext(&Node::NIL);
-
-    // Update tail's next pointer if list is not empty, otherwise set head
-    if (!tail_->isNIL())
-        tail_->setNext(n);
-    else
-        head_ = n;
-
-    // Update tail and increment size
-    tail_ = n;
-    ++size_;
+    head = tail = &Node::NIL;
+    count = 0;
 }

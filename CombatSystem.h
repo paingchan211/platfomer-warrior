@@ -98,23 +98,12 @@ public:
 
     // Returns reference to active fire projectiles list
     DoublyLinkedList<std::unique_ptr<FireProjectile>> &getFireProjectiles();
-    // Returns const reference to active fire projectiles list
-    const DoublyLinkedList<std::unique_ptr<FireProjectile>> &getFireProjectiles() const;
-
     // Returns reference to active ice projectiles list
     DoublyLinkedList<std::unique_ptr<IceProjectile>> &getIceProjectiles();
-    // Returns const reference to active ice projectiles list
-    const DoublyLinkedList<std::unique_ptr<IceProjectile>> &getIceProjectiles() const;
-
     // Returns reference to active HP potions list
     DoublyLinkedList<std::unique_ptr<HPPotion>> &getHPPotions();
-    // Returns const reference to active HP potions list
-    const DoublyLinkedList<std::unique_ptr<HPPotion>> &getHPPotions() const;
-
     // Returns reference to active meteors list
     DoublyLinkedList<std::unique_ptr<Meteor>> &getMeteors();
-    // Returns const reference to active meteors list
-    const DoublyLinkedList<std::unique_ptr<Meteor>> &getMeteors() const;
 
 private:
     // Enumeration for projectile types

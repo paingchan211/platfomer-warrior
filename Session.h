@@ -78,8 +78,8 @@ private:
     std::mt19937 rng{std::random_device{}()}; // Random generator
 
     // ---------- Exit Control ----------
-    bool requestExit = false;                               // Exit request flag
-    bool combatLogStdoutEnabled = ENABLE_COMBAT_LOG_STDOUT; // Mirrors combat log operations to std::cout when true
+    bool requestExit = false;                                       // Exit request flag
+    bool combatLogStdoutEnabled = ENABLE_SINGLY_LINKED_LIST_STDOUT; // Mirrors combat log operations to std::cout when true
 
 public:
     // ---------- Constructor & Destructor ----------

@@ -49,7 +49,7 @@ namespace
             if (!item || !item->isActive())
             {
                 // Move inactive item to pool for reuse
-                pool.push_back(std::move(item));
+                pool.pushBack(std::move(item));
                 it = active.erase(it); // Erase from active list and advance iterator
                 ++reclaimed;
             }
@@ -605,10 +605,10 @@ void CombatSystem::updateProjectiles(float dt,
 
                 std::unique_ptr<FireProjectile> newProj(nullptr);
                 // Reuse projectile from pool if available
-                if (!fireProjectilePool.empty())
+                if (!fireProjectilePool.isEmpty())
                 {
                     newProj = std::move(fireProjectilePool.front());
-                    fireProjectilePool.pop_front();
+                    fireProjectilePool.popFront();
 
                     if (newProj)
                         newProj->reset(resourceManager.getTexture("fireball"), spawnPos, playerFacingRight);
@@ -622,7 +622,7 @@ void CombatSystem::updateProjectiles(float dt,
                 // Activate projectile if successfully created
                 if (newProj)
                 {
-                    fireProjectiles.push_back(std::move(newProj));
+                    fireProjectiles.pushBack(std::move(newProj));
                     resourceManager.playFireballSound();
                     ++spawnedFireProjectiles;
                 }
@@ -654,10 +654,10 @@ void CombatSystem::updateProjectiles(float dt,
 
                 std::unique_ptr<IceProjectile> newProj(nullptr);
                 // Reuse projectile from pool if available
-                if (!iceProjectilePool.empty())
+                if (!iceProjectilePool.isEmpty())
                 {
                     newProj = std::move(iceProjectilePool.front());
-                    iceProjectilePool.pop_front();
+                    iceProjectilePool.popFront();
 
                     if (newProj)
                         newProj->reset(resourceManager.getTexture("ice_projectile"), spawnPos, playerFacingRight);
@@ -671,7 +671,7 @@ void CombatSystem::updateProjectiles(float dt,
                 // Activate projectile if successfully created
                 if (newProj)
                 {
-                    iceProjectiles.push_back(std::move(newProj));
+                    iceProjectiles.pushBack(std::move(newProj));
                     resourceManager.playFireballSound();
                     ++spawnedIceProjectiles;
                 }
@@ -731,7 +731,7 @@ void CombatSystem::updateProjectiles(float dt,
         auto &projPtr = *it;
         if (!projPtr || !projPtr->isActive())
         {
-            fireProjectilePool.push_back(std::move(projPtr));
+            fireProjectilePool.pushBack(std::move(projPtr));
             it = fireProjectiles.erase(it);
             ++fireReclaimed;
         }
@@ -739,7 +739,7 @@ void CombatSystem::updateProjectiles(float dt,
             ++it;
     }
 
-    if (fireReclaimed > 0)
+    if (fireReclaimed > 0 && ENABLE_DOUBLY_LINKED_LIST_STDOUT)
     {
         logListState("Fire Projectiles", fireProjectiles, fireProjectilePool);
         std::cout << "    action: reclaimed " << fireReclaimed << " fire projectile(s) into pool" << std::endl;
@@ -752,7 +752,7 @@ void CombatSystem::updateProjectiles(float dt,
         auto &projPtr = *it;
         if (!projPtr || !projPtr->isActive())
         {
-            iceProjectilePool.push_back(std::move(projPtr));
+            iceProjectilePool.pushBack(std::move(projPtr));
             it = iceProjectiles.erase(it);
             ++iceReclaimed;
         }
@@ -760,7 +760,7 @@ void CombatSystem::updateProjectiles(float dt,
             ++it;
     }
 
-    if (iceReclaimed > 0)
+    if (iceReclaimed > 0 && ENABLE_DOUBLY_LINKED_LIST_STDOUT)
     {
         logListState("Ice Projectiles", iceProjectiles, iceProjectilePool);
         std::cout << "    action: reclaimed " << iceReclaimed << " ice projectile(s) into pool" << std::endl;
@@ -1244,10 +1244,10 @@ void CombatSystem::spawnPotion(DoublyLinkedList<std::unique_ptr<HPPotion>> &poti
 
     std::unique_ptr<HPPotion> potion;
     // Try to reuse a potion from the pool
-    if (!hpPotionPool.empty())
+    if (!hpPotionPool.isEmpty())
     {
         potion = std::move(hpPotionPool.front());
-        hpPotionPool.pop_front();
+        hpPotionPool.popFront();
         if (potion)
         {
             potion->reset(texture, worldPos);
@@ -1262,7 +1262,7 @@ void CombatSystem::spawnPotion(DoublyLinkedList<std::unique_ptr<HPPotion>> &poti
     // Add potion to the active list if valid
     if (potion)
     {
-        potions.push_back(std::move(potion));
+        potions.pushBack(std::move(potion));
         if (ENABLE_DOUBLY_LINKED_LIST_STDOUT)
         {
             logListState("HP Potions", potions, hpPotionPool);
@@ -1324,10 +1324,10 @@ void CombatSystem::spawnMeteorBurst(DoublyLinkedList<std::unique_ptr<Meteor>> &m
 
         std::unique_ptr<Meteor> meteor;
         // Use meteor from pool if available
-        if (!meteorPool.empty())
+        if (!meteorPool.isEmpty())
         {
             meteor = std::move(meteorPool.front());
-            meteorPool.pop_front();
+            meteorPool.popFront();
             if (meteor)
             {
                 meteor->reset(meteorTextures, spawnPos);
@@ -1346,7 +1346,7 @@ void CombatSystem::spawnMeteorBurst(DoublyLinkedList<std::unique_ptr<Meteor>> &m
             {
                 std::cout << "[DoublyLinkedList] meteor node @" << meteor.get() << std::endl;
             }
-            meteors.push_back(std::move(meteor));
+            meteors.pushBack(std::move(meteor));
             ++spawned;
         }
     }
@@ -1428,20 +1428,8 @@ DoublyLinkedList<std::unique_ptr<FireProjectile>> &CombatSystem::getFireProjecti
     return fireProjectiles;
 }
 
-// Returns const reference to fire projectile list
-const DoublyLinkedList<std::unique_ptr<FireProjectile>> &CombatSystem::getFireProjectiles() const
-{
-    return fireProjectiles;
-}
-
 // Returns non-const reference to ice projectile list
 DoublyLinkedList<std::unique_ptr<IceProjectile>> &CombatSystem::getIceProjectiles()
-{
-    return iceProjectiles;
-}
-
-// Returns const reference to ice projectile list
-const DoublyLinkedList<std::unique_ptr<IceProjectile>> &CombatSystem::getIceProjectiles() const
 {
     return iceProjectiles;
 }
@@ -1452,20 +1440,8 @@ DoublyLinkedList<std::unique_ptr<HPPotion>> &CombatSystem::getHPPotions()
     return hpPotions;
 }
 
-// Returns const reference to HP potion list
-const DoublyLinkedList<std::unique_ptr<HPPotion>> &CombatSystem::getHPPotions() const
-{
-    return hpPotions;
-}
-
 // Returns non-const reference to meteor list
 DoublyLinkedList<std::unique_ptr<Meteor>> &CombatSystem::getMeteors()
-{
-    return meteors;
-}
-
-// Returns const reference to meteor list
-const DoublyLinkedList<std::unique_ptr<Meteor>> &CombatSystem::getMeteors() const
 {
     return meteors;
 }
