@@ -63,7 +63,9 @@ private:
     int combatLogDeleteCount = 0;                  // Deletion counter
 
     // ---------- Debugging ----------
-    bool debugMode = false;                                   // Enables debug mode
+    bool showDebugStateStack = false;                         // Show state stack visualization
+    bool showDebugKeyDisplay = false;                         // Show last key pressed
+    bool showDebugCollisions = false;                         // Show collision boxes
     std::string lastPressedKeyName = "";                      // Last key pressed (string)
     sf::Keyboard::Key lastPressedKey = sf::Keyboard::Unknown; // Last key pressed (enum)
 

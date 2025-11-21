@@ -149,7 +149,7 @@ void Session::run()
                 // Render main menu overlay
                 uiSystem.renderMainMenu(window, stateStack.top());
 
-                if (debugMode)
+                if (showDebugStateStack)
                 {
                     renderStateStack();
                 }
@@ -222,23 +222,25 @@ void Session::processEvents()
         }
         else if (event.type == sf::Event::KeyPressed)
         {
-            // Toggle debug overlay in Playing state
-            if (event.key.code == sf::Keyboard::D && getCurrentState() == GameStateType::Playing)
-            {
-                debugMode = !debugMode;
-            }
-
             // For debug: remember last key
-            if (debugMode)
+            if (showDebugKeyDisplay)
             {
                 lastPressedKey = event.key.code;
                 lastPressedKeyName = KeyBindingManager::getKeyName(event.key.code);
             }
 
+            // Toggle debug menu in Playing state
+            if (event.key.code == sf::Keyboard::D && getCurrentState() == GameStateType::Playing)
+            {
+                pushState(GameStateType::DebugMenu);
+                continue; // Consume this press so the menu stays open
+            }
+
             // Route to input manager with current context
             inputManager.processEvent(event, stateStack, gameOver, gameWorld.getPlayer(), resourceManager,
                                       combatLog,
-                                      combatLogCurrentNode, combatLogTraversalCount, combatLogDeleteCount, requestExit, &uiSystem, &keyBindingManager, &saveGameManager);
+                                      combatLogCurrentNode, combatLogTraversalCount, combatLogDeleteCount, requestExit, &uiSystem, &keyBindingManager, &saveGameManager,
+                                      &showDebugStateStack, &showDebugKeyDisplay, &showDebugCollisions);
 
             // Handle state transitions that require immediate actions
             if (!stateStack.isEmpty())
@@ -278,7 +280,8 @@ void Session::processEvents()
             // Forward non-keypress events (mouse, key releases, etc.)
             inputManager.processEvent(event, stateStack, gameOver, gameWorld.getPlayer(), resourceManager,
                                       combatLog,
-                                      combatLogCurrentNode, combatLogTraversalCount, combatLogDeleteCount, requestExit, &uiSystem, &keyBindingManager, &saveGameManager);
+                                      combatLogCurrentNode, combatLogTraversalCount, combatLogDeleteCount, requestExit, &uiSystem, &keyBindingManager, &saveGameManager,
+                                      &showDebugStateStack, &showDebugKeyDisplay, &showDebugCollisions);
         }
     }
 }
@@ -348,6 +351,26 @@ void Session::update(float dt)
 
     // High-level game rules (rage, events, etc.)
     gameMaster.update(dt, *gameWorld.getPlayer(), gameWorld);
+
+    // Duck background music during an active sand storm and restore afterward
+    static bool wasSandStormActive = false;
+    static float preSandStormMusicVolume = -1.0f;
+    bool sandStormActive = gameMaster.isSandStormActive();
+
+    if (sandStormActive && !wasSandStormActive)
+    {
+        preSandStormMusicVolume = resourceManager.getMusicVolume();
+        resourceManager.setMusicVolume(preSandStormMusicVolume * 0.55f);
+    }
+    else if (!sandStormActive && wasSandStormActive)
+    {
+        if (preSandStormMusicVolume >= 0.0f)
+        {
+            resourceManager.setMusicVolume(preSandStormMusicVolume);
+        }
+        preSandStormMusicVolume = -1.0f;
+    }
+    wasSandStormActive = sandStormActive;
 
     // Player update and combat handling
     updatePlayer(dt);
@@ -706,12 +729,6 @@ void Session::render()
     cameraController.applyToWindow(window);
     renderWorld();
 
-    // Optional debug overlays
-    if (debugMode)
-    {
-        renderDebugCollisions();
-    }
-
     // GameMaster visual overlays (e.g., sand storm) before HUD so bars remain readable
     gameMaster.render(window, cameraController.getView(), gameWorld.getPlayer(), resourceManager.getFont());
 
@@ -786,12 +803,28 @@ void Session::render()
     // Toast messages (e.g., "Saved!", "No slot")
     uiSystem.renderToast(window);
 
-    if (debugMode)
+    if (getCurrentState() == GameStateType::DebugMenu)
     {
-        renderStateStack();
+        uiSystem.renderDebugMenu(window, stateStack.top(), showDebugStateStack, showDebugKeyDisplay, showDebugCollisions);
+    }
+
+    if (showDebugStateStack || showDebugKeyDisplay || showDebugCollisions)
+    {
+        if (showDebugCollisions)
+        {
+            renderDebugCollisions();
+        }
+
+        if (showDebugStateStack)
+        {
+            renderStateStack();
+        }
 
         // Draw the debug key display last so it stays above large UI screens (e.g., combat log)
-        renderKeyDisplay();
+        if (showDebugKeyDisplay)
+        {
+            renderKeyDisplay();
+        }
     }
 }
 
@@ -940,6 +973,10 @@ void Session::renderGameOver()
 // Render collision bounds and hitboxes for all entities
 void Session::renderDebugCollisions()
 {
+    // Ensure collision boxes are drawn in world space (UI renders swap the view)
+    sf::View previousView = window.getView();
+    cameraController.applyToWindow(window);
+
     DebugRenderer debugRenderer(window);
 
     // Player
@@ -1001,6 +1038,9 @@ void Session::renderDebugCollisions()
         if (meteor)
             debugRenderer.draw(*meteor);
     }
+
+    // Restore whatever view was active before drawing debug overlays
+    window.setView(previousView);
 }
 
 void Session::renderKeyDisplay()
@@ -1088,12 +1128,18 @@ void Session::renderStateStack()
             return {"Playing", sf::Color(100, 200, 255)};
         case GameStateType::Paused:
             return {"Paused", sf::Color(255, 150, 100)};
+        case GameStateType::LoadGameMenu:
+            return {"Load", sf::Color(200, 150, 255)};
+        case GameStateType::SaveGameMenu:
+            return {"Save", sf::Color(200, 150, 255)};
         case GameStateType::SettingsMenu:
             return {"Settings", sf::Color(200, 150, 255)};
         case GameStateType::AudioSettings:
             return {"Audio", sf::Color(200, 150, 255)};
         case GameStateType::ControlsMenu:
             return {"Controls", sf::Color(200, 150, 255)};
+        case GameStateType::DebugMenu:
+            return {"Debug", sf::Color(150, 220, 255)};
         case GameStateType::InventoryOnlyScreen:
             return {"Inventory", sf::Color(200, 200, 100)};
         case GameStateType::PlayerStatsScreen:
@@ -1104,12 +1150,16 @@ void Session::renderStateStack()
             return {"Help", sf::Color(200, 200, 100)};
         case GameStateType::CombatLogScreen:
             return {"Log", sf::Color(200, 200, 100)};
+        case GameStateType::GameOver:
+            return {"GameOver", sf::Color(255, 120, 120)};
         case GameStateType::BossDeathSlowMotion:
             return {"Death", sf::Color(255, 100, 50)};
         case GameStateType::ConfirmRestart:
             return {"Restart", sf::Color(255, 200, 100)};
         case GameStateType::ConfirmQuitToMenu:
             return {"Quit", sf::Color(255, 200, 100)};
+        case GameStateType::ConfirmOverwriteSave:
+            return {"Overwrite", sf::Color(255, 200, 100)};
         default:
             return {"Unknown", sf::Color(150, 150, 150)};
         }

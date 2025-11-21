@@ -105,7 +105,10 @@ void InputManager::processEvent(const sf::Event &event,
                                 bool &requestExit,
                                 UISystem *uiSystem,
                                 KeyBindingManager *keyManager,
-                                class SaveGameManager *saveManager)
+                                class SaveGameManager *saveManager,
+                                bool *showDebugStateStack,
+                                bool *showDebugKeyDisplay,
+                                bool *showDebugCollisions)
 {
     // Key pressed branch
     if (event.type == sf::Event::KeyPressed)
@@ -177,6 +180,13 @@ void InputManager::processEvent(const sf::Event &event,
             else if (currentState == GameStateType::LoadGameMenu)
             {
                 handleLoadGameMenuInput(event, stateStack, player, saveManager, uiSystem);
+            }
+            else if (currentState == GameStateType::DebugMenu)
+            {
+                if (showDebugStateStack && showDebugKeyDisplay && showDebugCollisions)
+                {
+                    handleDebugMenuInput(event, stateStack, *showDebugStateStack, *showDebugKeyDisplay, *showDebugCollisions);
+                }
             }
             else if (currentState == GameStateType::Playing)
             {
@@ -656,6 +666,64 @@ void InputManager::handleCombatLogInput(const sf::Event &event,
                 combatLogCurrentNode = 0;
             }
         }
+    }
+}
+
+void InputManager::handleDebugMenuInput(const sf::Event &event,
+                                        Stack<GameStateData> &stateStack,
+                                        bool &showStateStack,
+                                        bool &showKeyDisplay,
+                                        bool &showCollisions)
+{
+    if (stateStack.isEmpty())
+        return;
+
+    GameStateData &debugState = stateStack.top();
+
+    if (event.key.code == sf::Keyboard::Up && !upKeyDown)
+    {
+        // Move selection up (wrap 0..2)
+        debugState.selectedDebugOption--;
+        if (debugState.selectedDebugOption < 0)
+            debugState.selectedDebugOption = 2;
+        upKeyDown = true;
+    }
+    else if (event.key.code == sf::Keyboard::Down && !downKeyDown)
+    {
+        // Move selection down (wrap 0..2)
+        debugState.selectedDebugOption++;
+        if (debugState.selectedDebugOption > 2)
+            debugState.selectedDebugOption = 0;
+        downKeyDown = true;
+    }
+    else if (event.key.code == sf::Keyboard::Enter && !enterKeyDown)
+    {
+        // Toggle the selected debug visualization
+        enterKeyDown = true;
+
+        switch (debugState.selectedDebugOption)
+        {
+        case 0: // State Stack
+            showStateStack = !showStateStack;
+            break;
+        case 1: // Key Display
+            showKeyDisplay = !showKeyDisplay;
+            break;
+        case 2: // Collision Boxes
+            showCollisions = !showCollisions;
+            break;
+        }
+    }
+    else if (event.key.code == sf::Keyboard::D)
+    {
+        // Close debug menu with 'D' key
+        stateStack.pop();
+    }
+    else if (event.key.code == sf::Keyboard::Escape && !escKeyDown)
+    {
+        // Close debug menu with Escape
+        stateStack.pop();
+        escKeyDown = true;
     }
 }
 

@@ -26,6 +26,7 @@ GameMaster::GameMaster()
       bossRageModeActive(false),
       bossRageModeTriggeredOnce(false),
       bossDamageMultiplier(1.0f),
+      sandStormSoundVolume(70.0f),
       sandStormTriggerAnnounced(false),
       sandStormWarningActive(false),
       sandStormInProgress(false),
@@ -33,12 +34,12 @@ GameMaster::GameMaster()
       sandStormWarningTimer(0.0f),
       sandStormTimer(0.0f),
       sandStormFadeDuration(4.0f),
-      sandStormActiveDuration(10.0f),
+      sandStormActiveDuration(20.0f),
       sandStormIntensity(0.0f),
       sandStormVisibilityRadius(0.0f),
       sandStormVisibilityMinRadius(90.0f),
       sandStormVisibilityMaxRadius(220.0f),
-      sandStormFogMaxAlpha(235.0f),
+      sandStormFogMaxAlpha(250.0f),
       sandStormKillsRequired(3),
       sandStormMaskSize(0, 0)
 {
@@ -63,6 +64,17 @@ bool GameMaster::initialize()
     {
         rageSound.setBuffer(rageSoundBuffer);
         rageSound.setVolume(rageSoundVolume);
+    }
+
+    if (!sandStormBuffer.loadFromFile("assets/sounds/sandstorm.wav"))
+    {
+        std::cerr << "Warning: Failed to load sand storm sound: assets/sounds/sandstorm.wav" << std::endl;
+    }
+    else
+    {
+        sandStormSound.setBuffer(sandStormBuffer);
+        sandStormSound.setVolume(sandStormSoundVolume);
+        sandStormSound.setLoop(true);
     }
 
     return true;
@@ -153,6 +165,8 @@ void GameMaster::reset()
     sandStormTimer = 0.0f;
     sandStormIntensity = 0.0f;
     sandStormVisibilityRadius = sandStormVisibilityMaxRadius;
+
+    stopSandStormSound();
 }
 
 // Stops all currently playing sounds
@@ -162,6 +176,8 @@ void GameMaster::stopAllSounds()
     {
         rageSound.stop();
     }
+
+    stopSandStormSound();
 }
 
 // Returns true if player rage mode is active
@@ -386,6 +402,26 @@ float GameMaster::getBossDamageMultiplier() const
     return bossDamageMultiplier;
 }
 
+void GameMaster::startSandStormSound()
+{
+    if (sandStormBuffer.getSampleCount() == 0)
+        return;
+
+    if (sandStormSound.getStatus() != sf::Sound::Playing)
+    {
+        sandStormSound.setVolume(sandStormSoundVolume);
+        sandStormSound.play();
+    }
+}
+
+void GameMaster::stopSandStormSound()
+{
+    if (sandStormSound.getStatus() == sf::Sound::Playing)
+    {
+        sandStormSound.stop();
+    }
+}
+
 bool GameMaster::isSandStormActive() const
 {
     return sandStormInProgress;
@@ -394,6 +430,8 @@ bool GameMaster::isSandStormActive() const
 // Handles scheduling and timers for the sand storm event
 void GameMaster::updateSandStorm(float dt, const GameWorld &gameWorld)
 {
+    bool wasSandStormInProgress = sandStormInProgress;
+
     if (!sandStormTriggerAnnounced)
     {
         int defeatedEnemies = getDefeatedEnemyCount(gameWorld);
@@ -413,6 +451,7 @@ void GameMaster::updateSandStorm(float dt, const GameWorld &gameWorld)
             sandStormWarningActive = false;
             sandStormInProgress = true;
             sandStormTimer = 0.0f;
+            startSandStormSound();
         }
     }
 
@@ -442,11 +481,17 @@ void GameMaster::updateSandStorm(float dt, const GameWorld &gameWorld)
             sandStormInProgress = false;
             sandStormIntensity = 0.0f;
             sandStormVisibilityRadius = sandStormVisibilityMaxRadius;
+            stopSandStormSound();
             return;
         }
 
         sandStormVisibilityRadius = sandStormVisibilityMaxRadius -
                                     (sandStormVisibilityMaxRadius - sandStormVisibilityMinRadius) * sandStormIntensity;
+    }
+
+    if (!sandStormInProgress && wasSandStormInProgress)
+    {
+        stopSandStormSound();
     }
 }
 

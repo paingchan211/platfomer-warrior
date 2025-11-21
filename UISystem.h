@@ -122,6 +122,11 @@ public:
     void renderLoadGameMenu(sf::RenderWindow &window,
                             const GameStateData &loadState,
                             SaveGameManager *saveManager = nullptr);
+    void renderDebugMenu(sf::RenderWindow &window,
+                         const GameStateData &debugState,
+                         bool showStateStack,
+                         bool showKeyDisplay,
+                         bool showCollisions);
 
     void showToast(const std::string &message, sf::Color color = sf::Color::White);
     void updateToast(float dt);

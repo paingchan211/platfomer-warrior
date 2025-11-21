@@ -1168,8 +1168,14 @@ void CombatSystem::updateMeteors(float dt,
         }
     }
 
-    // Play or stop meteor ambient sound based on activity
-    if (anyMeteorActive)
+    const bool sandStormActive = (gameMaster && gameMaster->isSandStormActive());
+
+    // Play or stop meteor ambient sound based on activity, but mute during sand storms
+    if (sandStormActive)
+    {
+        resourceManager.stopMeteorSound();
+    }
+    else if (anyMeteorActive)
     {
         resourceManager.playMeteorSound();
     }

@@ -32,7 +32,10 @@ public:
                       bool &requestExit,
                       UISystem *uiSystem,
                       KeyBindingManager *keyManager = nullptr,
-                      class SaveGameManager *saveManager = nullptr);
+                      class SaveGameManager *saveManager = nullptr,
+                      bool *showDebugStateStack = nullptr,
+                      bool *showDebugKeyDisplay = nullptr,
+                      bool *showDebugCollisions = nullptr);
 
     // Returns whether a specific SFML key is currently pressed
     bool isKeyDown(sf::Keyboard::Key key) const;
@@ -123,6 +126,12 @@ private:
                               int &combatLogCurrentNode,
                               int &combatLogTraversalCount,
                               int &combatLogDeleteCount);
+
+    void handleDebugMenuInput(const sf::Event &event,
+                              Stack<GameStateData> &stateStack,
+                              bool &showStateStack,
+                              bool &showKeyDisplay,
+                              bool &showCollisions);
 
     void appendCombatLogEntry(SinglyLinkedList<std::string> &combatLog, const std::string &message);
 

@@ -59,6 +59,7 @@ namespace
         static SimpleGameStateBehavior skillTree(GameStateType::SkillTreeScreen, true, false, true);
         static SimpleGameStateBehavior help(GameStateType::HelpScreen, true, false, true);
         static SimpleGameStateBehavior combat(GameStateType::CombatLogScreen, true, false, true);
+        static SimpleGameStateBehavior debugMenu(GameStateType::DebugMenu, true, false, true);
         static SimpleGameStateBehavior confirmQuit(GameStateType::ConfirmQuitToMenu, true, false, true);
         static SimpleGameStateBehavior confirmRestart(GameStateType::ConfirmRestart, true, false, true);
         static SimpleGameStateBehavior confirmOverwrite(GameStateType::ConfirmOverwriteSave, true, false, true);
@@ -87,6 +88,8 @@ namespace
             return help;
         case GameStateType::CombatLogScreen:
             return combat;
+        case GameStateType::DebugMenu:
+            return debugMenu;
         case GameStateType::ConfirmQuitToMenu:
             return confirmQuit;
         case GameStateType::ConfirmRestart:
@@ -134,6 +137,7 @@ const GameStateBehavior &getGameStateBehavior(GameStateType type)
     case GameStateType::SkillTreeScreen:
     case GameStateType::HelpScreen:
     case GameStateType::CombatLogScreen:
+    case GameStateType::DebugMenu:
     case GameStateType::ConfirmQuitToMenu:
     case GameStateType::ConfirmRestart:
     case GameStateType::ConfirmOverwriteSave:
@@ -177,6 +181,8 @@ const char *toString(GameStateType type)
         return "HelpScreen";
     case GameStateType::CombatLogScreen:
         return "CombatLogScreen";
+    case GameStateType::DebugMenu:
+        return "DebugMenu";
     case GameStateType::ConfirmQuitToMenu:
         return "ConfirmQuitToMenu";
     case GameStateType::ConfirmRestart:
@@ -226,6 +232,7 @@ void GameStateData::initializeDefaults()
     contextInfo.clear();
     selectedMenuOption = 0;
     selectedSkillIndex = 1;
+    selectedDebugOption = 0;
     musicVolume = 80.0f;
     sfxVolume = 80.0f;
     awaitingKeyPress = false;

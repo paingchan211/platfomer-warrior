@@ -51,6 +51,8 @@ private:
     void renderSandStorm(sf::RenderWindow &window, const sf::Vector2f &focusPoint, const sf::Font &font);
     void ensureSandStormTexture(const sf::Vector2u &windowSize);
     int getDefeatedEnemyCount(const GameWorld &gameWorld) const;
+    void startSandStormSound();
+    void stopSandStormSound();
 
     // Rage mode variables
     bool rageModeActive;
@@ -69,6 +71,10 @@ private:
     sf::SoundBuffer rageSoundBuffer;
     sf::Sound rageSound;
     float rageSoundVolume;
+
+    sf::SoundBuffer sandStormBuffer;
+    sf::Sound sandStormSound;
+    float sandStormSoundVolume;
 
     // Meteor fury variables
     bool meteorFuryActive;

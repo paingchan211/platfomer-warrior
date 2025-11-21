@@ -21,6 +21,7 @@ enum class GameStateType
     SkillTreeScreen,
     HelpScreen,
     CombatLogScreen,
+    DebugMenu,
     ConfirmQuitToMenu,
     ConfirmRestart,
     ConfirmOverwriteSave
@@ -50,6 +51,7 @@ struct GameStateData
     // Menu and skill state
     int selectedMenuOption;
     int selectedSkillIndex;
+    int selectedDebugOption;
 
     // Audio settings
     float musicVolume;

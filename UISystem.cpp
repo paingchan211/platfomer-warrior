@@ -2436,6 +2436,89 @@ void UISystem::renderLoadGameMenu(sf::RenderWindow &window,
     window.draw(hint);
 }
 
+void UISystem::renderDebugMenu(sf::RenderWindow &window,
+                               const GameStateData &debugState,
+                               bool showStateStack,
+                               bool showKeyDisplay,
+                               bool showCollisions)
+{
+    // Use screen-space view for UI overlay
+    sf::View screenView(sf::FloatRect(0.f, 0.f, SCREEN_WIDTH, SCREEN_HEIGHT));
+    window.setView(screenView);
+
+    // Semi-transparent overlay
+    sf::RectangleShape overlay(sf::Vector2f(SCREEN_WIDTH, SCREEN_HEIGHT));
+    overlay.setFillColor(sf::Color(0, 0, 0, 180));
+    window.draw(overlay);
+
+    // Font
+    const sf::Font &font = resourceManager.getFont();
+
+    // Title
+    sf::Text title;
+    title.setFont(font);
+    title.setString("DEBUG MENU");
+    title.setCharacterSize(48);
+    title.setFillColor(sf::Color(100, 200, 255));
+    title.setStyle(sf::Text::Bold);
+    title.setOutlineColor(sf::Color::Black);
+    title.setOutlineThickness(3.f);
+    sf::FloatRect titleBounds = title.getLocalBounds();
+    title.setOrigin(titleBounds.width / 2.f, titleBounds.height / 2.f);
+    title.setPosition(SCREEN_WIDTH / 2.f, SCREEN_HEIGHT / 2.f - 150.f);
+    window.draw(title);
+
+    // Debug options with their current state
+    const char *debugOptions[] = {"State Stack", "Key Display", "Collision Boxes"};
+    const bool optionStates[] = {showStateStack, showKeyDisplay, showCollisions};
+    const int numOptions = 3;
+
+    // Draw each option with selection highlight and ON/OFF indicator
+    for (int i = 0; i < numOptions; ++i)
+    {
+        sf::Text option;
+        option.setFont(font);
+
+        // Build display string with ON/OFF status
+        std::string displayText = debugOptions[i];
+        displayText += optionStates[i] ? " [ON]" : " [OFF]";
+
+        option.setString(displayText);
+        option.setCharacterSize(32);
+
+        if (i == debugState.selectedDebugOption)
+        {
+            // Selected state styling
+            option.setFillColor(sf::Color::White);
+            option.setCharacterSize(36);
+        }
+        else
+        {
+            // Unselected state styling
+            option.setFillColor(sf::Color(150, 150, 150));
+            option.setOutlineColor(sf::Color::Black);
+            option.setOutlineThickness(2.f);
+        }
+
+        // Center each option text
+        sf::FloatRect optionBounds = option.getLocalBounds();
+        option.setOrigin(optionBounds.width / 2.f, optionBounds.height / 2.f);
+        option.setPosition(SCREEN_WIDTH / 2.f, SCREEN_HEIGHT / 2.f - 30.f + i * 70.f);
+        window.draw(option);
+    }
+
+    // Bottom control hint
+    sf::Text hint;
+    hint.setFont(font);
+    hint.setString("UP/DOWN: Navigate | ENTER: Toggle | D: Close");
+    hint.setCharacterSize(20);
+    hint.setFillColor(sf::Color(180, 180, 180));
+    sf::FloatRect hintBounds = hint.getLocalBounds();
+    hint.setOrigin(hintBounds.width / 2.f, hintBounds.height / 2.f);
+    hint.setPosition(SCREEN_WIDTH / 2.f, SCREEN_HEIGHT - 80.f);
+    window.draw(hint);
+}
+
 // Toast helpers: message API for transient centered popups
 void UISystem::showToast(const std::string &message, sf::Color color)
 {
