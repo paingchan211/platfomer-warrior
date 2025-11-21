@@ -62,12 +62,19 @@ The game belongs to the action platformer genre, emphasizing fast-paced combat, 
    - Moving platform mechanics
    - **Meteor hazard system** with **procedural storytelling** - dynamic spawn rates controlled by **GameMaster AI**
    - Dynamic meteor count and spawn rate scale upward as more enemies fall (and spike again during meteor fury)
-   - **Sandstorm event** that reduces visibility, softens music volume, and disables sprinting to spike tension
+   - **Sandstorm Event System** - **GameMaster AI**-triggered atmospheric hazard with multi-layered effects:
+     - **Visual Impact:** Semi-transparent dust/sand overlay reduces visibility by ~30-40%, obscuring distant enemies and platforms
+     - **Audio Design:** Dynamically softens background music volume by 40-50%, replaced with wind/sand ambient sound effects
+     - **Gameplay Modifier:** Temporarily disables sprint ability, forcing tactical movement during hazard
+     - **Procedural Trigger:** Activated by **AI Storyteller** based on combat intensity, player health (40-60% HP), boss proximity, or random chance
+     - **Duration System:** Timed event (15-30 seconds, configurable in `Constants.h`) with clear start/end transitions
+     - **Narrative Purpose:** Creates "calm before the storm" or "desperate struggle" story moments through environmental storytelling
+     - **Integration:** Works synergistically with other **GameMaster** events (can occur during meteor showers or boss phases)
    - Enemy HP/damage scale for later foes based on how quickly the player clears the early waves (fast clears buff them, slow clears nerf them)
    - Ground and platform collision physics
    - Camera system following player through scrolling world
    - **AI-driven environmental storytelling** through hazard intensity scaling
-   - Tunable gameplay constants are centralized in `Constants.h` (e.g., meteor frequency, late-enemy scaling, boss entrance offsets) for quick balancing
+   - Tunable gameplay constants are centralized in `Constants.h` (e.g., meteor frequency, sandstorm duration/triggers, late-enemy scaling, boss entrance offsets) for quick balancing
 
 ---
 
@@ -360,6 +367,15 @@ The **GameMaster AI** implements several **procedural storytelling** systems:
   - **AI Storyteller** uses meteor frequency to communicate urgency and desperation
   - Creates procedural "everything is falling apart" moment without scripted cutscenes
 
+- **Sandstorm System** as **atmospheric procedural narrative device**:
+  - **Trigger Conditions**: **GameMaster AI** activates based on combat intensity, player health (40-60% HP), boss proximity, or random chance
+  - **Multi-Layered Effects**: Visual overlay (~30-40% visibility reduction), audio mixing (music volume reduced 40-50%), mechanical constraint (sprint disabled)
+  - **Duration**: 15-30 seconds (configurable), with clear visual/audio start/end cues, 45-60 second cooldown between events
+  - **Narrative Functions**: "Calm before storm" anticipation builder, "desperate struggle" difficulty amplifier, environmental adversity storytelling, pacing/tension modulation tool
+  - **System Synergy**: Combines with meteor showers for "apocalyptic" pressure, interacts with boss rage for layered difficulty, complements player rage for "berserker in storm" moments
+  - **Technical Implementation**: Animated particle overlay, audio mixing system, movement controller integration, state machine (Inactive → Starting → Active → Ending → Cooldown)
+  - **Player Feedback**: Visual warning (0.5s before start), UI sandstorm icon, grayed-out sprint indicator, distinct wind audio cue
+
 **4. Combat Event Logging as Story Chronicle**
 
 - Combat log (Singly Linked List) serves as **procedural narrative chronicle**
@@ -368,6 +384,7 @@ The **GameMaster AI** implements several **procedural storytelling** systems:
   - "Boss ENRAGED! Damage and speed increased!"
   - "Player entered RAGE MODE! Damage doubled!"
   - "Meteor Fury activated! Survive the onslaught!"
+  - "Sandstorm rising! Visibility reduced, sprint disabled!"
 - Creates emergent story through event sequencing
 
 **5. Victory/Defeat Story Moments**
@@ -737,6 +754,7 @@ This 2D action platformer demonstrates a sophisticated integration of traditiona
 
 - **Health-threshold event triggering** (rage modes at critical HP)
 - **Combat-state responsive difficulty** (boss phases, meteor frequency)
+- **Atmospheric environmental storytelling** (sandstorm system with multi-layered effects)
 - **Emergent narrative through system interaction** (player choices affect story pacing)
 - **Technical storytelling** (visual effects, audio cues, gameplay modifiers tell the story)
 
@@ -744,7 +762,7 @@ The project showcases both technical computer science principles (data structure
 
 **Key Achievements:**
 
-- **GameMaster AI** orchestrates **procedural storytelling** through 5+ event types
+- **GameMaster AI** orchestrates **procedural storytelling** through 6+ event types (rage modes, boss phases, meteor fury, sandstorm, victory cinematics)
 - Dynamic difficulty creates personalized narrative arcs (skilled vs. struggling players)
 - Combat log serves as **procedural narrative chronicle** of player's unique journey
 - Technical implementation enables story without dialogue—systems tell the story
