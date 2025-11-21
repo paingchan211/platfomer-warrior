@@ -14,7 +14,7 @@ set "LDFLAGS=-L"%~dp0SFML-2.5.1/lib" -lsfml-graphics -lsfml-window -lsfml-system
 set "NUM_JOBS=4"
 
 rem List of source files (without .cpp extension)
-set "SOURCES=main Game Session Animation Entity Character Projectile Player Enemy Boss Platform FireProjectile IceProjectile HPPotion Meteor ResourceManager UISystem InputManager CombatSystem FloatingText GameWorld CameraController PhysicsManager SkillTree KeyBindingManager DebugRenderer GameMaster SaveGameManager"
+set "SOURCES=main Game Session Animation Entity Character Projectile Player Enemy Boss Platform FireProjectile IceProjectile HPPotion Meteor ResourceManager UISystem InputManager CombatSystem FloatingText GameWorld CameraController PhysicsManager SkillTree KeyBindingManager DebugRenderer GameMaster SaveGameManager GameState"
 
 rem Compile each source file to object file (only if changed)
 set "OBJECTS="
