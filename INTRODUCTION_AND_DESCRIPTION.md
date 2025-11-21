@@ -65,6 +65,7 @@ The game belongs to the action platformer genre, emphasizing fast-paced combat, 
    - Ground and platform collision physics
    - Camera system following player through scrolling world
    - **AI-driven environmental storytelling** through hazard intensity scaling
+   - Tunable gameplay constants are centralized in `Constants.h` (e.g., meteor frequency, late-enemy scaling, boss entrance offsets) for quick balancing
 
 ---
 

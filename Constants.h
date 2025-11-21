@@ -111,11 +111,18 @@ constexpr float METEOR_FURY_MIN_INTERVAL = 1.0f;     // Minimum interval between
 constexpr float METEOR_FURY_MAX_INTERVAL = 2.0f;     // Maximum interval between meteors during fury mode in seconds
 constexpr float METEOR_NORMAL_MIN_INTERVAL = 10.0f;  // Minimum interval between meteors in normal mode in seconds
 constexpr float METEOR_NORMAL_MAX_INTERVAL = 20.0f;  // Maximum interval between meteors in normal mode in seconds
+constexpr int METEOR_NORMAL_BASE_COUNT = 3;          // Baseline meteor count for normal showers
+constexpr int METEOR_NORMAL_MAX_COUNT = 6;           // Maximum meteor count for normal showers
+constexpr float METEOR_NORMAL_PLAYER_TARGET_RATIO = 0.3f; // Chance a meteor targets the player during normal showers
 constexpr int METEOR_INTENSITY_KILL_THRESHOLD = 3;   // Defeated enemies required before upping base meteor pressure
 constexpr float METEOR_DYNAMIC_MIN_INTERVAL = 6.0f;  // Faster spawn interval once threshold is reached
 constexpr float METEOR_DYNAMIC_MAX_INTERVAL = 10.0f; // Faster spawn interval upper bound once threshold is reached
 constexpr int METEOR_DYNAMIC_BASE_COUNT = 5;         // Baseline meteor count when dynamic mode is active
 constexpr int METEOR_DYNAMIC_MAX_COUNT = 10;         // Max meteor count when dynamic mode is active
+constexpr float METEOR_DYNAMIC_PLAYER_TARGET_RATIO = 0.4f; // Chance a meteor targets the player in dynamic mode
+constexpr int METEOR_FURY_BASE_COUNT = 20;           // Baseline meteor count during meteor fury
+constexpr int METEOR_FURY_MAX_COUNT = 30;            // Max meteor count during meteor fury
+constexpr float METEOR_FURY_PLAYER_TARGET_RATIO = 0.5f; // Chance a meteor targets the player during fury
 
 // Boss rage mode constants
 constexpr float BOSS_RAGE_HP_THRESHOLD = 0.50f;           // Health percentage threshold for boss rage activation (50%)

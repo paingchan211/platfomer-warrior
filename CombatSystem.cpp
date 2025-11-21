@@ -1205,11 +1205,11 @@ void CombatSystem::updateMeteors(float dt,
         meteorShowerTimer = 0.f;
 
         // Default meteor settings
-        float minInterval = 10.f;
-        float maxInterval = 20.f;
-        int meteorCount = 3;
-        int maxMeteorCount = 6;
-        float playerTargetRatio = 0.3f;
+        float minInterval = METEOR_NORMAL_MIN_INTERVAL;
+        float maxInterval = METEOR_NORMAL_MAX_INTERVAL;
+        int meteorCount = METEOR_NORMAL_BASE_COUNT;
+        int maxMeteorCount = METEOR_NORMAL_MAX_COUNT;
+        float playerTargetRatio = METEOR_NORMAL_PLAYER_TARGET_RATIO;
 
         const bool rampUpFromKills = (defeatedEnemiesCount > METEOR_INTENSITY_KILL_THRESHOLD);
 
@@ -1220,17 +1220,17 @@ void CombatSystem::updateMeteors(float dt,
             maxInterval = METEOR_DYNAMIC_MAX_INTERVAL;
             meteorCount = METEOR_DYNAMIC_BASE_COUNT;
             maxMeteorCount = METEOR_DYNAMIC_MAX_COUNT;
-            playerTargetRatio = 0.4f;
+            playerTargetRatio = METEOR_DYNAMIC_PLAYER_TARGET_RATIO;
         }
 
         // Increase intensity during Meteor Fury
         if (isMeteorFuryActive)
         {
-            minInterval = 1.f;
-            maxInterval = 2.f;
-            meteorCount = 20;
-            maxMeteorCount = 30;
-            playerTargetRatio = 0.5f;
+            minInterval = METEOR_FURY_MIN_INTERVAL;
+            maxInterval = METEOR_FURY_MAX_INTERVAL;
+            meteorCount = METEOR_FURY_BASE_COUNT;
+            maxMeteorCount = METEOR_FURY_MAX_COUNT;
+            playerTargetRatio = METEOR_FURY_PLAYER_TARGET_RATIO;
         }
 
         // Randomize next meteor shower interval
