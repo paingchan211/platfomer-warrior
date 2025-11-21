@@ -25,8 +25,8 @@ bool GameWorld::initialize()
     playerStartX = 0.f;
     playerStartY = groundLevel - CHARACTER_HEIGHT;
 
-    // Define boss spawn position
-    bossSpawnPosition = sf::Vector2f{WORLD_WIDTH - 400.f, groundLevel - 100.f};
+    // Define boss spawn position just beyond the playable space so it walks in from the right
+    bossSpawnPosition = sf::Vector2f{WORLD_WIDTH + BOSS_SPAWN_OFFSET_X, groundLevel - 100.f};
 
     // Create all entities
     createPlayer();
@@ -51,7 +51,8 @@ void GameWorld::reset()
 void GameWorld::setupFloorTiles()
 {
     const float floorY = WORLD_HEIGHT - FLOOR_TILE_HEIGHT + FLOOR_Y_OFFSET;
-    const int requiredTiles = static_cast<int>(std::ceil(WORLD_WIDTH / FLOOR_TILE_WIDTH));
+    const float floorSpan = WORLD_WIDTH + BOSS_ENTRANCE_FLOOR_PADDING;
+    const int requiredTiles = static_cast<int>(std::ceil(floorSpan / FLOOR_TILE_WIDTH));
     floorTileCount = static_cast<std::size_t>(requiredTiles);
     floorTiles = std::make_unique<sf::Sprite[]>(floorTileCount);
 

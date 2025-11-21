@@ -732,6 +732,10 @@ void Session::render()
     // GameMaster visual overlays (e.g., sand storm) before HUD so bars remain readable
     gameMaster.render(window, cameraController.getView(), gameWorld.getPlayer(), resourceManager.getFont());
 
+    Boss *boss = gameWorld.getBoss();
+    const bool bossSpawning = boss && boss->isActive() && boss->isAlive() && gameWorld.isBossSpawned() &&
+                              boss->getBossState() == BossState::SPAWNING;
+
     // HUD and dynamic status indicators
     uiSystem.renderHUD(window,
                        *gameWorld.getPlayer(),
@@ -742,7 +746,8 @@ void Session::render()
                        combatSystem.isEffectivelyUsingFireProjectile(*gameWorld.getPlayer()),
                        gameMaster.isRageModeActive(),
                        gameMaster.isMeteorFuryActive(),
-                       gameMaster.isBossRageModeActive());
+                       gameMaster.isBossRageModeActive(),
+                       bossSpawning);
 
     // Periodic low-HP attention
     uiSystem.renderLowHpWarning(window, lowHpWarningTimer, gameWorld.getPlayer());

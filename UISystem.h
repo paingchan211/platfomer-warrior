@@ -61,7 +61,8 @@ public:
                    bool isFireProjectile,
                    bool rageMode = false,
                    bool meteorFuryMode = false,
-                   bool bossRageMode = false);
+                   bool bossRageMode = false,
+                   bool bossSpawning = false);
 
     void renderEnemyHealthBar(sf::RenderWindow &window,
                               const Enemy &enemy,

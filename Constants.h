@@ -84,6 +84,8 @@ constexpr float BOSS_ATTACK_RANGE = 120.f;         // Attack range for boss in p
 constexpr float BOSS_SPRITE_SCALE = 2.5f;          // Scale multiplier for boss sprite
 constexpr float BOSS_DEATH_SLOWMO_DURATION = 3.0f; // Duration of slow motion effect when boss dies in seconds
 constexpr float SLOWMO_TIME_SCALE = 0.3f;          // Time scale multiplier for slow motion (0.3 = 30% speed)
+constexpr float BOSS_SPAWN_OFFSET_X = 500.f;       // Distance beyond the right world edge where the boss spawns
+constexpr float BOSS_ENTRANCE_FLOOR_PADDING = 800.f; // Extra floor span to support the off-screen boss spawn area
 
 // Status effect constants
 constexpr float ICE_STACK_LIFETIME = 3.0f; // Lifetime of ice stack effect in seconds

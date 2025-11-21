@@ -259,7 +259,8 @@ void UISystem::renderHUD(sf::RenderWindow &window,
                          bool isFireProjectile,
                          bool rageMode,
                          bool meteorFuryMode,
-                         bool bossRageMode)
+                         bool bossRageMode,
+                         bool bossSpawning)
 {
     window.setView(window.getDefaultView());
     // Draw core HUD components
@@ -273,6 +274,13 @@ void UISystem::renderHUD(sf::RenderWindow &window,
 
     // Alerts for special modes (Rage, Meteor, Boss Rage)
     float yOffset = 120.f;
+
+    if (bossSpawning)
+    {
+        renderCenteredAlert(window, "All enemies defeated! Boss approaching",
+                            yOffset, sf::Color(255, 215, 0), sf::Color(255, 80, 0));
+        yOffset += 70.f;
+    }
 
     if (rageMode)
     {

@@ -82,6 +82,7 @@ void Boss::spawn(sf::Vector2f spawnPos)
     bossState = BossState::SPAWNING;
     spawnTimer = 2.0f;
     setActive(true);
+    facingRight = false;
     // Reset velocity and restore full health
     velocity = {0.f, 0.f};
     setHp(maxHp);
