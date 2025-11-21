@@ -60,7 +60,8 @@ The game belongs to the action platformer genre, emphasizing fast-paced combat, 
 
 4. **Environmental Interaction and Procedural Events**
    - Moving platform mechanics
-   - **Meteor hazard system** with **procedural storytelling**—dynamic spawn rates controlled by **GameMaster AI**
+   - **Meteor hazard system** with **procedural storytelling** - dynamic spawn rates controlled by **GameMaster AI**
+   - **Sandstorm event** that reduces visibility, softens music volume, and disables sprinting to spike tension
    - Ground and platform collision physics
    - Camera system following player through scrolling world
    - **AI-driven environmental storytelling** through hazard intensity scaling

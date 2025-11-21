@@ -4,7 +4,7 @@
 
 // Debug / instrumentation toggles
 constexpr bool ENABLE_HASH_TABLE_STDOUT = false;         // Mirror HashTable insert/lookups/stats
-constexpr bool ENABLE_SINGLY_LINKED_LIST_STDOUT = false; // Mirror combat log operations to std::cout when true
+constexpr bool ENABLE_SINGLY_LINKED_LIST_STDOUT = true;  // Mirror combat log operations to std::cout when true
 constexpr bool ENABLE_DOUBLY_LINKED_LIST_STDOUT = false; // Mirror DoublyLinkedList pool/active actions
 constexpr bool ENABLE_STACK_STDOUT = false;              // Mirror Stack operations to std::cout when true
 constexpr bool ENABLE_QUEUE_STDOUT = false;              // Mirror Queue operations to std::cout when true
@@ -75,16 +75,16 @@ constexpr float ENEMY_ATTACK_RANGE = 150.f;        // Attack range for enemies i
 constexpr float ENEMY_ANIMATION_FRAME_TIME = 0.1f; // Time per animation frame for enemies in seconds
 
 // Boss starting stats and properties
-constexpr int BOSS_STARTING_HP = 400;              // Starting health points for boss
-constexpr int BOSS_STARTING_DAMAGE = 30;           // Starting damage value for boss
-constexpr float BOSS_MOVEMENT_SPEED = 80.f;        // Base movement speed for boss in pixels per second
-constexpr float BOSS_CHASE_SPEED = 120.f;          // Chase speed for boss in pixels per second
-constexpr float BOSS_DETECTION_RANGE = 500.f;      // Range at which boss detects the player in pixels
-constexpr float BOSS_ATTACK_RANGE = 120.f;         // Attack range for boss in pixels
-constexpr float BOSS_SPRITE_SCALE = 2.5f;          // Scale multiplier for boss sprite
-constexpr float BOSS_DEATH_SLOWMO_DURATION = 3.0f; // Duration of slow motion effect when boss dies in seconds
-constexpr float SLOWMO_TIME_SCALE = 0.3f;          // Time scale multiplier for slow motion (0.3 = 30% speed)
-constexpr float BOSS_SPAWN_OFFSET_X = 500.f;       // Distance beyond the right world edge where the boss spawns
+constexpr int BOSS_STARTING_HP = 400;                // Starting health points for boss
+constexpr int BOSS_STARTING_DAMAGE = 30;             // Starting damage value for boss
+constexpr float BOSS_MOVEMENT_SPEED = 80.f;          // Base movement speed for boss in pixels per second
+constexpr float BOSS_CHASE_SPEED = 120.f;            // Chase speed for boss in pixels per second
+constexpr float BOSS_DETECTION_RANGE = 500.f;        // Range at which boss detects the player in pixels
+constexpr float BOSS_ATTACK_RANGE = 120.f;           // Attack range for boss in pixels
+constexpr float BOSS_SPRITE_SCALE = 2.5f;            // Scale multiplier for boss sprite
+constexpr float BOSS_DEATH_SLOWMO_DURATION = 3.0f;   // Duration of slow motion effect when boss dies in seconds
+constexpr float SLOWMO_TIME_SCALE = 0.3f;            // Time scale multiplier for slow motion (0.3 = 30% speed)
+constexpr float BOSS_SPAWN_OFFSET_X = 500.f;         // Distance beyond the right world edge where the boss spawns
 constexpr float BOSS_ENTRANCE_FLOOR_PADDING = 800.f; // Extra floor span to support the off-screen boss spawn area
 
 // Status effect constants
@@ -107,16 +107,29 @@ constexpr float RAGE_OVERLAY_MAX_ALPHA = 60.0f; // Maximum alpha value for rage 
 constexpr float RAGE_PULSE_SPEED = 3.0f;        // Speed of rage pulse effect
 
 // Meteor system constants
-constexpr float METEOR_FURY_MIN_INTERVAL = 1.0f;    // Minimum interval between meteors during fury mode in seconds
-constexpr float METEOR_FURY_MAX_INTERVAL = 2.0f;    // Maximum interval between meteors during fury mode in seconds
-constexpr float METEOR_NORMAL_MIN_INTERVAL = 10.0f; // Minimum interval between meteors in normal mode in seconds
-constexpr float METEOR_NORMAL_MAX_INTERVAL = 20.0f; // Maximum interval between meteors in normal mode in seconds
+constexpr float METEOR_FURY_MIN_INTERVAL = 1.0f;     // Minimum interval between meteors during fury mode in seconds
+constexpr float METEOR_FURY_MAX_INTERVAL = 2.0f;     // Maximum interval between meteors during fury mode in seconds
+constexpr float METEOR_NORMAL_MIN_INTERVAL = 10.0f;  // Minimum interval between meteors in normal mode in seconds
+constexpr float METEOR_NORMAL_MAX_INTERVAL = 20.0f;  // Maximum interval between meteors in normal mode in seconds
+constexpr int METEOR_INTENSITY_KILL_THRESHOLD = 3;   // Defeated enemies required before upping base meteor pressure
+constexpr float METEOR_DYNAMIC_MIN_INTERVAL = 6.0f;  // Faster spawn interval once threshold is reached
+constexpr float METEOR_DYNAMIC_MAX_INTERVAL = 10.0f; // Faster spawn interval upper bound once threshold is reached
+constexpr int METEOR_DYNAMIC_BASE_COUNT = 5;         // Baseline meteor count when dynamic mode is active
+constexpr int METEOR_DYNAMIC_MAX_COUNT = 10;         // Max meteor count when dynamic mode is active
 
 // Boss rage mode constants
 constexpr float BOSS_RAGE_HP_THRESHOLD = 0.50f;           // Health percentage threshold for boss rage activation (50%)
 constexpr float BOSS_RAGE_DAMAGE_BONUS = 1.0f;            // Damage bonus multiplier for boss during rage
 constexpr float BOSS_RAGE_SPEED_MULTIPLIER = 1.5f;        // Speed multiplier for boss during rage
 constexpr float BOSS_RAGE_ATTACK_SPEED_MULTIPLIER = 1.5f; // Attack speed multiplier for boss during rage
+
+// Late-enemy scaling (helps if slow clear speed)
+constexpr int LATE_ENEMY_SCALING_KILL_TARGET = 4;  // Number of enemies to defeat before scaling later enemies
+constexpr int LATE_ENEMY_SCALING_START_INDEX = 4;  // Zero-based index to start scaling (5th enemy onward)
+constexpr float LATE_ENEMY_FAST_THRESHOLD = 35.0f; // If the first 4 are cleared faster than this, later enemies are buffed
+constexpr float LATE_ENEMY_SLOW_THRESHOLD = 90.0f; // If the first 4 are slower than this, later enemies are nerfed
+constexpr float LATE_ENEMY_FAST_PENALTY = 0.50f;   // HP/damage increase for fast clears
+constexpr float LATE_ENEMY_SLOW_BONUS = 0.20f;     // HP/damage decrease for slow clears
 
 // Structure for enemy spawn information
 struct EnemySpawn

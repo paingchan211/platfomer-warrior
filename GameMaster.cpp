@@ -34,7 +34,7 @@ GameMaster::GameMaster()
       sandStormWarningTimer(0.0f),
       sandStormTimer(0.0f),
       sandStormFadeDuration(4.0f),
-      sandStormActiveDuration(20.0f),
+      sandStormActiveDuration(15.0f),
       sandStormIntensity(0.0f),
       sandStormVisibilityRadius(0.0f),
       sandStormVisibilityMinRadius(90.0f),

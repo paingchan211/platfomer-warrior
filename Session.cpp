@@ -88,6 +88,9 @@ void Session::resetGame()
     // Reset win/lose state flags
     gameOver = false;
     gameWon = false;
+    sessionElapsedTime = 0.f;
+    timeToFirstFourEnemies = -1.f;
+    lateEnemyScalingApplied = false;
 
     // Clear transient UI elements and logs
     clearFloatingTexts("[Session] Cleared all floating texts during reset");
@@ -346,6 +349,8 @@ void Session::update(float dt)
         return;
     }
 
+    sessionElapsedTime += dt;
+
     // Accumulate timer for low HP warning visuals
     lowHpWarningTimer += dt;
 
@@ -397,11 +402,13 @@ void Session::update(float dt)
                                    BOSS_DEATH_SLOWMO_DURATION,
                                    &keyBindingManager);
     combatSystem.updatePotions(dt, *gameWorld.getPlayer());
-    combatSystem.updateMeteors(dt, *gameWorld.getPlayer(), gameWorld.getGroundLevel(), cameraController.getView(), rng, &gameMaster);
+    const int defeatedEnemies = countDefeatedEnemies();
+    combatSystem.updateMeteors(dt, *gameWorld.getPlayer(), gameWorld.getGroundLevel(), cameraController.getView(), rng, &gameMaster, defeatedEnemies);
 
     // World/platforms and enemies
     gameWorld.updatePlatforms(dt);
     updateEnemies(dt);
+    applyLateEnemyScaling(countDefeatedEnemies());
     gameWorld.checkAndSpawnBoss();
     updateBoss(dt);
 
@@ -716,6 +723,93 @@ void Session::updateFloatingTexts(float dt)
     {
         floatingTexts.dequeue(); // remove expired floating text
         removedCount++;          // for debug logging
+    }
+}
+
+int Session::countDefeatedEnemies() const
+{
+    int defeated = 0;
+    const auto &enemies = gameWorld.getEnemies();
+    std::size_t enemyCount = gameWorld.getEnemyCount();
+
+    for (std::size_t i = 0; i < enemyCount; ++i)
+    {
+        if (enemies[i] && !enemies[i]->isAlive())
+        {
+            ++defeated;
+        }
+    }
+
+    return defeated;
+}
+
+void Session::applyLateEnemyScaling(int defeatedEnemies)
+{
+    if (lateEnemyScalingApplied)
+        return;
+
+    if (defeatedEnemies < LATE_ENEMY_SCALING_KILL_TARGET)
+        return;
+
+    if (timeToFirstFourEnemies < 0.f)
+    {
+        timeToFirstFourEnemies = sessionElapsedTime;
+    }
+
+    float multiplier = 1.0f;
+    bool buff = false;
+    bool nerf = false;
+
+    if (timeToFirstFourEnemies <= LATE_ENEMY_FAST_THRESHOLD)
+    {
+        multiplier += LATE_ENEMY_FAST_PENALTY;
+        buff = true;
+    }
+    else if (timeToFirstFourEnemies >= LATE_ENEMY_SLOW_THRESHOLD)
+    {
+        multiplier -= LATE_ENEMY_SLOW_BONUS;
+        nerf = true;
+    }
+
+    // Clamp to avoid zero/negative stats
+    multiplier = std::max(0.5f, multiplier);
+
+    auto &enemies = gameWorld.getEnemies();
+    std::size_t enemyCount = gameWorld.getEnemyCount();
+
+    for (std::size_t i = LATE_ENEMY_SCALING_START_INDEX; i < enemyCount; ++i)
+    {
+        if (!enemies[i])
+            continue;
+
+        Enemy *enemy = enemies[i].get();
+
+        int newMaxHp = static_cast<int>(std::round(enemy->getMaxHp() * multiplier));
+        int newDamage = static_cast<int>(std::round(enemy->getDamage() * multiplier));
+
+        newMaxHp = std::max(1, newMaxHp);
+        newDamage = std::max(1, newDamage);
+
+        enemy->setMaxHp(newMaxHp);
+        if (enemy->isAlive())
+        {
+            enemy->setHp(newMaxHp);
+        }
+        enemy->setDamage(newDamage);
+    }
+
+    lateEnemyScalingApplied = true;
+    if (buff)
+    {
+        addCombatLog("[Dynamic GamePlay] Late enemies empowered by your fast clears! They now hit harder and have more HP.");
+    }
+    else if (nerf)
+    {
+        addCombatLog("[Dynamic GamePlay] Late enemies weakened to help you survive.");
+    }
+    else
+    {
+        addCombatLog("[Dynamic GamePlay] Late enemies unchanged.");
     }
 }
 

@@ -1091,7 +1091,8 @@ void CombatSystem::updateMeteors(float dt,
                                  float groundLevel,
                                  const sf::View &camera,
                                  std::mt19937 &rng,
-                                 const GameMaster *gameMaster)
+                                 const GameMaster *gameMaster,
+                                 int defeatedEnemiesCount)
 {
     const sf::FloatRect playerCollision = player.getCollisionBounds();
 
@@ -1209,6 +1210,18 @@ void CombatSystem::updateMeteors(float dt,
         int meteorCount = 3;
         int maxMeteorCount = 6;
         float playerTargetRatio = 0.3f;
+
+        const bool rampUpFromKills = (defeatedEnemiesCount > METEOR_INTENSITY_KILL_THRESHOLD);
+
+        // Increase pressure once the player clears a few foes, unless Meteor Fury overrides it
+        if (rampUpFromKills && !isMeteorFuryActive)
+        {
+            minInterval = METEOR_DYNAMIC_MIN_INTERVAL;
+            maxInterval = METEOR_DYNAMIC_MAX_INTERVAL;
+            meteorCount = METEOR_DYNAMIC_BASE_COUNT;
+            maxMeteorCount = METEOR_DYNAMIC_MAX_COUNT;
+            playerTargetRatio = 0.4f;
+        }
 
         // Increase intensity during Meteor Fury
         if (isMeteorFuryActive)

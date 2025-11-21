@@ -79,7 +79,8 @@ public:
                        float groundLevel,
                        const sf::View &camera,
                        std::mt19937 &rng,
-                       const GameMaster *gameMaster = nullptr);
+                       const GameMaster *gameMaster = nullptr,
+                       int defeatedEnemiesCount = 0);
 
     // Returns current projectile ammo count
     int getProjectileAmmo() const;

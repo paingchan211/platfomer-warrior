@@ -51,6 +51,9 @@ private:
 
     // ---------- Player & Status ----------
     float lowHpWarningTimer = 0.f; // Timer for low HP warnings
+    float sessionElapsedTime = 0.f; // Total elapsed gameplay time (seconds) in the current run
+    float timeToFirstFourEnemies = -1.f; // Time required to defeat the first four enemies
+    bool lateEnemyScalingApplied = false; // Whether late-enemy scaling was already applied
 
     // ---------- Floating Texts ----------
     Queue<std::unique_ptr<FloatingText>> floatingTexts; // Queue of floating text entities
@@ -134,4 +137,7 @@ private:
     // ---------- Floating Text Control ----------
     void spawnFloatingText(int damage, sf::Vector2f position, const sf::Color &color = sf::Color::Red, bool isHealing = false); // Creates floating text
     void clearFloatingTexts(const char *context = nullptr);                                                                     // Clears floating texts
+
+    int countDefeatedEnemies() const;            // Counts number of defeated regular enemies
+    void applyLateEnemyScaling(int defeatedEnemies); // Buffs later enemies based on slow clear speed
 };
