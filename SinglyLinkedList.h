@@ -57,9 +57,6 @@ public:
     // Apply functor to each entry (mutable access).
     template <typename Func>
     void forEach(Func func);
-    // Apply functor to each entry (read-only).
-    template <typename Func>
-    void forEach(Func func) const;
     // Destroy every node and reset to empty.
     void clear();
     // True when the list has no nodes.
@@ -269,19 +266,6 @@ void SinglyLinkedList<T>::forEach(Func func)
     {
         func(current->data);     // Invoke callback with mutable reference
         current = current->next; // Traverse to next element
-    }
-}
-
-template <typename T>
-template <typename Func>
-void SinglyLinkedList<T>::forEach(Func func) const
-{
-    Node *current = head;
-
-    while (current != nullptr)
-    {
-        func(current->data);     // Invoke callback in read-only context
-        current = current->next;
     }
 }
 

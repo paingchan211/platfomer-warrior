@@ -65,9 +65,6 @@ public:
     // Get a const reference to value for a given key. Throws if key is missing.
     const V &get(const K &key) const;
 
-    // Return value for key if present; otherwise return provided defaultValue.
-    V getOrDefault(const K &key, const V &defaultValue) const;
-
     // True if key exists in table, false otherwise.
     bool contains(const K &key) const;
 
@@ -86,10 +83,6 @@ public:
     // Access value by key, creating a default-constructed value if missing.
     V &operator[](const K &key);
 
-    // Return all key-value pairs as a contiguous array of std::pair<K, V>.
-    // outCount is set to number of pairs. Returns nullptr if table is empty.
-    std::unique_ptr<std::pair<K, V>[]> getAllPairs(size_t &outCount) const;
-
     // Total number of buckets in the underlying table.
     size_t bucketCount() const;
 
@@ -105,9 +98,6 @@ public:
 
     // Compute maximum chain length (longest linked list) across all buckets.
     size_t longestChainLength() const;
-
-    // Compute average chain length among buckets that are non-empty.
-    double averageChainLength() const;
 };
 
 // -------------------- Implementation --------------------
@@ -339,26 +329,6 @@ const V &HashTable<K, V>::get(const K &key) const
     throw std::runtime_error("Key not found in hash table");
 }
 
-// Return value for key if present; otherwise return copy of defaultValue.
-template <typename K, typename V>
-V HashTable<K, V>::getOrDefault(const K &key, const V &defaultValue) const
-{
-    size_t index = hash(key);
-    Node *current = table[index];
-
-    while (current != nullptr)
-    {
-        if (current->key == key)
-        {
-            return current->value; // Return found value by copy
-        }
-        current = current->next;
-    }
-
-    // Key not found: return provided default value
-    return defaultValue;
-}
-
 // Check if key exists in table by scanning the appropriate bucket chain.
 template <typename K, typename V>
 bool HashTable<K, V>::contains(const K &key) const
@@ -459,37 +429,6 @@ V &HashTable<K, V>::operator[](const K &key)
     return get(key); // Now guaranteed to exist
 }
 
-// Return all key-value pairs as an array of std::pair<K, V>.
-// outCount is set to number of elements, and the caller owns the returned array.
-template <typename K, typename V>
-std::unique_ptr<std::pair<K, V>[]> HashTable<K, V>::getAllPairs(size_t &outCount) const
-{
-    outCount = count;
-
-    if (count == 0)
-    {
-        // Return null pointer when table is empty
-        return nullptr;
-    }
-
-    // Allocate array big enough for all pairs
-    auto result = std::make_unique<std::pair<K, V>[]>(count);
-    size_t index = 0; // Current index in result array
-
-    // Copy each key-value pair from every bucket chain
-    for (size_t i = 0; i < capacity; ++i)
-    {
-        Node *current = table[i];
-        while (current != nullptr)
-        {
-            result[index++] = {current->key, current->value};
-            current = current->next;
-        }
-    }
-
-    return result;
-}
-
 // Number of buckets allocated in this hash table.
 template <typename K, typename V>
 size_t HashTable<K, V>::bucketCount() const
@@ -567,18 +506,4 @@ size_t HashTable<K, V>::longestChainLength() const
     }
 
     return maxLength;
-}
-
-// Compute average chain length across only the buckets that are populated.
-template <typename K, typename V>
-double HashTable<K, V>::averageChainLength() const
-{
-    size_t usedBuckets = nonEmptyBucketCount();
-    if (usedBuckets == 0)
-    {
-        return 0.0; // Avoid division by zero when table is empty
-    }
-
-    // Average chain size is total nodes divided by number of non-empty buckets
-    return static_cast<double>(count) / static_cast<double>(usedBuckets);
 }
