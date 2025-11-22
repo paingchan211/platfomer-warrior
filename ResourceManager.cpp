@@ -125,11 +125,7 @@ bool ResourceManager::loadTextures()
            loadAndInsert("fireball", "assets/fireball.png") &&
            loadAndInsert("ice_projectile", "assets/iceshard.png") &&
            loadAndInsert("hp_potion", "assets/hp-potion.png") &&
-           loadAndInsert("banner", "assets/banner-horizontal.png") &&
-           loadAndInsert("easy", "assets/easy.png") &&
-           loadAndInsert("medium", "assets/medium.png") &&
-           loadAndInsert("hard", "assets/hard.png") &&
-           loadAndInsert("select", "assets/select.png");
+           loadAndInsert("banner", "assets/banner-horizontal.png");
 }
 
 // Loads textures for meteor effects

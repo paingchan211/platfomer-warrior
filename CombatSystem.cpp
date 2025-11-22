@@ -113,10 +113,6 @@ void CombatSystem::reset(std::mt19937 &rng, const Player &player)
     meteors.clear();
     meteorPool.clear();
 
-    // Reset projectile ammo and cooldown based on player's skill tree
-    projectileAmmo = getMaxProjectileAmmo(player);
-    projectileCooldown = 0.f;
-
     // Determine projectile type based on player's unlocked skills
     bool hasFire = player.getSkillTree().hasFireProjectile();
     bool hasIce = player.getSkillTree().hasIceProjectile();
@@ -126,6 +122,10 @@ void CombatSystem::reset(std::mt19937 &rng, const Player &player)
         currentProjectileType = ProjectileType::ICE;
     else
         currentProjectileType = ProjectileType::FIRE;
+
+    // Reset projectile ammo and cooldown based on player's skill tree
+    projectileAmmo = getMaxProjectileAmmo(player);
+    projectileCooldown = 0.f;
 
     // Reset special attack and potion cooldowns (respect unlocked skills)
     const bool hasSpecialAttack = player.getSkillTree().hasSpecialAttack();
@@ -1395,15 +1395,20 @@ float CombatSystem::getProjectileCooldown() const
 // Returns maximum projectile ammo based on player's skill tree
 int CombatSystem::getMaxProjectileAmmo(const Player &player) const
 {
-    // Return fire or ice projectile charges based on current type
-    if (currentProjectileType == ProjectileType::FIRE)
-    {
-        return player.getSkillTree().getFireProjectileCharges();
-    }
-    else
-    {
-        return player.getSkillTree().getIceProjectileCharges();
-    }
+    // Use effective projectile type so locked selections fall back to unlocked branch
+    const bool hasFire = player.getSkillTree().hasFireProjectile();
+    const bool hasIce = player.getSkillTree().hasIceProjectile();
+
+    ProjectileType effectiveType = currentProjectileType;
+    if (effectiveType == ProjectileType::FIRE && !hasFire && hasIce)
+        effectiveType = ProjectileType::ICE;
+    else if (effectiveType == ProjectileType::ICE && !hasIce && hasFire)
+        effectiveType = ProjectileType::FIRE;
+
+    if (effectiveType == ProjectileType::FIRE)
+        return hasFire ? player.getSkillTree().getFireProjectileCharges() : 0;
+
+    return hasIce ? player.getSkillTree().getIceProjectileCharges() : 0;
 }
 
 // Returns current special attack ammo count
