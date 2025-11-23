@@ -22,6 +22,7 @@ enum class GameStateType
     HelpScreen,
     CombatLogScreen,
     DebugMenu,
+    ConsoleDebugMenu,
     ConfirmQuitToMenu,
     ConfirmRestart,
     ConfirmOverwriteSave

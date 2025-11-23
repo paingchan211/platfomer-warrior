@@ -3,16 +3,16 @@
 #include <string>
 
 // Debug / instrumentation toggles
-constexpr bool ENABLE_HASH_TABLE_STDOUT = false;         // Mirror HashTable insert/lookups/stats
-constexpr bool ENABLE_SINGLY_LINKED_LIST_STDOUT = false; // Mirror combat log operations to std::cout when true
-constexpr bool ENABLE_DOUBLY_LINKED_LIST_STDOUT = false; // Mirror DoublyLinkedList pool/active actions
-constexpr bool ENABLE_STACK_STDOUT = false;              // Mirror Stack operations to std::cout when true
-constexpr bool ENABLE_QUEUE_STDOUT = false;              // Mirror Queue operations to std::cout when true
-constexpr bool ENABLE_SINGLETON_STDOUT = false;          // Mirror Singleton creation/destruction to std::cout when true
-constexpr bool ENABLE_ITERATOR_STDOUT = false;           // Mirror Iterator operations to std::cout when true
-constexpr bool ENABLE_INHERITANCE_STDOUT = false;        // Mirror base/derived constructor activity
-constexpr bool ENABLE_POLYMORPHISM_STDOUT = false;       // Mirror virtual dispatch usage to std::cout when true
-constexpr int POLYMORPHISM_LOG_LIMIT = 9999;             // Max logs per polymorphic dispatch site (unlimited for full frame logging)
+inline bool ENABLE_HASH_TABLE_STDOUT = false;         // Mirror HashTable insert/lookups/stats
+inline bool ENABLE_SINGLY_LINKED_LIST_STDOUT = false; // Mirror combat log operations to std::cout when true
+inline bool ENABLE_DOUBLY_LINKED_LIST_STDOUT = false; // Mirror DoublyLinkedList pool/active actions
+inline bool ENABLE_STACK_STDOUT = false;              // Mirror Stack operations to std::cout when true
+inline bool ENABLE_QUEUE_STDOUT = false;              // Mirror Queue operations to std::cout when true
+inline bool ENABLE_SINGLETON_STDOUT = true;           // Mirror Singleton creation/destruction to std::cout when true
+inline bool ENABLE_ITERATOR_STDOUT = false;           // Mirror Iterator operations to std::cout when true
+inline bool ENABLE_INHERITANCE_STDOUT = false;        // Mirror base/derived constructor activity
+inline bool ENABLE_POLYMORPHISM_STDOUT = false;       // Mirror virtual dispatch usage to std::cout when true
+constexpr int POLYMORPHISM_LOG_LIMIT = 1;             // Max logs per polymorphic dispatch site (unlimited for full frame logging)
 
 // Screen and world dimensions
 constexpr float SCREEN_WIDTH = 1200.f;        // Width of the game screen in pixels

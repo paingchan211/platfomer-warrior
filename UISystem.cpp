@@ -2485,9 +2485,9 @@ void UISystem::renderDebugMenu(sf::RenderWindow &window,
     window.draw(title);
 
     // Debug options with their current state
-    const char *debugOptions[] = {"State Stack", "Key Display", "Collision Boxes"};
-    const bool optionStates[] = {showStateStack, showKeyDisplay, showCollisions};
-    const int numOptions = 3;
+    const char *debugOptions[] = {"State Stack", "Key Display", "Collision Boxes", "Console Debug"};
+    const bool *optionStates[] = {&showStateStack, &showKeyDisplay, &showCollisions, nullptr};
+    const int numOptions = 4;
 
     // Draw each option with selection highlight and ON/OFF indicator
     for (int i = 0; i < numOptions; ++i)
@@ -2497,7 +2497,14 @@ void UISystem::renderDebugMenu(sf::RenderWindow &window,
 
         // Build display string with ON/OFF status
         std::string displayText = debugOptions[i];
-        displayText += optionStates[i] ? " [ON]" : " [OFF]";
+        if (optionStates[i])
+        {
+            displayText += *optionStates[i] ? " [ON]" : " [OFF]";
+        }
+        else
+        {
+            displayText += " [OPEN]";
+        }
 
         option.setString(displayText);
         option.setCharacterSize(32);
@@ -2519,19 +2526,108 @@ void UISystem::renderDebugMenu(sf::RenderWindow &window,
         // Center each option text
         sf::FloatRect optionBounds = option.getLocalBounds();
         option.setOrigin(optionBounds.width / 2.f, optionBounds.height / 2.f);
-        option.setPosition(SCREEN_WIDTH / 2.f, SCREEN_HEIGHT / 2.f - 30.f + i * 70.f);
+        option.setPosition(SCREEN_WIDTH / 2.f, SCREEN_HEIGHT / 2.f - 60.f + i * 60.f);
         window.draw(option);
     }
 
     // Bottom control hint
     sf::Text hint;
     hint.setFont(font);
-    hint.setString("UP/DOWN: Navigate | ENTER: Toggle | D: Close");
+    hint.setString("UP/DOWN: Navigate | ENTER: Toggle/Open | D: Close");
     hint.setCharacterSize(20);
     hint.setFillColor(sf::Color(180, 180, 180));
     sf::FloatRect hintBounds = hint.getLocalBounds();
     hint.setOrigin(hintBounds.width / 2.f, hintBounds.height / 2.f);
     hint.setPosition(SCREEN_WIDTH / 2.f, SCREEN_HEIGHT - 80.f);
+    window.draw(hint);
+}
+
+void UISystem::renderConsoleDebugMenu(sf::RenderWindow &window,
+                                      const GameStateData &debugState)
+{
+    sf::View screenView(sf::FloatRect(0.f, 0.f, SCREEN_WIDTH, SCREEN_HEIGHT));
+    window.setView(screenView);
+
+    sf::RectangleShape overlay(sf::Vector2f(SCREEN_WIDTH, SCREEN_HEIGHT));
+    overlay.setFillColor(sf::Color(0, 0, 0, 180));
+    window.draw(overlay);
+
+    const sf::Font &font = resourceManager.getFont();
+
+    sf::Text title;
+    title.setFont(font);
+    title.setString("CONSOLE DEBUG");
+    title.setCharacterSize(46);
+    title.setFillColor(sf::Color(200, 220, 120));
+    title.setStyle(sf::Text::Bold);
+    title.setOutlineColor(sf::Color::Black);
+    title.setOutlineThickness(3.f);
+    sf::FloatRect titleBounds = title.getLocalBounds();
+    title.setOrigin(titleBounds.width / 2.f, titleBounds.height / 2.f);
+    title.setPosition(SCREEN_WIDTH / 2.f, SCREEN_HEIGHT / 2.f - 220.f);
+    window.draw(title);
+
+    const char *debugOptions[] = {
+        "Hash Table Stdout",
+        "SinglyLinkedList Stdout",
+        "DoublyLinkedList Stdout",
+        "Stack Stdout",
+        "Queue Stdout",
+        "Singleton Stdout",
+        "Iterator Stdout",
+        "Inheritance Stdout",
+        "Polymorphism Stdout"};
+
+    bool *optionFlags[] = {
+        &ENABLE_HASH_TABLE_STDOUT,
+        &ENABLE_SINGLY_LINKED_LIST_STDOUT,
+        &ENABLE_DOUBLY_LINKED_LIST_STDOUT,
+        &ENABLE_STACK_STDOUT,
+        &ENABLE_QUEUE_STDOUT,
+        &ENABLE_SINGLETON_STDOUT,
+        &ENABLE_ITERATOR_STDOUT,
+        &ENABLE_INHERITANCE_STDOUT,
+        &ENABLE_POLYMORPHISM_STDOUT};
+
+    const int numOptions = 9;
+
+    for (int i = 0; i < numOptions; ++i)
+    {
+        sf::Text option;
+        option.setFont(font);
+
+        std::string displayText = debugOptions[i];
+        displayText += *optionFlags[i] ? " [ON]" : " [OFF]";
+
+        option.setString(displayText);
+        option.setCharacterSize(28);
+
+        if (i == debugState.selectedDebugOption)
+        {
+            option.setFillColor(sf::Color::White);
+            option.setCharacterSize(32);
+        }
+        else
+        {
+            option.setFillColor(sf::Color(170, 170, 170));
+            option.setOutlineColor(sf::Color::Black);
+            option.setOutlineThickness(2.f);
+        }
+
+        sf::FloatRect optionBounds = option.getLocalBounds();
+        option.setOrigin(optionBounds.width / 2.f, optionBounds.height / 2.f);
+        option.setPosition(SCREEN_WIDTH / 2.f, SCREEN_HEIGHT / 2.f - 120.f + i * 45.f);
+        window.draw(option);
+    }
+
+    sf::Text hint;
+    hint.setFont(font);
+    hint.setString("UP/DOWN: Navigate | ENTER: Toggle | D/Esc: Back");
+    hint.setCharacterSize(20);
+    hint.setFillColor(sf::Color(180, 180, 180));
+    sf::FloatRect hintBounds = hint.getLocalBounds();
+    hint.setOrigin(hintBounds.width / 2.f, hintBounds.height / 2.f);
+    hint.setPosition(SCREEN_WIDTH / 2.f, SCREEN_HEIGHT - 70.f);
     window.draw(hint);
 }
 

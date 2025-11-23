@@ -20,8 +20,7 @@ InputManager::InputManager()
       projectileKeyPressed(false),
       switchProjectileKeyPressed(false),
       attack1KeyPressed(false),
-      attack2KeyPressed(false),
-      combatLogStdoutEnabled(false)
+      attack2KeyPressed(false)
 {
 }
 
@@ -187,6 +186,10 @@ void InputManager::processEvent(const sf::Event &event,
                 {
                     handleDebugMenuInput(event, stateStack, *showDebugStateStack, *showDebugKeyDisplay, *showDebugCollisions);
                 }
+            }
+            else if (currentState == GameStateType::ConsoleDebugMenu)
+            {
+                handleConsoleDebugMenuInput(event, stateStack);
             }
             else if (currentState == GameStateType::Playing)
             {
@@ -648,7 +651,7 @@ void InputManager::handleCombatLogInput(const sf::Event &event,
                                                       currentIndex++;
                                                       return shouldRemove; });
 
-            if (removedCount > 0 && combatLogStdoutEnabled)
+            if (removedCount > 0 && ENABLE_SINGLY_LINKED_LIST_STDOUT)
             {
                 std::cout << "\n[SinglyLinkedList] [InputManager] User deleted entry at index " << targetIndex << "\n";
                 std::cout << "[SinglyLinkedList] [Session] Combat Log Size: " << combatLog.size() << "\n\n";
@@ -682,17 +685,17 @@ void InputManager::handleDebugMenuInput(const sf::Event &event,
 
     if (event.key.code == sf::Keyboard::Up && !upKeyDown)
     {
-        // Move selection up (wrap 0..2)
+        // Move selection up (wrap 0..3)
         debugState.selectedDebugOption--;
         if (debugState.selectedDebugOption < 0)
-            debugState.selectedDebugOption = 2;
+            debugState.selectedDebugOption = 3;
         upKeyDown = true;
     }
     else if (event.key.code == sf::Keyboard::Down && !downKeyDown)
     {
-        // Move selection down (wrap 0..2)
+        // Move selection down (wrap 0..3)
         debugState.selectedDebugOption++;
-        if (debugState.selectedDebugOption > 2)
+        if (debugState.selectedDebugOption > 3)
             debugState.selectedDebugOption = 0;
         downKeyDown = true;
     }
@@ -712,6 +715,9 @@ void InputManager::handleDebugMenuInput(const sf::Event &event,
         case 2: // Collision Boxes
             showCollisions = !showCollisions;
             break;
+        case 3: // Console Debug submenu
+            stateStack.push(GameStateData(GameStateType::ConsoleDebugMenu));
+            break;
         }
     }
     else if (event.key.code == sf::Keyboard::D)
@@ -727,10 +733,79 @@ void InputManager::handleDebugMenuInput(const sf::Event &event,
     }
 }
 
+void InputManager::handleConsoleDebugMenuInput(const sf::Event &event,
+                                               Stack<GameStateData> &stateStack)
+{
+    if (stateStack.isEmpty())
+        return;
+
+    GameStateData &consoleState = stateStack.top();
+    const int numOptions = 9;
+
+    if (event.key.code == sf::Keyboard::Up && !upKeyDown)
+    {
+        consoleState.selectedDebugOption--;
+        if (consoleState.selectedDebugOption < 0)
+            consoleState.selectedDebugOption = numOptions - 1;
+        upKeyDown = true;
+    }
+    else if (event.key.code == sf::Keyboard::Down && !downKeyDown)
+    {
+        consoleState.selectedDebugOption++;
+        if (consoleState.selectedDebugOption >= numOptions)
+            consoleState.selectedDebugOption = 0;
+        downKeyDown = true;
+    }
+    else if (event.key.code == sf::Keyboard::Enter && !enterKeyDown)
+    {
+        enterKeyDown = true;
+
+        switch (consoleState.selectedDebugOption)
+        {
+        case 0:
+            ENABLE_HASH_TABLE_STDOUT = !ENABLE_HASH_TABLE_STDOUT;
+            break;
+        case 1:
+            ENABLE_SINGLY_LINKED_LIST_STDOUT = !ENABLE_SINGLY_LINKED_LIST_STDOUT;
+            break;
+        case 2:
+            ENABLE_DOUBLY_LINKED_LIST_STDOUT = !ENABLE_DOUBLY_LINKED_LIST_STDOUT;
+            break;
+        case 3:
+            ENABLE_STACK_STDOUT = !ENABLE_STACK_STDOUT;
+            break;
+        case 4:
+            ENABLE_QUEUE_STDOUT = !ENABLE_QUEUE_STDOUT;
+            break;
+        case 5:
+            ENABLE_SINGLETON_STDOUT = !ENABLE_SINGLETON_STDOUT;
+            break;
+        case 6:
+            ENABLE_ITERATOR_STDOUT = !ENABLE_ITERATOR_STDOUT;
+            break;
+        case 7:
+            ENABLE_INHERITANCE_STDOUT = !ENABLE_INHERITANCE_STDOUT;
+            break;
+        case 8:
+            ENABLE_POLYMORPHISM_STDOUT = !ENABLE_POLYMORPHISM_STDOUT;
+            break;
+        }
+    }
+    else if (event.key.code == sf::Keyboard::D)
+    {
+        stateStack.pop();
+    }
+    else if (event.key.code == sf::Keyboard::Escape && !escKeyDown)
+    {
+        stateStack.pop();
+        escKeyDown = true;
+    }
+}
+
 void InputManager::appendCombatLogEntry(SinglyLinkedList<std::string> &combatLog, const std::string &message)
 {
     combatLog.pushBack(message);
-    if (combatLogStdoutEnabled)
+    if (ENABLE_SINGLY_LINKED_LIST_STDOUT)
     {
         std::cout << "[SinglyLinkedList] [Session] Combat Log Entry Added: \"" << message << "\"\n";
         std::cout << "[SinglyLinkedList] [Session] Combat Log Size: " << combatLog.size() << "\n\n";
@@ -1107,7 +1182,6 @@ void InputManager::setProjectileKeyPressed(bool pressed) { projectileKeyPressed 
 void InputManager::setSwitchProjectileKeyPressed(bool pressed) { switchProjectileKeyPressed = pressed; }
 void InputManager::setAttack1KeyPressed(bool pressed) { attack1KeyPressed = pressed; }
 void InputManager::setAttack2KeyPressed(bool pressed) { attack2KeyPressed = pressed; }
-void InputManager::setCombatLogStdoutEnabled(bool enabled) { combatLogStdoutEnabled = enabled; }
 
 // Handles Save Game menu (choose slot, confirm overwrite, or go back)
 void InputManager::handleSaveGameMenuInput(const sf::Event &event,

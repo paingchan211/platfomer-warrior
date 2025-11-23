@@ -74,6 +74,6 @@ inline void logPolymorphicDispatch(const BasePtr *instance,
     }
 
     // Print polymorphism dispatch result to stdout
-    // std::cout << "[Polymorphism] " << base << " pointer dispatched to "
-    //           << derivedName << "::" << method << std::endl;
+    std::cout << "[Polymorphism] " << base << " pointer dispatched to "
+              << derivedName << "::" << method << std::endl;
 }

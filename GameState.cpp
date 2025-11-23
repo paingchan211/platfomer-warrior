@@ -60,6 +60,7 @@ namespace
         static SimpleGameStateBehavior help(GameStateType::HelpScreen, true, false, true);
         static SimpleGameStateBehavior combat(GameStateType::CombatLogScreen, true, false, true);
         static SimpleGameStateBehavior debugMenu(GameStateType::DebugMenu, true, false, true);
+        static SimpleGameStateBehavior consoleDebug(GameStateType::ConsoleDebugMenu, true, false, true);
         static SimpleGameStateBehavior confirmQuit(GameStateType::ConfirmQuitToMenu, true, false, true);
         static SimpleGameStateBehavior confirmRestart(GameStateType::ConfirmRestart, true, false, true);
         static SimpleGameStateBehavior confirmOverwrite(GameStateType::ConfirmOverwriteSave, true, false, true);
@@ -90,6 +91,8 @@ namespace
             return combat;
         case GameStateType::DebugMenu:
             return debugMenu;
+        case GameStateType::ConsoleDebugMenu:
+            return consoleDebug;
         case GameStateType::ConfirmQuitToMenu:
             return confirmQuit;
         case GameStateType::ConfirmRestart:
@@ -138,6 +141,7 @@ const GameStateBehavior &getGameStateBehavior(GameStateType type)
     case GameStateType::HelpScreen:
     case GameStateType::CombatLogScreen:
     case GameStateType::DebugMenu:
+    case GameStateType::ConsoleDebugMenu:
     case GameStateType::ConfirmQuitToMenu:
     case GameStateType::ConfirmRestart:
     case GameStateType::ConfirmOverwriteSave:
@@ -183,6 +187,8 @@ const char *toString(GameStateType type)
         return "CombatLogScreen";
     case GameStateType::DebugMenu:
         return "DebugMenu";
+    case GameStateType::ConsoleDebugMenu:
+        return "ConsoleDebugMenu";
     case GameStateType::ConfirmQuitToMenu:
         return "ConfirmQuitToMenu";
     case GameStateType::ConfirmRestart:

@@ -85,7 +85,6 @@ private:
 
     // ---------- Exit Control ----------
     bool requestExit = false;                                       // Exit request flag
-    bool combatLogStdoutEnabled = ENABLE_SINGLY_LINKED_LIST_STDOUT; // Mirrors combat log operations to std::cout when true
 
 public:
     // ---------- Constructor & Destructor ----------
@@ -95,8 +94,6 @@ public:
     // ---------- Main Game Loop ----------
     void run();              // Runs the main game loop
     bool shouldExit() const; // Checks if game should exit
-    void setCombatLogStdoutEnabled(bool enabled);
-    bool isCombatLogStdoutEnabled() const { return combatLogStdoutEnabled; }
 
 private:
     // ---------- Initialization ----------

@@ -129,6 +129,8 @@ public:
                          bool showStateStack,
                          bool showKeyDisplay,
                          bool showCollisions);
+    void renderConsoleDebugMenu(sf::RenderWindow &window,
+                                const GameStateData &debugState);
 
     void showToast(const std::string &message, sf::Color color = sf::Color::White);
     void updateToast(float dt);
