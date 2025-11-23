@@ -1423,12 +1423,6 @@ float CombatSystem::getSpecialAttackCooldown() const
     return specialAttackCooldown;
 }
 
-// Returns whether fire projectile type is currently selected
-bool CombatSystem::isUsingFireProjectile() const
-{
-    return currentProjectileType == ProjectileType::FIRE;
-}
-
 // Returns the effective projectile type based on player's unlocked skills
 bool CombatSystem::isEffectivelyUsingFireProjectile(const Player &player) const
 {

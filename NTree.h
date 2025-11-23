@@ -12,7 +12,7 @@ class NTree
 private:
     T key;                 // The value stored at this node
     NTree<T, N> *nodes[N]; // Fixed-size array of child pointers
-    NTree<T, N> *parent_;  // Pointer to this node's parent (nullptr for root)
+    NTree<T, N> *parent;   // Pointer to this node's parent (nullptr for root)
     NTree();               // Private default constructor used only for defining NIL
 
 public:
@@ -48,14 +48,13 @@ public:
     NTree<T, N> *search(const T &key) const;
 
     // Parent accessors
-    NTree<T, N> *getParent() const { return parent_; }
+    NTree<T, N> *getParent() const { return parent; }
 
     // True if parent is null or this node *is* the root sentinel
-    bool isRoot() const { return parent_ == nullptr || parent_ == &NTree<T, N>::NIL; }
+    bool isRoot() const { return parent == nullptr || parent == &NTree<T, N>::NIL; }
 
     // Level-order (breadth-first) traversal with read/write or read-only callback
     void traverseLevelOrder(std::function<void(T &)> visitor);
-    void traverseLevelOrder(std::function<void(const T &)> visitor) const;
 };
 
 // -------------------- Static NIL sentinel definition --------------------
@@ -70,7 +69,7 @@ NTree<T, N> NTree<T, N>::NIL;
 // Creates an empty NIL-like node. Children are set to NIL.
 // Used only to construct the static NIL instance.
 template <class T, int N>
-NTree<T, N>::NTree() : parent_(nullptr)
+NTree<T, N>::NTree() : parent(nullptr)
 {
     for (int i = 0; i < N; ++i)
         nodes[i] = &NTree<T, N>::NIL; // Every child is empty by default
@@ -80,7 +79,7 @@ NTree<T, N>::NTree() : parent_(nullptr)
 
 // Initializes node with a key and sets all children to NIL.
 template <class T, int N>
-NTree<T, N>::NTree(const T &aKey) : key(aKey), parent_(nullptr)
+NTree<T, N>::NTree(const T &aKey) : key(aKey), parent(nullptr)
 {
     for (int i = 0; i < N; ++i)
         nodes[i] = &NTree<T, N>::NIL; // No children yet
@@ -158,7 +157,7 @@ void NTree<T, N>::attachNTree(int index, NTree<T, N> *tree)
 
     nodes[index] = tree;           // Install child
     if (tree != &NTree<T, N>::NIL) // NIL's parent must never be changed
-        tree->parent_ = this;      // Update parent pointer
+        tree->parent = this;       // Update parent pointer
 }
 
 // Detaches child at index and returns it. The pointer is not deleted.
@@ -175,7 +174,7 @@ NTree<T, N> *NTree<T, N>::detachNTree(int index)
     nodes[index] = &NTree<T, N>::NIL;     // Replace with NIL
 
     if (detached != &NTree<T, N>::NIL)
-        detached->parent_ = nullptr; // Detached subtree becomes root
+        detached->parent = nullptr; // Detached subtree becomes root
 
     return detached;
 }
@@ -289,83 +288,6 @@ void NTree<T, N>::traverseLevelOrder(std::function<void(T &)> visitor)
         visitor(current->key); // Visit node's stored value
 
         // Add each non-NIL child
-        for (int i = 0; i < N; ++i)
-        {
-            if (current->nodes[i] != &NTree<T, N>::NIL)
-                queue.push(current->nodes[i]);
-        }
-    }
-}
-
-// -------------------- Level-order traversal (const version) --------------------
-
-// Identical to non-const traversal, except visitor receives const T&.
-template <class T, int N>
-void NTree<T, N>::traverseLevelOrder(std::function<void(const T &)> visitor) const
-{
-    if (isEmpty())
-        return;
-
-    // Minimal queue storing const node pointers
-    struct SimpleQueue
-    {
-        struct QNode
-        {
-            const NTree<T, N> *node;
-            QNode *next;
-            QNode(const NTree<T, N> *n) : node(n), next(nullptr) {}
-        };
-
-        QNode *head = nullptr;
-        QNode *tail = nullptr;
-
-        void push(const NTree<T, N> *n)
-        {
-            if (n == &NTree<T, N>::NIL)
-                return;
-
-            QNode *q = new QNode(n);
-            if (!tail)
-            {
-                head = tail = q;
-            }
-            else
-            {
-                tail->next = q;
-                tail = q;
-            }
-        }
-
-        const NTree<T, N> *pop()
-        {
-            if (!head)
-                return nullptr;
-
-            QNode *q = head;
-            const NTree<T, N> *n = q->node;
-
-            head = head->next;
-            if (!head)
-                tail = nullptr;
-
-            delete q;
-            return n;
-        }
-
-        bool empty() const { return head == nullptr; }
-    };
-
-    SimpleQueue queue;
-    queue.push(this);
-
-    while (!queue.empty())
-    {
-        const NTree<T, N> *current = queue.pop();
-        if (!current || current->isEmpty())
-            continue;
-
-        visitor(current->key); // Visit this node's data
-
         for (int i = 0; i < N; ++i)
         {
             if (current->nodes[i] != &NTree<T, N>::NIL)

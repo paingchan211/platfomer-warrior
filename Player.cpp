@@ -76,7 +76,55 @@ Player::Player(Animation *run, Animation *idle, Animation *atk1, Animation *atk2
 // Update animation logic each frame
 void Player::update(float dt)
 {
-    updateAnimation(dt);
+    Animation *anim = nullptr;
+    float currentFrameTime = 0.1f;
+
+    // Determine current animation
+    if (isAttacking || isSpecialAttacking)
+    {
+        if (attackType == 3)
+        {
+            anim = attack2Anim;
+            currentFrameTime = 0.1f;
+        }
+        else
+        {
+            anim = (attackType == 1) ? attack1Anim : attack2Anim;
+            currentFrameTime = 0.15f;
+        }
+    }
+    else
+    {
+        anim = isRunning ? runAnim : idleAnim;
+    }
+
+    sprite.setTexture(anim->texture);
+
+    // Handle animation frame timing
+    animationTimer += dt;
+    if (animationTimer >= currentFrameTime)
+    {
+        currentFrame++;
+        animationTimer = 0.f;
+
+        // Reset after attack animation completes
+        if ((isAttacking || isSpecialAttacking) && currentFrame >= anim->frames)
+        {
+            isAttacking = false;
+            isSpecialAttacking = false;
+            attackType = 0;
+            currentFrame = 0;
+            specialDashTraveled = 0.f;
+        }
+        else
+        {
+            currentFrame = currentFrame % anim->frames;
+        }
+    }
+
+    // Apply frame and direction
+    sprite.setTextureRect(anim->frameRect(currentFrame));
+    setSpriteDirection(sprite, facingRight, anim->frameSize);
 }
 
 // Handle user input for movement, sprinting, and dashing
@@ -141,60 +189,6 @@ void Player::handleInput(float dt, const KeyBindingManager *keyManager, bool spr
         isRunning = moving;
         currentFrame = 0;
     }
-}
-
-// Update player animation state based on current action
-void Player::updateAnimation(float dt)
-{
-    Animation *anim = nullptr;
-    float currentFrameTime = 0.1f;
-
-    // Determine current animation
-    if (isAttacking || isSpecialAttacking)
-    {
-        if (attackType == 3)
-        {
-            anim = attack2Anim;
-            currentFrameTime = 0.1f;
-        }
-        else
-        {
-            anim = (attackType == 1) ? attack1Anim : attack2Anim;
-            currentFrameTime = 0.15f;
-        }
-    }
-    else
-    {
-        anim = isRunning ? runAnim : idleAnim;
-    }
-
-    sprite.setTexture(anim->texture);
-
-    // Handle animation frame timing
-    animationTimer += dt;
-    if (animationTimer >= currentFrameTime)
-    {
-        currentFrame++;
-        animationTimer = 0.f;
-
-        // Reset after attack animation completes
-        if ((isAttacking || isSpecialAttacking) && currentFrame >= anim->frames)
-        {
-            isAttacking = false;
-            isSpecialAttacking = false;
-            attackType = 0;
-            currentFrame = 0;
-            specialDashTraveled = 0.f;
-        }
-        else
-        {
-            currentFrame = currentFrame % anim->frames;
-        }
-    }
-
-    // Apply frame and direction
-    sprite.setTextureRect(anim->frameRect(currentFrame));
-    setSpriteDirection(sprite, facingRight, anim->frameSize);
 }
 
 // Apply gravity, platform, and ground collision logic

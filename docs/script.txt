@@ -1,0 +1,158 @@
+Platformer Game Demo Video Script — Polished Narrative Version (No Repetition)
+Introduction (1–2 minutes)
+
+Hello. Today I'll be demonstrating my C++ platformer game, a 2D action platformer that blends fast-paced melee and projectile combat with RPG-style character progression and a dynamic AI Storyteller system. The game features elemental attacks, a leveling system, a multi-branch skill tree, and concludes with a multi-phase boss encounter supported by environmental hazards and procedural difficulty adjustments.
+
+A unique aspect of this project is how ten core computer science concepts are integrated into the gameplay systems. The game uses an object-oriented class hierarchy with inheritance and polymorphism; six custom-built data structures; two design patterns; and a real-time AI system, the GameMaster, which monitors the player's performance and triggers adaptive events such as Player Rage Mode and Boss Rage Mode to create dramatic pacing.
+
+Data Structures Overview (1–2 minutes)
+
+[SHOW: Diagram or overview slide of all six data structures]
+
+The game uses six custom data structures, each chosen for a specific real-time requirement.
+
+A custom hash table powers the ResourceManager, giving constant-time access to textures and sounds when the game loads sprites or plays audio. A singly linked list stores the combat log in chronological order, supporting fast insertion as events occur. A doubly linked list manages object pools such as projectiles, potions, and meteors, enabling efficient addition and removal during gameplay. A stack manages game states (menus, pause, skill tree), ensuring states are pushed and popped in a strict LIFO order. A queue controls floating damage text, guaranteeing that damage numbers appear in the sequence they were created. Finally, an N-ary tree—a tree where each node can have any number of children—represents the skill system, naturally encoding prerequisite relationships between abilities.
+
+These structures ensure that resource lookup, state transitions, combat event handling, visual feedback, and skill-tree traversal all remain efficient during gameplay. Every core operation involved—insert, lookup, push, pop, enqueue, dequeue—executes in constant time, which is essential for maintaining a smooth 60 FPS experience.
+
+1. Object-Oriented Programming
+1a. Inheritance and Derived Classes (2–3 minutes)
+
+[SHOW: Code snippet of Entity.h - base class with pure virtual update() and virtual getBounds()]
+[SHOW: Code snippet of Character.h - middle layer adding combat stats, inherits from Entity]
+[SHOW: Code snippet of Player.h - concrete class with full gameplay features, inherits from Character]
+
+The game's architecture is built on a three-level inheritance hierarchy. At the base level, the Entity class defines shared features: position, velocity, rendering, an activation flag, and a pure virtual update method that must be implemented by all derived classes. Entity also declares getBounds as virtual, allowing derived classes to override collision detection.
+
+Character extends Entity and adds attributes for combat—health, damage values, movement speed, and jumping mechanics—along with virtual methods such as takeDamage and isAlive. Character is still abstract because it doesn't implement the pure virtual update method.
+
+Player builds on Character with input handling, physics, animations, special abilities, a leveling system, and a skill tree. Player implements the pure virtual update method and overrides getBounds to provide player-specific collision detection. Enemy extends Character to implement AI—patrolling, chasing, and attacking—while Boss introduces multi-phase behavior.
+
+Projectiles follow a similar structure. A base Projectile class extends Entity and defines shared behavior, while FireProjectile, IceProjectile, and Meteor override update and getBounds to deliver their elemental effects and custom collision boxes.
+
+This three-level hierarchy—Entity → Character → Player—demonstrates how inheritance allows all game objects to share core capabilities while providing room for specialized behaviors at each level.
+
+1b. Polymorphism (2–3 minutes)
+
+[SHOW: Code snippet from CombatSystem.cpp showing baseProjectile->update(dt) and baseProjectile->getBounds()]
+[SHOW: Code snippet from GameWorld.cpp showing platformEntity->update(dt)]
+
+Polymorphism allows different game entities to be managed uniformly. By calling virtual functions through base-class pointers, the game loop can treat Players, Enemies, and Projectiles in the same way while still invoking their correct behaviors at runtime. 
+
+For example, in the combat system, I store FireProjectile and IceProjectile objects but call update and getBounds through a Projectile base pointer. This eliminates the need for manual type checking—without polymorphism, I would need if-else chains checking entity types and casting to specific classes. Instead, when update is called, each entity executes its own logic—FireProjectile animates fire effects, IceProjectile applies slow effects, Meteors fall with gravity. The same applies to getBounds—each projectile type returns its own custom collision box.
+
+This design supports a large variety of behaviors while preserving a unified interface.
+
+[DEMO: Show game running with multiple entity types updating simultaneously]
+
+2. Composite Data Structures
+2a. Hash Table – Independent Research (3–4 minutes)
+
+[SHOW: Code snippet of hash table class with separate chaining]
+
+The hash table is a fully custom implementation using separate chaining for collision resolution. It stores key-value pairs in bucket lists, uses std::hash for hashing, and automatically resizes when the load factor exceeds 0.75.
+
+Insertions update existing keys or create new nodes, and resizing rehashes entries to maintain low collision rates. Lookup, insert, and remove all achieve average-case constant time. The hash table is used heavily in the ResourceManager to store textures and animations, allowing the engine to retrieve assets instantly during rendering and gameplay.
+
+[SHOW: Diagnostic output showing load factor and collision statistics]
+
+I also implemented diagnostic methods—load factor, bucket count, longest chain, and average chain length—to evaluate distribution quality and collision behavior.
+
+2b. Singly Linked List (2 minutes)
+
+[SHOW: Combat log displaying in-game, updating in real-time]
+
+The singly linked list stores combat log entries in chronological order. It maintains head and tail pointers for fast insertion and supports operations such as pushBack, popFront, removeAt, and removeIf. A copy constructor, assignment operator (copy-and-swap), move semantics, and a destructor ensure safe memory management. This structure is ideal for the combat log because entries come in order and usually only need to be appended or trimmed from the front.
+
+2c. Doubly Linked List (2 minutes)
+
+[DEMO: Show projectiles spawning and despawning during combat]
+
+The doubly linked list provides bidirectional traversal and O(1) removal from any position when an iterator is available. It uses a NIL sentinel node to simplify edge cases. A custom iterator supports increment, decrement, dereferencing, and comparison, allowing STL-style iteration and convenient forEach processing. This structure supports object pooling for projectiles and meteors, where elements frequently activate, deactivate, and need removal during iteration.
+
+3. Abstract Data Types
+3a. Stack (2–3 minutes)
+
+[DEMO: Navigate through menus - main menu → pause → skill tree, then back out]
+
+The stack manages game states such as menus, pause screens, and the skill tree. It supports O(1) push and pop operations. The top operation returns the current state, and a peek(level) function allows inspecting deeper states when necessary. A debug logger helps track push/pop operations during development. The stack ensures states exit in the reverse order they were entered, matching the natural structure of nested menus.
+
+3b. Queue (2 minutes)
+
+[DEMO: Attack enemies to show floating damage text appearing in sequence]
+
+The queue controls floating damage text. Enqueue adds new damage indicators to the rear in constant time, and dequeue removes old ones from the front. FIFO ordering ensures text appears in the correct sequence. A removeIf function supports removing text that has faded or moved off-screen. A specialized debug logger outputs the actual damage value being enqueued or dequeued for testing clarity.
+
+3c. N-ary Tree (2–3 minutes)
+
+[SHOW: Skill tree UI with parent-child relationships highlighted]
+
+The N-ary tree powers the skill system. Each node contains a value, an array of child pointers, and a parent pointer. Attach and detach operations restructure the tree while maintaining parent-child relationships. Depth-first search locates specific skills, and a level-order traversal (using an internal queue) supports UI rendering of skill layers. This structure represents hierarchical dependencies cleanly and efficiently.
+
+[DEMO: Unlock a skill and show how it enables child skills]
+
+4. Design Patterns
+4a. Iterator Pattern (2 minutes)
+
+[SHOW: Code snippet of custom iterator implementation]
+
+The Iterator pattern appears in two forms.
+External iterators, such as the doubly linked list iterator, allow clients to manually traverse data structures using standard operators (++, --, *, ->).
+Internal iterators, via forEach methods, let structures apply a function to each element without exposing traversal logic.
+This creates a consistent, flexible way to process lists, queues, and trees across the engine.
+
+4b. Singleton Pattern (2 minutes)
+
+[SHOW: Code snippet of Singleton getInstance() method]
+
+The Singleton pattern ensures a single instance of the Game class. The constructor is private, copy and move operations are deleted, and a static local variable in getInstance guarantees thread-safe lazy initialization. This prevents conflicts in window management and resource loading while providing a central access point for game logic.
+
+5. AI Storyteller System – GameMaster (3–4 minutes)
+
+[SHOW: Code snippet or diagram of GameMaster monitoring system]
+
+The GameMaster is a real-time AI system that monitors player performance and dynamically adjusts gameplay intensity to create dramatic pacing. It tracks key metrics including player health percentage, damage dealt, damage taken, time elapsed, and boss health thresholds.
+
+When certain conditions are met, the GameMaster triggers adaptive events:
+
+Player Rage Mode activates when the player's health drops below 30%. This temporarily boosts the player's damage output and movement speed, creating comeback opportunities and preventing frustrating deaths. The screen tint and visual effects signal this power-up state.
+
+[DEMO: Take damage until health is low, show Rage Mode activation with visual effects]
+
+Boss Rage Mode triggers when the boss reaches specific health thresholds—typically at 50% and 25% health. This introduces new attack patterns, increased aggression, and environmental hazards such as meteor showers that rain down across the arena. The boss's appearance changes to reflect its enraged state.
+
+[DEMO: Damage boss to 50% health, show phase transition and new mechanics]
+
+The GameMaster also controls the frequency and intensity of environmental events like sandstorms, which reduce visibility and add strategic complexity. By monitoring the flow of combat, it ensures that encounters remain challenging but fair, preventing both trivial victories and impossible scenarios.
+
+This system creates dynamic difficulty adjustment without requiring manual scripting of every encounter, allowing the same boss fight to feel different based on player performance.
+
+6. Boss Fight Demonstration (3–4 minutes)
+
+[DEMO: Full boss encounter from start to finish]
+
+Now let me demonstrate how all these systems come together in the final boss encounter.
+
+The fight begins with the boss in its initial phase, using basic melee attacks and projectile patterns. As I deal damage, the combat log tracks each hit, floating damage numbers appear in sequence via the queue, and the GameMaster monitors the boss's health.
+
+[DEMO: Attack boss, show combat systems working together]
+
+When the boss reaches 50% health, the GameMaster triggers the first phase transition. The boss enters Rage Mode—its attack speed increases, it gains new fire-based abilities, and meteors begin spawning from the doubly linked list object pool, creating environmental hazards across the arena.
+
+[DEMO: Show phase 1 transition, meteor spawns, increased difficulty]
+
+If my health drops critically low during this phase, the GameMaster activates Player Rage Mode, giving me enhanced damage and speed to create a dramatic comeback moment.
+
+[DEMO: If possible, trigger Player Rage Mode]
+
+Continuing to damage the boss triggers the second phase transition at 25% health. The boss becomes even more aggressive, combining melee rushes with elemental projectiles. The polymorphic update system ensures all entities—player, boss, projectiles, meteors—execute their unique behaviors seamlessly within the same game loop.
+
+[DEMO: Show final phase mechanics and defeat the boss]
+
+This encounter demonstrates how inheritance structures the entity behaviors, polymorphism unifies their execution, data structures manage real-time gameplay elements, and the GameMaster orchestrates dramatic pacing—all working together in a cohesive, playable experience.
+
+Conclusion (1 minute)
+
+This project integrates ten core computer science concepts into a functional action platformer. Inheritance and polymorphism organize game behaviors; custom data structures handle resources, logs, object pools, states, effects, and skill dependencies efficiently; and design patterns streamline traversal and global game access. The GameMaster system uses these foundations to trigger adaptive, procedural events that shape the intensity and pacing of gameplay.
+
+The final result is a complete, real-time platformer implemented in over 8,000 lines of C++ code with clear modular structure and practical use of data structures, OOP principles, and design patterns. Thank you for watching this demonstration.

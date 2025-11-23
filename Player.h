@@ -87,9 +87,6 @@ public:
     // Handle keyboard input (movement / attacks)
     void handleInput(float dt, const KeyBindingManager *keyManager = nullptr, bool sprintDisabled = false);
 
-    // Handle sprite animation transitions
-    void updateAnimation(float dt);
-
     // Apply gravity and collision logic
     void updatePhysics(float dt, float groundLevel, Platform **platforms, int numPlatforms);
 

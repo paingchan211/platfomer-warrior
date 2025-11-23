@@ -56,10 +56,6 @@ public:
     Stack(const Stack &) = delete;
     Stack &operator=(const Stack &) = delete;
 
-    // Enable move operations for efficiency
-    Stack(Stack &&other) noexcept;
-    Stack &operator=(Stack &&other) noexcept;
-
     // Pushing values onto stack
     void push(const T &value); // Copy push
     void push(T &&value);      // Move push
@@ -72,7 +68,6 @@ public:
 
     // Peek allows reading an element deeper in the stack (0 = top)
     T &peek(int level);
-    const T &peek(int level) const;
 
     // Stack status
     bool isEmpty() const;
@@ -111,33 +106,6 @@ Stack<T>::~Stack()
     clear(); // Clean up all nodes
 }
 
-// Move constructor: transfer ownership of node chain
-template <typename T>
-Stack<T>::Stack(Stack &&other) noexcept
-    : topNode(other.topNode), // Steal other's nodes
-      count(other.count)
-{
-    other.topNode = nullptr;
-    other.count = 0;
-}
-
-// Move assignment: clear current stack then take ownership from other
-template <typename T>
-Stack<T> &Stack<T>::operator=(Stack &&other) noexcept
-{
-    if (this != &other) // Prevent self-move
-    {
-        clear(); // Free current nodes
-
-        topNode = other.topNode;
-        count = other.count;
-
-        other.topNode = nullptr;
-        other.count = 0;
-    }
-    return *this;
-}
-
 // Push an element onto the stack by copying the value
 template <typename T>
 void Stack<T>::push(const T &value)
@@ -168,7 +136,7 @@ void Stack<T>::pop()
     Node *oldTop = topNode;  // Save pointer to delete
     topNode = topNode->next; // Move top downward
     StackDebugLogger<T>::popped(oldTop->data);
-    delete oldTop;           // Free removed node
+    delete oldTop; // Free removed node
     --count;
 }
 
@@ -202,20 +170,6 @@ T &Stack<T>::peek(int level)
     Node *current = topNode;
 
     // Traverse downward to "level"
-    for (int i = 0; i < level; ++i)
-        current = current->next;
-
-    return current->data;
-}
-
-// Const version of peek
-template <typename T>
-const T &Stack<T>::peek(int level) const
-{
-    if (level < 0 || level >= count)
-        throw std::out_of_range("Stack::peek() level out of range");
-
-    Node *current = topNode;
     for (int i = 0; i < level; ++i)
         current = current->next;
 

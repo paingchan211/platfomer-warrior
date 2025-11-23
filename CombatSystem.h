@@ -92,8 +92,6 @@ public:
     int getSpecialAttackAmmo() const;
     // Returns current special attack cooldown time
     float getSpecialAttackCooldown() const;
-    // Returns whether fire projectile type is currently selected
-    bool isUsingFireProjectile() const;
     // Returns the effective projectile type based on player's unlocked skills
     bool isEffectivelyUsingFireProjectile(const Player &player) const;
 

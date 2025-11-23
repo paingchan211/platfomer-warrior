@@ -62,7 +62,8 @@ public:
                    bool rageMode = false,
                    bool meteorFuryMode = false,
                    bool bossRageMode = false,
-                   bool bossSpawning = false);
+                   bool bossSpawning = false,
+                   bool lateEnemyScalingAdjusted = false);
 
     void renderEnemyHealthBar(sf::RenderWindow &window,
                               const Enemy &enemy,

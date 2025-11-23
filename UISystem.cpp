@@ -260,7 +260,8 @@ void UISystem::renderHUD(sf::RenderWindow &window,
                          bool rageMode,
                          bool meteorFuryMode,
                          bool bossRageMode,
-                         bool bossSpawning)
+                         bool bossSpawning,
+                         bool lateEnemyScalingAdjusted)
 {
     window.setView(window.getDefaultView());
     // Draw core HUD components
@@ -278,6 +279,13 @@ void UISystem::renderHUD(sf::RenderWindow &window,
     if (bossSpawning)
     {
         renderCenteredAlert(window, "All enemies defeated! Boss approaching",
+                            yOffset, sf::Color(255, 215, 0), sf::Color(255, 80, 0));
+        yOffset += 70.f;
+    }
+
+    if (lateEnemyScalingAdjusted)
+    {
+        renderCenteredAlert(window, "Game difficulty has been adjusted to match your pace.",
                             yOffset, sf::Color(255, 215, 0), sf::Color(255, 80, 0));
         yOffset += 70.f;
     }

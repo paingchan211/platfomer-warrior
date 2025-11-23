@@ -1419,7 +1419,7 @@ Project Root/
 │   ├── DoublyLinkedList.h (Data structure)
 │   ├── Stack.h (Data structure)
 │   ├── Queue.h (Data structure)
-│   ├── Tree.h (Data structure)
+│   ├── NTree.h (Data structure)
 │   ├── HashTable.h (Data structure)
 │   └── [22 more header files...]
 │

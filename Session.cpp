@@ -91,6 +91,7 @@ void Session::resetGame()
     sessionElapsedTime = 0.f;
     timeToFirstFourEnemies = -1.f;
     lateEnemyScalingApplied = false;
+    lateEnemyScalingAlertTimer = 0.f;
 
     // Clear transient UI elements and logs
     clearFloatingTexts("[Session] Cleared all floating texts during reset");
@@ -353,6 +354,10 @@ void Session::update(float dt)
 
     // Accumulate timer for low HP warning visuals
     lowHpWarningTimer += dt;
+    if (lateEnemyScalingAlertTimer > 0.f)
+    {
+        lateEnemyScalingAlertTimer = std::max(0.f, lateEnemyScalingAlertTimer - dt);
+    }
 
     // High-level game rules (rage, events, etc.)
     gameMaster.update(dt, *gameWorld.getPlayer(), gameWorld);
@@ -422,7 +427,7 @@ void Session::update(float dt)
     if (ENABLE_POLYMORPHISM_STDOUT && collisionFrameCounter == 120)
     {
         std::cout << "\n[Collision] Polymorphic getBounds() usage:\n";
-        Player *player = gameWorld.getPlayer();
+        Entity *player = gameWorld.getPlayer();
         sf::FloatRect playerBounds = player->getBounds();
         std::cout << "[Collision] Player bounds: ("
                   << playerBounds.left << ", " << playerBounds.top << ", "
@@ -502,7 +507,7 @@ void Session::updatePlayer(float dt)
 
     // Physics + animation updates
     physicsManager.updatePlayerPhysics(*player, dt, gameWorld.getGroundLevel(), gameWorld.getPlatformRawArray(), static_cast<int>(gameWorld.getPlatformRawCount()));
-    player->updateAnimation(dt);
+    player->update(dt);
 
     // Landed this frame?
     if (wasInAir && player->getOnGround())
@@ -745,6 +750,8 @@ int Session::countDefeatedEnemies() const
 
 void Session::applyLateEnemyScaling(int defeatedEnemies)
 {
+    static constexpr float LATE_ENEMY_SCALING_BANNER_DURATION = 4.0f;
+
     if (lateEnemyScalingApplied)
         return;
 
@@ -799,6 +806,7 @@ void Session::applyLateEnemyScaling(int defeatedEnemies)
     }
 
     lateEnemyScalingApplied = true;
+    lateEnemyScalingAlertTimer = LATE_ENEMY_SCALING_BANNER_DURATION;
     if (buff)
     {
         addCombatLog("[Dynamic GamePlay] Late enemies empowered by your fast clears! They now hit harder and have more HP.");
@@ -841,7 +849,8 @@ void Session::render()
                        gameMaster.isRageModeActive(),
                        gameMaster.isMeteorFuryActive(),
                        gameMaster.isBossRageModeActive(),
-                       bossSpawning);
+                       bossSpawning,
+                       lateEnemyScalingAlertTimer > 0.f);
 
     // Periodic low-HP attention
     uiSystem.renderLowHpWarning(window, lowHpWarningTimer, gameWorld.getPlayer());

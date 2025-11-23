@@ -54,6 +54,7 @@ private:
     float sessionElapsedTime = 0.f; // Total elapsed gameplay time (seconds) in the current run
     float timeToFirstFourEnemies = -1.f; // Time required to defeat the first four enemies
     bool lateEnemyScalingApplied = false; // Whether late-enemy scaling was already applied
+    float lateEnemyScalingAlertTimer = 0.f; // Time remaining to show scaling banner
 
     // ---------- Floating Texts ----------
     Queue<std::unique_ptr<FloatingText>> floatingTexts; // Queue of floating text entities

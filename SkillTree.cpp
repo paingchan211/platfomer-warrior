@@ -262,10 +262,9 @@ void SkillTree::reset()
     if (tree)
     {
         tree->traverseLevelOrder([](SkillNode &skill)
-                                  {
+                                 {
             skill.currentLevel = 0;
-            skill.isLocked = true;
-        });
+            skill.isLocked = true; });
     }
 }
 
@@ -291,14 +290,6 @@ int SkillTree::getSkillPoints() const
     return availableSkillPoints;
 }
 
-// Return total number of nodes in the tree
-int SkillTree::getTreeSize() const
-{
-    if (!tree)
-        return 0;
-    return tree->getSize();
-}
-
 // Clear an entire branch (fire or ice) and refund points
 void SkillTree::clearSkillBranch(SkillType branchRoot)
 {
@@ -315,7 +306,7 @@ void SkillTree::clearSkillBranch(SkillType branchRoot)
 
         // Traverse and refund points
         fireProjectileNode->traverseLevelOrder([&pointsRefunded](SkillNode &skill)
-                                                {
+                                               {
             int points = skill.currentLevel;
             if (points > 0 && skill.type != SkillType::FIRE_PROJECTILE)
             {
@@ -364,7 +355,7 @@ void SkillTree::clearSkillBranch(SkillType branchRoot)
 
         // Traverse and refund points
         iceProjectileNode->traverseLevelOrder([&pointsRefunded](SkillNode &skill)
-                                               {
+                                              {
             int points = skill.currentLevel;
             if (points > 0 && skill.type != SkillType::ICE_PROJECTILE)
             {
