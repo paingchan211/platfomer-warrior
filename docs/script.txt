@@ -48,64 +48,146 @@ This design supports a large variety of behaviors while preserving a unified int
 2. Composite Data Structures
 2a. Hash Table – Independent Research (3–4 minutes)
 
-[SHOW: Code snippet of hash table class with separate chaining]
+[SHOW: Code snippet of Node structure - lines 19-30 showing key, value, next pointer]
+[SHOW: Code snippet of hash() function - lines 107-111 using std::hash]
+[SHOW: Code snippet of insert() method - lines 230-258 showing collision handling and resize trigger]
+[SHOW: Code snippet of resize() method - lines 114-146 showing capacity doubling and rehashing]
 
-The hash table is a fully custom implementation using separate chaining for collision resolution. It stores key-value pairs in bucket lists, uses std::hash for hashing, and automatically resizes when the load factor exceeds 0.75.
+The hash table is a fully custom implementation using separate chaining for collision resolution. Each bucket contains a linked list of Node structures, where each Node stores a key, value, and a next pointer to handle collisions.
 
-Insertions update existing keys or create new nodes, and resizing rehashes entries to maintain low collision rates. Lookup, insert, and remove all achieve average-case constant time. The hash table is used heavily in the ResourceManager to store textures and animations, allowing the engine to retrieve assets instantly during rendering and gameplay.
+The hash function uses std::hash to compute a hash value, then mods by capacity to get the bucket index. When inserting, the method first checks if the key already exists in the bucket's chain—if so, it updates the value. If not, it creates a new node and inserts it at the head of the chain.
+
+After each insertion, the table checks if the load factor exceeds 0.75. If it does, the resize method doubles the capacity, allocates a new bucket array, and rehashes all existing entries into the new table. This maintains low collision rates and ensures O(1) average-case performance for lookup, insert, and remove operations.
+
+The hash table is used heavily in the ResourceManager to store textures and animations, allowing the engine to retrieve assets instantly during rendering and gameplay.
 
 [SHOW: Diagnostic output showing load factor and collision statistics]
 
-I also implemented diagnostic methods—load factor, bucket count, longest chain, and average chain length—to evaluate distribution quality and collision behavior.
+I also implemented diagnostic methods—loadFactor, bucketCount, longestChainLength, and nonEmptyBucketCount—to evaluate distribution quality and collision behavior during development.
 
 2b. Singly Linked List (2 minutes)
 
+[SHOW: Code snippet of Node structure - lines 14-21 showing data and next pointer]
+[SHOW: Code snippet of pushBack() method - lines 133-147 showing O(1) tail insertion]
+[SHOW: Code snippet of copy-and-swap idiom - lines 88-96 showing exception-safe assignment]
+
 [SHOW: Combat log displaying in-game, updating in real-time]
 
-The singly linked list stores combat log entries in chronological order. It maintains head and tail pointers for fast insertion and supports operations such as pushBack, popFront, removeAt, and removeIf. A copy constructor, assignment operator (copy-and-swap), move semantics, and a destructor ensure safe memory management. This structure is ideal for the combat log because entries come in order and usually only need to be appended or trimmed from the front.
+The singly linked list stores combat log entries in chronological order. Each Node contains data and a single next pointer, forming a forward-only chain. The list maintains both head and tail pointers, enabling O(1) insertion at both ends.
+
+The pushBack method demonstrates O(1) tail insertion—if the list is empty, both head and tail point to the new node; otherwise, the current tail's next pointer is updated, and tail moves to the new node. This makes appending combat events extremely efficient.
+
+For memory safety, the list implements the Rule of Five: copy constructor, copy assignment using copy-and-swap idiom, move constructor, move assignment, and destructor. The copy-and-swap technique creates a temporary copy first, then swaps pointers—if the copy fails, the original list remains unchanged, providing strong exception safety.
+
+This structure is ideal for the combat log because entries arrive in chronological order and typically only need to be appended or trimmed from the front.
 
 2c. Doubly Linked List (2 minutes)
 
+[SHOW: Code snippet of DoublyLinkedNode - lines 14-21 showing value, next, previous, and NIL sentinel]
+[SHOW: Code snippet of pushBack() method - lines 370-387 showing bidirectional linking]
+[SHOW: Code snippet of erase() method - lines 437-467 showing O(1) removal with iterator]
+[SHOW: Code snippet of custom iterator - DoublyLinkedNodeIterator.h showing ++, --, *, -> operators]
+
 [DEMO: Show projectiles spawning and despawning during combat]
 
-The doubly linked list provides bidirectional traversal and O(1) removal from any position when an iterator is available. It uses a NIL sentinel node to simplify edge cases. A custom iterator supports increment, decrement, dereferencing, and comparison, allowing STL-style iteration and convenient forEach processing. This structure supports object pooling for projectiles and meteors, where elements frequently activate, deactivate, and need removal during iteration.
+The doubly linked list provides bidirectional traversal with each node storing value, next, and previous pointers. It uses a NIL sentinel node—a static instance representing the end of the list—which simplifies edge case handling by eliminating null checks.
+
+The pushBack method updates both forward and backward links. The new node's previous points to the current tail, and if the tail exists, its next points to the new node. This bidirectional structure enables efficient removal from any position.
+
+The erase method demonstrates O(1) removal when given an iterator. It updates the previous node's next pointer and the next node's previous pointer, then deletes the node and returns an iterator to the next element. This is crucial for object pooling—during iteration, inactive projectiles can be removed and returned to the pool without invalidating the iterator.
+
+A custom iterator supports STL-style operations: increment (++), decrement (--), dereference (*), arrow (->), and comparison, allowing range-based for loops and forEach processing. This structure supports object pooling for projectiles and meteors, where elements frequently activate, deactivate, and need removal during iteration.
 
 3. Abstract Data Types
 3a. Stack (2–3 minutes)
 
+[SHOW: Code snippet of Node structure - lines 36-46 showing data and next pointer]
+[SHOW: Code snippet of push() method - lines 111-117 showing O(1) insertion at top]
+[SHOW: Code snippet of pop() method - lines 131-141 showing O(1) removal from top]
+[SHOW: Code snippet of peek() method - lines 164-177 showing access to deeper levels]
+
 [DEMO: Navigate through menus - main menu → pause → skill tree, then back out]
 
-The stack manages game states such as menus, pause screens, and the skill tree. It supports O(1) push and pop operations. The top operation returns the current state, and a peek(level) function allows inspecting deeper states when necessary. A debug logger helps track push/pop operations during development. The stack ensures states exit in the reverse order they were entered, matching the natural structure of nested menus.
+The stack manages game states such as menus, pause screens, and the skill tree using a singly linked list. Each Node contains data and a next pointer to the node below it. The topNode pointer always references the most recently added element.
+
+The push method demonstrates O(1) insertion—it creates a new node, links it to the current top, and updates topNode. This makes state transitions instant. The pop method removes the top element in O(1) time by moving topNode to the next node and deleting the old top.
+
+A unique feature is the peek method, which allows inspecting elements deeper in the stack without removing them. It traverses downward from the top by following next pointers. This is useful for checking if a pause menu is already open before pushing another state.
+
+A specialized debug logger tracks push and pop operations for GameStateData, outputting state names during development. The stack ensures states exit in the reverse order they were entered, matching the natural structure of nested menus.
 
 3b. Queue (2 minutes)
 
+[SHOW: Code snippet of Node structure - lines 36-46 showing data and next pointer]
+[SHOW: Code snippet of enqueue() method - lines 138-156 showing O(1) rear insertion]
+[SHOW: Code snippet of dequeue() method - lines 160-175 showing O(1) front removal]
+[SHOW: Code snippet of specialized debug logger - lines 87-101 showing FloatingText logging]
+
 [DEMO: Attack enemies to show floating damage text appearing in sequence]
 
-The queue controls floating damage text. Enqueue adds new damage indicators to the rear in constant time, and dequeue removes old ones from the front. FIFO ordering ensures text appears in the correct sequence. A removeIf function supports removing text that has faded or moved off-screen. A specialized debug logger outputs the actual damage value being enqueued or dequeued for testing clarity.
+The queue controls floating damage text using a singly linked list with both front and rear pointers. This enables O(1) operations at both ends—critical for real-time gameplay.
+
+The enqueue method adds elements to the rear in constant time. If the queue is empty, both frontNode and rearNode point to the new node; otherwise, the current rear's next pointer is updated, and rearNode moves to the new node. This ensures damage numbers are added instantly without frame drops.
+
+The dequeue method removes elements from the front in O(1) time, maintaining FIFO ordering. When the last element is removed, both frontNode and rearNode are set to nullptr, resetting the queue to empty.
+
+A specialized debug logger for unique_ptr<FloatingText> outputs the actual damage value being enqueued or dequeued, making it easy to verify that damage numbers appear in the correct sequence during testing.
 
 3c. N-ary Tree (2–3 minutes)
 
+[SHOW: Code snippet of NTree structure - lines 12-16 showing key, nodes array, parent pointer, and NIL sentinel]
+[SHOW: Code snippet of attachNTree() method - lines 149-161 showing parent-child linking]
+[SHOW: Code snippet of search() method - lines 201-217 showing depth-first search]
+[SHOW: Code snippet of traverseLevelOrder() - lines 223-297 showing BFS with internal queue]
+
 [SHOW: Skill tree UI with parent-child relationships highlighted]
 
-The N-ary tree powers the skill system. Each node contains a value, an array of child pointers, and a parent pointer. Attach and detach operations restructure the tree while maintaining parent-child relationships. Depth-first search locates specific skills, and a level-order traversal (using an internal queue) supports UI rendering of skill layers. This structure represents hierarchical dependencies cleanly and efficiently.
+The N-ary tree powers the skill system. Each node contains a key (the skill data), a fixed-size array of N child pointers, and a parent pointer. The tree uses a NIL sentinel—a static instance representing empty nodes—which eliminates null checks and simplifies edge cases.
+
+The attachNTree method links a child to a specific index. It verifies the slot is empty (points to NIL), then installs the child and updates its parent pointer. The detachNTree method reverses this, removing the child and clearing its parent pointer, allowing subtrees to be reorganized dynamically.
+
+The search method uses depth-first traversal to locate skills. It checks the current node's key, then recursively searches each child subtree, returning a pointer to the matching node or nullptr if not found.
+
+The traverseLevelOrder method implements breadth-first search using an internal queue. It visits nodes level-by-level, which is perfect for rendering the skill tree UI in layers. The internal queue is a minimal implementation that stores tree node pointers and supports push, pop, and empty operations.
+
+This structure naturally represents hierarchical dependencies—parent skills must be unlocked before children become available.
 
 [DEMO: Unlock a skill and show how it enables child skills]
 
 4. Design Patterns
 4a. Iterator Pattern (2 minutes)
 
-[SHOW: Code snippet of custom iterator implementation]
+[SHOW: Code snippet of DoublyLinkedNodeIterator class - lines 12-46 showing iterator structure]
+[SHOW: Code snippet of operator++() - lines 84-89 showing prefix increment]
+[SHOW: Code snippet of operator--() - lines 104-108 showing prefix decrement]
+[SHOW: Code snippet of operator*() and operator->() - lines 66-80 showing dereference operations]
+[SHOW: Code snippet of operator== and operator!= - lines 121-131 showing comparison]
 
-The Iterator pattern appears in two forms.
-External iterators, such as the doubly linked list iterator, allow clients to manually traverse data structures using standard operators (++, --, *, ->).
-Internal iterators, via forEach methods, let structures apply a function to each element without exposing traversal logic.
+The Iterator pattern appears in two forms throughout the engine.
+
+External iterators, such as the DoublyLinkedNodeIterator, provide STL-compatible traversal. The iterator class wraps a node pointer and overloads standard operators. The prefix increment operator (++) moves to the next node by calling getNext(), while the prefix decrement operator (--) moves backward via getPrevious(). This bidirectional capability is essential for the doubly linked list.
+
+The dereference operator (*) returns a reference to the node's stored value, and the arrow operator (->) returns a pointer, enabling direct member access. Equality comparison checks if two iterators point to the same node, which is critical for loop termination when comparing against end().
+
+This design allows range-based for loops and standard algorithms to work seamlessly with custom data structures. For example, iterating over projectiles in the object pool uses the same syntax as iterating over std::vector.
+
+Internal iterators, via forEach methods, let structures apply a function to each element without exposing traversal logic. The client passes a lambda or function object, and the data structure handles iteration internally. This is used extensively for updating and rendering entities.
+
 This creates a consistent, flexible way to process lists, queues, and trees across the engine.
 
 4b. Singleton Pattern (2 minutes)
 
-[SHOW: Code snippet of Singleton getInstance() method]
+[SHOW: Code snippet of getInstance() method - Game.cpp lines 6-15 showing static local variable]
+[SHOW: Code snippet of private constructor - Game.h lines 28-29]
+[SHOW: Code snippet of deleted copy/move operations - Game.h lines 34-44]
 
-The Singleton pattern ensures a single instance of the Game class. The constructor is private, copy and move operations are deleted, and a static local variable in getInstance guarantees thread-safe lazy initialization. This prevents conflicts in window management and resource loading while providing a central access point for game logic.
+The Singleton pattern ensures a single instance of the Game class. The getInstance() method uses a static local variable—when first called, it constructs the Game instance, and on subsequent calls, it returns the same instance. This is thread-safe in C++11 and later due to guaranteed initialization of static locals.
+
+The constructor is private, preventing direct instantiation via `Game g;`. Copy and move operations are explicitly deleted using `= delete`, preventing accidental duplication through assignment or passing by value. This ensures there is exactly one Game object throughout the program's lifetime.
+
+This pattern is essential for the Game class because it manages the window, resource manager, and active session. Multiple Game instances would create conflicting windows and duplicate resource loading. The Singleton provides a central access point—any part of the code can call `Game::getInstance()` to access the shared game state.
+
+The ResourceManager is also accessed through this single Game instance, ensuring textures and sounds are loaded once and shared across all systems.
 
 5. AI Storyteller System – GameMaster (3–4 minutes)
 
