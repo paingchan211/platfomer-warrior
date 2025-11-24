@@ -30,7 +30,7 @@ GameMaster::GameMaster()
       sandStormTriggerAnnounced(false),
       sandStormWarningActive(false),
       sandStormInProgress(false),
-      sandStormWarningDuration(3.0f),
+      sandStormWarningDuration(10.0f),
       sandStormWarningTimer(0.0f),
       sandStormTimer(0.0f),
       sandStormFadeDuration(4.0f),
@@ -516,7 +516,7 @@ void GameMaster::renderSandStorm(sf::RenderWindow &window, const sf::Vector2f &f
     {
         sf::Text warningText;
         warningText.setFont(font);
-        warningText.setString("Sand storm approaching in about 3 seconds.");
+        warningText.setString("Sand storm approaching in about 10 seconds.");
         warningText.setCharacterSize(26);
         warningText.setFillColor(sf::Color(255, 235, 180));
         warningText.setOutlineColor(sf::Color(60, 40, 10, 200));

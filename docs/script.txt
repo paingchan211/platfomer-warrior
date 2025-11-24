@@ -1,19 +1,9 @@
 Platformer Game Demo Video Script — Polished Narrative Version (No Repetition)
 Introduction (1–2 minutes)
 
-Hello. Today I'll be demonstrating my C++ platformer game, a 2D action platformer that blends fast-paced melee and projectile combat with RPG-style character progression and a dynamic AI Storyteller system. The game features elemental attacks, a leveling system, a multi-branch skill tree, and concludes with a multi-phase boss encounter supported by environmental hazards and procedural difficulty adjustments.
+Hello. I am Paing Chan Today I'll be demonstrating what I did for my Data Sturcture Programming Project. I did a 2D action platformer game with RPG-style character progression and a dynamic AI Storyteller system. The game has elemental attacks, a leveling system, a skill tree, and ends with a multi-phase boss encounter supported by environmental hazards and procedural difficulty adjustments.
 
-A unique aspect of this project is how ten core computer science concepts are integrated into the gameplay systems. The game uses an object-oriented class hierarchy with inheritance and polymorphism; six custom-built data structures; two design patterns; and a real-time AI system, the GameMaster, which monitors the player's performance and triggers adaptive events such as Player Rage Mode and Boss Rage Mode to create dramatic pacing.
-
-Data Structures Overview (1–2 minutes)
-
-[SHOW: Diagram or overview slide of all six data structures]
-
-The game uses six custom data structures, each chosen for a specific real-time requirement.
-
-A custom hash table powers the ResourceManager, giving constant-time access to textures and sounds when the game loads sprites or plays audio. A singly linked list stores the combat log in chronological order, supporting fast insertion as events occur. A doubly linked list manages object pools such as projectiles, potions, and meteors, enabling efficient addition and removal during gameplay. A stack manages game states (menus, pause, skill tree), ensuring states are pushed and popped in a strict LIFO order. A queue controls floating damage text, guaranteeing that damage numbers appear in the sequence they were created. Finally, an N-ary tree—a tree where each node can have any number of children—represents the skill system, naturally encoding prerequisite relationships between abilities.
-
-These structures ensure that resource lookup, state transitions, combat event handling, visual feedback, and skill-tree traversal all remain efficient during gameplay. Every core operation involved—insert, lookup, push, pop, enqueue, dequeue—executes in constant time, which is essential for maintaining a smooth 60 FPS experience.
+I will be demonstrating in 3 sessions: first i will do a brief gameplay to show the design of the game followed by explaining how i integrate the 10 concepts into my game and finally, i will be playing the game from the start to the end. So, let's start with the first session. Let me open the game by clicking this play button.
 
 1. Object-Oriented Programming
 1a. Inheritance and Derived Classes (2–3 minutes)
@@ -22,7 +12,9 @@ These structures ensure that resource lookup, state transitions, combat event ha
 [SHOW: Code snippet of Character.h - middle layer adding combat stats, inherits from Entity]
 [SHOW: Code snippet of Player.h - concrete class with full gameplay features, inherits from Character]
 
-The game's architecture is built on a three-level inheritance hierarchy. At the base level, the Entity class defines shared features: position, velocity, rendering, an activation flag, and a pure virtual update method that must be implemented by all derived classes. Entity also declares getBounds as virtual, allowing derived classes to override collision detection.
+So these things in the game - the player, the enemy, the platform, the meteor, the hp potion they are all entities in the game. we can see this in the UML class diagram.
+
+The game's architecture is built on a three-level inheritance hierarchy. At the base level, the Entity class defines shared features: position, velocity, rendering, an activation flag, and a pure virtual update method that must be implemented by all these derived classes. Entity also declares getBounds as virtual, allowing derived classes to override collision detection.
 
 Character extends Entity and adds attributes for combat—health, damage values, movement speed, and jumping mechanics—along with virtual methods such as takeDamage and isAlive. Character is still abstract because it doesn't implement the pure virtual update method.
 
@@ -45,6 +37,16 @@ This design supports a large variety of behaviors while preserving a unified int
 
 [DEMO: Show game running with multiple entity types updating simultaneously]
 
+Data Structures Overview (1–2 minutes)
+
+[SHOW: Diagram or overview slide of all six data structures]
+
+The game uses six custom data structures, each chosen for a specific real-time requirement.
+
+A custom hash table powers the ResourceManager class, giving constant-time access to the textures and sounds when the game loads sprites or plays audio. A singly linked list stores the combat log in chronological order, supporting fast insertion as events occur. A doubly linked list manages object pools such as projectiles, potions, and meteors, enabling efficient addition and removal during gameplay. A stack manages game states (menus, pause, skill tree), ensuring states are pushed and popped in a strict LIFO order. A queue controls floating damage text, guaranteeing that damage numbers appear in the sequence they were created. Finally, an N-ary tree—a tree where each node can have any number of children—represents the skill system, naturally enforcing prerequisite relationships between abilities.
+
+These structures ensure that resource lookup, state transitions, combat event handling, visual feedback, and skill-tree traversal all remain efficient during gameplay. Every core operation involved—insert, lookup, push, pop, enqueue, dequeue—executes in constant time, which is essential for maintaining a smooth gameplay experience.
+
 2. Composite Data Structures
 2a. Hash Table – Independent Research (3–4 minutes)
 
@@ -59,11 +61,9 @@ The hash function uses std::hash to compute a hash value, then mods by capacity 
 
 After each insertion, the table checks if the load factor exceeds 0.75. If it does, the resize method doubles the capacity, allocates a new bucket array, and rehashes all existing entries into the new table. This maintains low collision rates and ensures O(1) average-case performance for lookup, insert, and remove operations.
 
-The hash table is used heavily in the ResourceManager to store textures and animations, allowing the engine to retrieve assets instantly during rendering and gameplay.
+The hash table is used heavily in the ResourceManager to store textures and animations, allowing the game to retrieve assets instantly during rendering and gameplay.
 
 [SHOW: Diagnostic output showing load factor and collision statistics]
-
-I also implemented diagnostic methods—loadFactor, bucketCount, longestChainLength, and nonEmptyBucketCount—to evaluate distribution quality and collision behavior during development.
 
 2b. Singly Linked List (2 minutes)
 

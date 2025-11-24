@@ -305,6 +305,8 @@ void InputManager::handleGameInput(const sf::Event &event,
 
     if (event.key.code == skillTreeKey && !gameOver)
     {
+        // Stop footsteps so the walking loop doesn't continue under the Skill Tree overlay
+        resourceManager.stopWalkSound();
         stateStack.push(GameStateData(GameStateType::SkillTreeScreen));
 
         // Default to root node so navigation always starts from the base skill
