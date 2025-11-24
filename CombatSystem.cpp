@@ -622,6 +622,10 @@ void CombatSystem::updateProjectiles(float dt,
                 // Activate projectile if successfully created
                 if (newProj)
                 {
+                    if (ENABLE_DOUBLY_LINKED_LIST_STDOUT)
+                    {
+                        std::cout << "[DoublyLinkedList] fire projectile node @" << newProj.get() << std::endl;
+                    }
                     fireProjectiles.pushBack(std::move(newProj));
                     resourceManager.playFireballSound();
                     ++spawnedFireProjectiles;
@@ -671,6 +675,10 @@ void CombatSystem::updateProjectiles(float dt,
                 // Activate projectile if successfully created
                 if (newProj)
                 {
+                    if (ENABLE_DOUBLY_LINKED_LIST_STDOUT)
+                    {
+                        std::cout << "[DoublyLinkedList] ice projectile node @" << newProj.get() << std::endl;
+                    }
                     iceProjectiles.pushBack(std::move(newProj));
                     resourceManager.playFireballSound();
                     ++spawnedIceProjectiles;
@@ -1281,6 +1289,10 @@ void CombatSystem::spawnPotion(DoublyLinkedList<std::unique_ptr<HPPotion>> &poti
     // Add potion to the active list if valid
     if (potion)
     {
+        if (ENABLE_DOUBLY_LINKED_LIST_STDOUT)
+        {
+            std::cout << "[DoublyLinkedList] hp potion node @" << potion.get() << std::endl;
+        }
         potions.pushBack(std::move(potion));
         if (ENABLE_DOUBLY_LINKED_LIST_STDOUT)
         {
