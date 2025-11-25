@@ -101,6 +101,8 @@ The doubly linked list is essential here because during the forEach iteration ov
 
 that supports STL-style operations: increment (++), decrement (--), dereference (*), arrow (->), and comparison, allowing range-based for loops and forEach processing. This structure supports object pooling for projectiles and meteors, where elements frequently activate, deactivate, and need removal during iteration while maintaining optimal memory performance. I will be talking in detail about iterators in the iterator design pattern section.
 
+Next, I would like to skip the stack, queue and tree for a while and talk about the iterator design pattern first since we just finished the DoublyLinkedList.
+
 3. Abstract Data Types
 3a. Stack (2–3 minutes)
 
@@ -166,17 +168,21 @@ This structure naturally represents hierarchical dependencies—parent skills mu
 [SHOW: Code snippet of operator*() and operator->() - lines 66-80 showing dereference operations]
 [SHOW: Code snippet of operator== and operator!= - lines 121-131 showing comparison]
 
-The Iterator pattern appears in two forms throughout the engine.
+The DoublyLinkedList is used for object pooling throughout the game because of its bidirectional traversal capability - the next and previous pointers enable fast O(1) removal from any position in the list. Additionally, the Iterator design pattern built into this structure provides both external and internal iteration mechanisms, making it highly versatile for game systems that need to frequently add, remove, and traverse active objects like projectiles and hp potions.
+
+So, speaking about the Iterator design pattern in my program, it appears in two forms.
 
 External iterators, such as the DoublyLinkedNodeIterator, provide STL-compatible traversal. The iterator class wraps a node pointer and overloads standard operators. The prefix increment operator (++) moves to the next node by calling getNext(), while the prefix decrement operator (--) moves backward via getPrevious(). This bidirectional capability is essential for the doubly linked list.
 
 The dereference operator (*) returns a reference to the node's stored value, and the arrow operator (->) returns a pointer, enabling direct member access. Equality comparison checks if two iterators point to the same node, which is critical for loop termination when comparing against end().
 
-This design allows range-based for loops and standard algorithms to work seamlessly with custom data structures. For example, iterating over projectiles in the object pool uses the same syntax as iterating over std::vector.
+The combination of begin and end function in the DoublyLinkedList container together with these operators ++, * and != in the iterator is what allows range-based for loops to work seamlessly with custom data structures. This can be seen in Session.cpp. 
 
-Internal iterators, via forEach methods, let structures apply a function to each element without exposing traversal logic. The client passes a lambda or function object, and the data structure handles iteration internally. This is used extensively for updating and rendering entities.
+Internal iterators, via forEach methods, let structures apply a function to each element without exposing traversal logic. The client passes a function to apply to each element and the data structure handles iteration internally. This is used extensively for updating and rendering entities across my game.
 
-This creates a consistent, flexible way to process lists, queues, and trees across the engine.
+Now let's look at the UML diagram for Iterator Design Pattern. The UML diagram illustrates the relationships between the three core components. DoublyLinkedList contains DoublyLinkedNode objects, which form the underlying data structure. The list creates DoublyLinkedNodeIterator instances through its begin() and end() methods. The iterator maintains a pointer to a node, enabling it to traverse the linked structure.
+
+Crucially, the iterator is declared as a friend of DoublyLinkedList, granting it access to internal node pointers while keeping them hidden from other client code. This friendship is essential because the iterator constructor takes a raw Node pointer, which only the list should provide.
 
 4b. Singleton Pattern (2 minutes)
 
