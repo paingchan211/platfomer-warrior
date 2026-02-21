@@ -1,6 +1,12 @@
 # Platformer Warrior
 
-![Platformer Warrior](image.png)
+<p align="center">
+    <img src="images/image-1.png" alt="Screenshot 1" width="45%"/>
+    <img src="images/image-2.png" alt="Screenshot 2" width="45%"/>
+    <br/>
+    <img src="images/image-3.png" alt="Screenshot 3" width="45%"/>
+    <img src="images/image-4.png" alt="Screenshot 4" width="45%"/>
+</p>
 
 A 2D side-scrolling action platformer built in C++ with SFML 2.5.1, developed as a Data Structures programming project at Swinburne University. The game puts every major data structure you learn in class to actual use — the skill tree runs on an N-ary tree, the combat log uses a singly linked list, key bindings live in a hash table, and so on.
 
