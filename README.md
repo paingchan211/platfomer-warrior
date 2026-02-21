@@ -1,4 +1,6 @@
-# Realm of Valor
+# Platformer Warrior
+
+![Platformer Warrior](image.png)
 
 A 2D side-scrolling action platformer built in C++ with SFML 2.5.1, developed as a Data Structures programming project at Swinburne University. The game puts every major data structure you learn in class to actual use — the skill tree runs on an N-ary tree, the combat log uses a singly linked list, key bindings live in a hash table, and so on.
 
@@ -42,7 +44,6 @@ All of these are in `src/data_structures/` as header-only templates.
 ## Design Patterns
 
 - **Singleton** — `Game::getInstance()` enforces a single game instance; address equality is printed on startup as a runtime proof
-- **Inheritance & Polymorphism** — `Entity → Character → Player / Enemy / Boss`, `Projectile → FireProjectile / IceProjectile`
 - **Iterator** — custom iterator on `DoublyLinkedList` for range-based traversal
 
 ---
@@ -75,7 +76,7 @@ programming-project/
 ### Requirements
 
 - **Windows** (the build scripts target Windows only)
-- **GCC 7.3.0** (MinGW-w64, POSIX threads, SEH) — other versions may work but haven't been tested
+- **GCC 7.3.0** - need the exact version which can be downloaded from the following link
 
 Download GCC 7.3.0:
 
@@ -86,7 +87,7 @@ https://sourceforge.net/projects/mingw-w64/files/Toolchains%20targetting%20Win64
 After extracting, add `mingw64\bin` to your system `PATH`. For example:
 
 ```
-C:\mingw730\mingw64\bin
+C:\mingw64\bin
 ```
 
 You can verify it's on PATH by running `g++ --version` in a terminal — it should print `7.3.0`.
@@ -147,5 +148,4 @@ Save data is stored as plain text in `bin/saves/`. Two slots are available (`sav
 ## Notes
 
 - SFML 2.5.1 is bundled in the repo (`SFML-2.5.1/`), so you don't need to install it separately
-- The debug stdout flags in `src/core/Constants.h` let you trace individual data structure operations to the console — useful if you want to see the structures working at runtime
 - The game window is fixed at 1200×800
