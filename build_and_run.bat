@@ -1,20 +1,22 @@
 @echo off
 setlocal enabledelayedexpansion
+rem Change to the directory containing this script so all relative paths work
+pushd "%~dp0"
 echo Building SFML game...
 rem Prepare bin directory so we can compile directly into it
-set "BIN_DIR=%~dp0bin"
-set "OBJ_DIR=%~dp0bin\obj"
+set "BIN_DIR=bin"
+set "OBJ_DIR=bin\obj"
 if not exist "!BIN_DIR!" mkdir "!BIN_DIR!"
 if not exist "!OBJ_DIR!" mkdir "!OBJ_DIR!"
 
 rem Compiler settings
-set "CXX=C:\mingw730\mingw64\bin\g++.exe"
-set "CXXFLAGS=-std=c++17 -O2 -I"%~dp0SFML-2.5.1/include""
-set "LDFLAGS=-L"%~dp0SFML-2.5.1/lib" -lsfml-graphics -lsfml-window -lsfml-system -lsfml-audio"
+set "CXX=C:\mingw64\bin\g++.exe"
+set "CXXFLAGS=-std=c++17 -O2 -I"SFML-2.5.1/include" -I"src/core" -I"src/entities" -I"src/systems" -I"src/world" -I"src/rendering" -I"src/data_structures""
+set "LDFLAGS=-L"SFML-2.5.1/lib" -lsfml-graphics -lsfml-window -lsfml-system -lsfml-audio"
 set "NUM_JOBS=4"
 
-rem List of source files (without .cpp extension)
-set "SOURCES=main Game Session Animation Entity Character Projectile Player Enemy Boss Platform FireProjectile IceProjectile HPPotion Meteor ResourceManager UISystem InputManager CombatSystem FloatingText GameWorld CameraController PhysicsManager SkillTree KeyBindingManager DebugRenderer GameMaster SaveGameManager GameState"
+rem List of source files (relative paths without .cpp extension)
+set "SOURCES=main src/core/Game src/core/Session src/core/GameState src/core/GameMaster src/entities/Animation src/entities/Entity src/entities/Character src/entities/Projectile src/entities/Player src/entities/Enemy src/entities/Boss src/entities/FireProjectile src/entities/IceProjectile src/entities/HPPotion src/entities/Meteor src/systems/ResourceManager src/systems/UISystem src/systems/InputManager src/systems/CombatSystem src/systems/CameraController src/systems/PhysicsManager src/systems/SkillTree src/systems/KeyBindingManager src/systems/SaveGameManager src/world/FloatingText src/world/GameWorld src/world/Platform src/rendering/DebugRenderer"
 
 rem Compile each source file to object file (only if changed)
 set "OBJECTS="
@@ -25,7 +27,8 @@ set "COMPILE_COUNT=0"
 rem First pass: determine what needs compilation
 for %%S in (!SOURCES!) do (
     set "SRC=%%S.cpp"
-    set "OBJ=!OBJ_DIR!\%%S.o"
+    for %%F in ("%%S.cpp") do set "BASENAME=%%~nF"
+    set "OBJ=!OBJ_DIR!\!BASENAME!.o"
     set "OBJECTS=!OBJECTS! !OBJ!"
     set "SHOULD_COMPILE=0"
     
@@ -53,9 +56,10 @@ if !COMPILE_COUNT! GTR 0 (
     set "JOB_COUNT=0"
     for %%S in (!TO_COMPILE!) do (
         set "SRC=%%S.cpp"
-        set "OBJ=!OBJ_DIR!\%%S.o"
+        for %%F in ("%%S.cpp") do set "BASENAME=%%~nF"
+        set "OBJ=!OBJ_DIR!\!BASENAME!.o"
         echo   Compiling %%S.cpp...
-        start /B "compile_%%S" cmd /c "!CXX! !CXXFLAGS! -c "!SRC!" -o "!OBJ!" 2>&1 && exit 0 || exit 1"
+        start /B "compile_!BASENAME!" cmd /c "!CXX! !CXXFLAGS! -c "!SRC!" -o "!OBJ!" 2>&1 && exit 0 || exit 1"
         set /a "JOB_COUNT+=1"
         
         rem Wait if we've reached max parallel jobs
@@ -70,7 +74,8 @@ if !COMPILE_COUNT! GTR 0 (
     
     rem Check for compilation errors
     for %%S in (!TO_COMPILE!) do (
-        set "OBJ=!OBJ_DIR!\%%S.o"
+        for %%F in ("%%S.cpp") do set "BASENAME=%%~nF"
+        set "OBJ=!OBJ_DIR!\!BASENAME!.o"
         if not exist "!OBJ!" (
             echo Error compiling %%S.cpp
             pause

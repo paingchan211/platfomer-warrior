@@ -8,23 +8,27 @@ param(
 $ErrorActionPreference = "Stop"
 
 # Configuration
-$CXX = "C:\mingw730\mingw64\bin\g++.exe"
-$CXXFLAGS = "-std=c++17 -O2 -I`"$PSScriptRoot\SFML-2.5.1\include`""
+$CXX = "C:\mingw64\bin\g++.exe"
+$CXXFLAGS = "-std=c++17 -O2 -I`"$PSScriptRoot\SFML-2.5.1\include`" -I`"$PSScriptRoot\src\core`" -I`"$PSScriptRoot\src\entities`" -I`"$PSScriptRoot\src\systems`" -I`"$PSScriptRoot\src\world`" -I`"$PSScriptRoot\src\rendering`" -I`"$PSScriptRoot\src\data_structures`""
 $LDFLAGS = "-L`"$PSScriptRoot\SFML-2.5.1\lib`" -lsfml-graphics -lsfml-window -lsfml-system -lsfml-audio"
 
 $BIN_DIR = "$PSScriptRoot\bin"
 $OBJ_DIR = "$BIN_DIR\obj"
 $TARGET = "$BIN_DIR\main.exe"
 
-# Source files
+# Source files (relative paths without .cpp extension)
 $SOURCES = @(
-    "main", "Game", "Session", "Animation", "Entity", "Character",
-    "Projectile", "Player", "Enemy",
-    "Boss", "Platform", "FireProjectile", "IceProjectile", "HPPotion",
-    "Meteor", "ResourceManager", "UISystem", "InputManager",    "CombatSystem", "FloatingText",
-    "GameWorld", "CameraController", "PhysicsManager", "SkillTree",
-    "KeyBindingManager", "DebugRenderer", "GameMaster", "SaveGameManager",
-    "GameState"
+    "main",
+    "src/core/Game", "src/core/Session", "src/core/GameState", "src/core/GameMaster",
+    "src/entities/Animation", "src/entities/Entity", "src/entities/Character",
+    "src/entities/Projectile", "src/entities/Player", "src/entities/Enemy",
+    "src/entities/Boss", "src/entities/FireProjectile", "src/entities/IceProjectile",
+    "src/entities/HPPotion", "src/entities/Meteor",
+    "src/systems/ResourceManager", "src/systems/UISystem", "src/systems/InputManager",
+    "src/systems/CombatSystem", "src/systems/CameraController", "src/systems/PhysicsManager",
+    "src/systems/SkillTree", "src/systems/KeyBindingManager", "src/systems/SaveGameManager",
+    "src/world/FloatingText", "src/world/GameWorld", "src/world/Platform",
+    "src/rendering/DebugRenderer"
 )
 
 # Create directories
@@ -44,7 +48,8 @@ if ($Clean) {
 $toCompile = @()
 foreach ($src in $SOURCES) {
     $srcFile = "$PSScriptRoot\$src.cpp"
-    $objFile = "$OBJ_DIR\$src.o"
+    $basename = [System.IO.Path]::GetFileName($src)
+    $objFile = "$OBJ_DIR\$basename.o"
     
     if (-not (Test-Path $objFile)) {
         $toCompile += $src
@@ -68,6 +73,9 @@ if ($toCompile.Count -gt 0) {
             Start-Sleep -Milliseconds 100
         }
         
+        $basename = [System.IO.Path]::GetFileName($src)
+        $srcFile = "$PSScriptRoot\$src.cpp"
+        $objFile = "$OBJ_DIR\$basename.o"
         Write-Host "  Compiling $src.cpp..." -ForegroundColor Gray
         $psi = New-Object System.Diagnostics.ProcessStartInfo
         $psi.FileName = $CXX
@@ -110,7 +118,7 @@ $needsLink = $toCompile.Count -gt 0 -or -not (Test-Path $TARGET)
 if ($needsLink) {
     Write-Host "Linking executable..." -ForegroundColor Cyan
     
-    $objFiles = ($SOURCES | ForEach-Object { "`"$OBJ_DIR\$_.o`"" }) -join ' '
+    $objFiles = ($SOURCES | ForEach-Object { "`"$OBJ_DIR\$([System.IO.Path]::GetFileName($_)).o`"" }) -join ' '
     $linkArgs = "$objFiles $LDFLAGS -o `"$TARGET`""
     
     $psi = New-Object System.Diagnostics.ProcessStartInfo
