@@ -1,157 +1,120 @@
-# Platformer Warrior
+# ⚔️ Platformer Warrior
 
-<p align="center">
-    <img src="images/image-1.png" alt="Screenshot 1" width="45%"/>
-    <img src="images/image-2.png" alt="Screenshot 2" width="45%"/>
-    <br/>
-    <img src="images/image-3.png" alt="Screenshot 3" width="45%"/>
-    <img src="images/image-4.png" alt="Screenshot 4" width="45%"/>
-</p>
+A 2D side-scrolling action platformer built in C++ with SFML, created as a Data Structures programming project at Swinburne University.
 
-A 2D side-scrolling action platformer built in C++ with SFML 2.5.1, developed as a Data Structures programming project at Swinburne University. The game puts every major data structure you learn in class to actual use — the skill tree runs on an N-ary tree, the combat log uses a singly linked list, key bindings live in a hash table, and so on.
+## ✨ Technologies
 
----
+- C++ and object-oriented programming
+- SFML 2.5.1 for graphics, audio, input, and the game window
+- Custom data structures implemented as header-only templates
+- Windows batch and PowerShell build scripts
+- GCC 7.3.0 with MinGW-w64
+- File-based save data and key binding persistence
 
-## Gameplay Overview
+## 🚀 Features
 
-You play as a warrior working through a side-scrolling world, fighting waves of enemies that get progressively harder, and eventually facing a boss. The combat system has a bit of depth to it:
+- Play through a side-scrolling action level as a warrior
+- Fight enemy waves that scale based on player performance
+- Face a boss with a second-phase rage state at 50% HP
+- Use melee attacks, fire projectiles, ice projectiles, and a chargeable dash attack
+- Apply burn stacks with fire and freeze buildup with ice
+- Collect HP potions and trigger rage mode when health is low
+- Unlock and upgrade abilities through an in-game skill tree
+- Save player level, stats, experience, and unlocked skills across two save slots
+- Rebind controls from the in-game menu and persist them to `keybindings.cfg`
+- Manage game states such as menu, gameplay, and pause screens
+- Spawn meteor hazards that ramp up as the fight continues
+- Show slow-motion feedback after defeating the boss
 
-- **Melee** — basic close-range attack
-- **Projectiles** — switch between Fire and Ice mid-combat; fire applies burn stacks, ice stacks build toward a freeze
-- **Special attack** — a chargeable dash strike with its own cooldown
-- **HP Potions** — scattered around the world, collected on contact
-- **Rage mode** — activates automatically below 30% HP when enemies are nearby, boosting damage for 8 seconds
-- **Skill tree** — earn levels, spend points to unlock and upgrade fire/ice/special abilities
-- **Save system** — two save slots, persisted to disk; your level, stats, and unlocked skills carry over
+## 📍 The Process
 
-Enemies scale dynamically based on how fast you clear the early waves. Clear them quickly and the later ones hit harder; take your time and they're slightly nerfed. The boss enters at 50% HP rage, gaining speed and attack rate.
+I built Platformer Warrior to connect data structures with real gameplay systems instead of leaving them as isolated classroom examples.
 
-Meteors also fall periodically throughout the run, starting sparse and ramping up the longer the fight goes. When the boss dies, there's a brief slow-motion effect before the win screen.
+The project uses custom implementations of common structures across the game. The skill tree is powered by an N-ary tree, key bindings are stored in a hash table, active entities use a doubly linked list, combat events use a singly linked list, game states use a stack, and pending combat effects use a queue.
 
----
+I kept the project as a native Windows C++ game with SFML bundled in the repository, so it can be built without installing SFML separately. The gameplay loop combines movement, combat, enemy scaling, persistence, UI screens, and progression into one playable project.
 
-## Data Structures Used
+## 🗄️ Data Structures
 
-This was written for a Data Structures course, so each structure is implemented from scratch (no STL containers for the core game logic):
+The project implements and uses these custom data structures:
 
-| Structure             | Where it's used                                                     |
-| --------------------- | ------------------------------------------------------------------- |
-| `HashTable<K, V>`     | Key binding storage — maps `GameAction` → `sf::Keyboard::Key`       |
-| `NTree<T, N>`         | Skill tree — each node is a skill, children are unlockable upgrades |
-| `DoublyLinkedList<T>` | Active entity pool management                                       |
-| `SinglyLinkedList<T>` | Combat event log                                                    |
-| `Stack<T>`            | Game state stack (main menu → gameplay → pause)                     |
-| `Queue<T>`            | Pending damage/effect queue                                         |
+- `HashTable<K, V>` for key binding storage
+- `NTree<T, N>` for the skill tree
+- `DoublyLinkedList<T>` for active entity management
+- `SinglyLinkedList<T>` for the combat event log
+- `Stack<T>` for the game state stack
+- `Queue<T>` for pending damage and effect processing
 
-All of these are in `src/data_structures/` as header-only templates.
+The project also demonstrates these design patterns:
 
----
+- `Singleton` for the main `Game` instance
+- `Iterator` for traversing the custom doubly linked list
 
-## Design Patterns
+## 🚦 Running the Project
 
-- **Singleton** — `Game::getInstance()` enforces a single game instance; address equality is printed on startup as a runtime proof
-- **Iterator** — custom iterator on `DoublyLinkedList` for range-based traversal
+1. Clone the repository.
+2. Install GCC 7.3.0 with MinGW-w64.
+3. Add `mingw64\bin` to your system `PATH`.
+4. Verify the compiler:
 
----
+   ```bash
+   g++ --version
+   ```
 
-## Project Structure
+5. Build and run the game:
 
-```
-programming-project/
-├── main.cpp
-├── build_and_run.bat       # Main build + run script (Windows)
-├── build.ps1               # PowerShell alternative
-├── keybindings.cfg         # Default key bindings
-├── assets/                 # Textures, fonts, sounds
-├── bin/                    # Compiled output (main.exe goes here)
-│   └── saves/              # Save files (savegame1.txt, savegame2.txt)
-├── SFML-2.5.1/             # SFML headers and libs (bundled)
-└── src/
-    ├── core/               # Game loop, session, state machine, constants
-    ├── entities/           # Player, Enemy, Boss, projectiles, animations
-    ├── systems/            # Physics, combat, input, camera, UI, save, skill tree
-    ├── world/              # World layout, platforms, floating damage text
-    ├── rendering/          # Debug overlay renderer
-    └── data_structures/    # HashTable, NTree, LinkedLists, Stack, Queue
-```
+   ```bat
+   build_and_run.bat
+   ```
 
----
-
-## Building and Running
-
-### Requirements
-
-- **Windows** (the build scripts target Windows only)
-- **GCC 7.3.0** - need the exact version which can be downloaded from the following link
-
-Download GCC 7.3.0:
-
-```
-https://sourceforge.net/projects/mingw-w64/files/Toolchains%20targetting%20Win64/Personal%20Builds/mingw-builds/7.3.0/threads-posix/seh/x86_64-7.3.0-release-posix-seh-rt_v5-rev0.7z/download
-```
-
-After extracting, add `mingw64\bin` to your system `PATH`. For example:
-
-```
-C:\mingw64\bin
-```
-
-You can verify it's on PATH by running `g++ --version` in a terminal — it should print `7.3.0`.
-
-### Build & Run
-
-Double-click `build_and_run.bat`, or from a terminal in the project root:
-
-```bat
-build_and_run.bat
-```
-
-The script compiles everything into `bin/main.exe` and launches the game automatically. If you only want to build without running:
+To build without launching the game:
 
 ```bat
 build_and_run.bat --no-run
 ```
 
-Or use PowerShell:
+PowerShell alternative:
 
 ```powershell
 .\build.ps1
 ```
 
-### VS Code
+The compiled executable is created at:
 
-Two tasks are configured in `.vscode/tasks.json`:
+```text
+bin/main.exe
+```
 
-- **Build and prepare SFML game** — runs `build_and_run.bat --no-run` (default build task, `Ctrl+Shift+B`)
-- **C/C++: g++.exe build active file** — direct `g++` compilation as a fallback
+## 🎮 Controls
 
----
+Default controls are rebindable from the in-game menu:
 
-## Controls
+- `A` - Move left
+- `D` - Move right
+- `Space` - Jump
+- `J` - Melee attack
+- `K` - Shoot projectile
+- `L` - Switch projectile type
+- `I` - Special attack
+- `H` - Use HP potion
+- `T` - Open skill tree
 
-Default bindings (all rebindable from the in-game menu, saved to `keybindings.cfg`):
+## 🔐 Save Files
 
-| Action            | Default Key |
-| ----------------- | ----------- |
-| Move Left         | `A`         |
-| Move Right        | `D`         |
-| Jump              | `Space`     |
-| Melee Attack      | `J`         |
-| Shoot Projectile  | `K`         |
-| Switch Projectile | `L`         |
-| Special Attack    | `I`         |
-| Use HP Potion     | `H`         |
-| Open Skill Tree   | `T`         |
+Save data is stored as plain text in:
 
----
+```text
+bin/saves/
+```
 
-## Save Files
+The game supports two save slots. Each save stores player level, HP, damage, experience, and skill tree progress.
 
-Save data is stored as plain text in `bin/saves/`. Two slots are available (`savegame1.txt`, `savegame2.txt`). Each save records player level, HP, damage, experience, and the full skill tree state. You can start a new game at any time without touching your saves.
+## 🎞️ Preview
 
----
-
-## Notes
-
-- SFML 2.5.1 is bundled in the repo (`SFML-2.5.1/`), so you don't need to install it separately
-- The game window is fixed at 1200×800
+<p align="center">
+    <img src="images/image-1.png" alt="Platformer Warrior gameplay screenshot" width="45%"/>
+    <img src="images/image-2.png" alt="Platformer Warrior combat screenshot" width="45%"/>
+    <br/>
+    <img src="images/image-3.png" alt="Platformer Warrior progression screenshot" width="45%"/>
+    <img src="images/image-4.png" alt="Platformer Warrior boss fight screenshot" width="45%"/>
+</p>
